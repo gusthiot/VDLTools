@@ -18,7 +18,7 @@ class DuplicateTool(QgsMapToolIdentify):
         self.canvas = iface.mapCanvas()
         self.dlg = DuplicateDialog()
         self.icon_path = ':/plugins/VDLTools/tools/duplicate_icon.png'
-        self.text = u'Duplicate a feature'
+        self.text = 'Duplicate a feature'
         self.dlg.previewButton.clicked.connect(self.preview)
         self.dlg.okButton.clicked.connect(self.ok)
         self.dlg.cancelButton.clicked.connect(self.cancel)

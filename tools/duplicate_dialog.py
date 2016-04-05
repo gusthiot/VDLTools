@@ -5,7 +5,7 @@ import os
 from PyQt4 import QtGui, uic
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'duplicate_dialog_base.ui'))
+    os.path.dirname(__file__), 'duplicate_dialog.ui'))
 
 
 class DuplicateDialog(QtGui.QDialog, FORM_CLASS):

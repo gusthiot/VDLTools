@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>DuplicateDialogBase</class>
- <widget class="QDialog" name="DuplicateDialogBase">
+ <class>DuplicateDialog</class>
+ <widget class="QDialog" name="DuplicateDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
