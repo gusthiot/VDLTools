@@ -2,13 +2,13 @@
 """
 /***************************************************************************
  VDLTools
-                                 A QGIS plugin
- Tools needed by the Ville de Lausanne
-                             -------------------
+                                 A QGIS plugin for the Ville de Lausanne
+                              -------------------
         begin                : 2016-04-05
-        copyright            : (C) 2016 by Christophe Gusthiot
-        email                : christophe.gusthiot@lausanne.ch
         git sha              : $Format:%H$
+        copyright            : (C) 2016 Ville de Lausanne
+        author               : Christophe Gusthiot
+        email                : christophe.gusthiot@lausanne.ch
  ***************************************************************************/
 
 /***************************************************************************
@@ -19,9 +19,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
- This script initializes the plugin, making it known to QGIS.
 """
-
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name

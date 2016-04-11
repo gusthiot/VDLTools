@@ -2,12 +2,12 @@
 """
 /***************************************************************************
  VDLTools
-                                 A QGIS plugin
- Tools needed by the Ville de Lausanne
+                                 A QGIS plugin for the Ville de Lausanne
                               -------------------
         begin                : 2016-04-05
         git sha              : $Format:%H$
-        copyright            : (C) 2016 by Christophe Gusthiot
+        copyright            : (C) 2016 Ville de Lausanne
+        author               : Christophe Gusthiot
         email                : christophe.gusthiot@lausanne.ch
  ***************************************************************************/
 
