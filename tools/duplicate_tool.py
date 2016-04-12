@@ -26,7 +26,8 @@ from qgis.core import *
 from qgis.gui import *
 from math import *
 
-from duplicate_dialog import DuplicateDialog
+from duplicate_distance_dialog import DuplicateDistanceDialog
+from duplicate_attributes_dialog import DuplicateAttributesDialog
 
 
 class DuplicateTool(QgsMapTool):
@@ -35,13 +36,9 @@ class DuplicateTool(QgsMapTool):
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.dlg = DuplicateDialog()
+        self.dstDlg = None
         self.icon_path = ':/plugins/VDLTools/tools/duplicate_icon.png'
         self.text = 'Duplicate a feature'
-        self.dlg.previewButton.clicked.connect(self.preview)
-        self.dlg.okButton.clicked.connect(self.ok)
-        self.dlg.cancelButton.clicked.connect(self.cancel)
-        self.dlg.distanceEdit.setValidator(QDoubleValidator(-1000, 1000, 2, self))
         self.setCursor(Qt.ArrowCursor)
         self.isEditing = 0
         self.layer = self.iface.activeLayer()
@@ -53,28 +50,47 @@ class DuplicateTool(QgsMapTool):
     def setTool(self):
         self.canvas.setMapTool(self)
 
+    def setDistanceDialog(self, isComplexPolygon):
+        self.dstDlg = DuplicateDistanceDialog(isComplexPolygon)
+        self.dstDlg.previewButton.clicked.connect(self.dstPreview)
+        self.dstDlg.okButton.clicked.connect(self.dstOk)
+        self.dstDlg.cancelButton.clicked.connect(self.dstCancel)
 
-    def cancel(self):
-        self.dlg.close()
+    def setAttributesDialog(self, fields, attributes):
+        self.attDlg = DuplicateAttributesDialog(fields, attributes)
+        self.attDlg.okButton.clicked.connect(self.attOk)
+        self.attDlg.cancelButton.clicked.connect(self.attCancel)
+
+    def dstCancel(self):
+        self.dstDlg.close()
         self.isEditing = 0
         self.canvas.scene().removeItem(self.rubberBand)
         self.rubberBand = None
         self.layer.removeSelection()
 
-    def angle(self, point1, point2):
+    def attCancel(self):
+        self.attDlg.close()
+        self.isEditing = 0
+        self.canvas.scene().removeItem(self.rubberBand)
+        self.rubberBand = None
+        self.layer.removeSelection()
+
+    @staticmethod
+    def angle(point1, point2):
         return atan2(point2.y()-point1.y(), point2.x()-point1.x())
 
-    def newPoint(self, angle, point, distance):
+    @staticmethod
+    def newPoint(angle, point, distance):
         x = point.x() + cos(angle)*distance
         y = point.y() + sin(angle)*distance
         return QgsPoint(x,y)
 
-    def preview(self):
+    def dstPreview(self):
         if self.rubberBand:
             self.canvas.scene().removeItem(self.rubberBand)
             self.rubberBand = None
-        if self.dlg.distanceEdit.text():
-            distance = float(self.dlg.distanceEdit.text())
+        if self.dstDlg.distanceEdit.text():
+            distance = float(self.dstDlg.distanceEdit.text())
             if self.layer.wkbType() == QGis.WKBPolygon:
                 self.polygonPreview(distance)
             else:
@@ -107,12 +123,14 @@ class DuplicateTool(QgsMapTool):
 
     def polygonPreview(self, distance):
         self.rubberBand = QgsRubberBand(self.canvas, QGis.Polygon)
-        self.newFeatures = []
         lines = self.selectedFeature.geometry().asPolygon()
-        print lines
+        self.newFeatures = []
+        nb = 0
         for points in lines:
-            print points
             newPoints = []
+            if nb == 1:
+                if self.dstDlg.direction_button_group.checkedId() == 1:
+                    distance = -distance
             for pos in range(0, len(points)):
                 if pos == 0:
                     pos1 = len(points) - 2
@@ -123,18 +141,25 @@ class DuplicateTool(QgsMapTool):
                     pos3 = 1
                 else:
                     pos3 = pos + 1
-                print str(len(points)) + " : " + str(pos1) + " - " + str(pos2) + " - " + str(pos3)
                 angle1 = self.angle(points[pos1], points[pos2])
                 angle2 = self.angle(points[pos], points[pos3])
                 angle = float(pi + angle1 + angle2) / 2
                 dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
                 newPoints.append(self.newPoint(angle, points[pos], dist))
-            self.newFeatures.append(newPoints)
-        print self.newFeatures
-        self.rubberBand.setToGeometry(QgsGeometry.fromPolygon(self.newFeatures), None)
+                self.newFeatures.append(newPoints)
+            if nb == 0:
+                self.rubberBand.setToGeometry(QgsGeometry.fromPolyline(newPoints), None)
+            else:
+                self.rubberBand.addGeometry(QgsGeometry.fromPolyline(newPoints), None)
+            nb += 1
 
-    # TODO : check polygon in ok
-    def ok(self):
+    def dstOk(self):
+        self.dstDlg.close()
+        self.setAttributesDialog(self.layer.pendingFields(), self.selectedFeature.attributes())
+        self.attDlg.show()
+
+    def attOk(self):
+        self.attDlg.close()
         self.canvas.scene().removeItem(self.rubberBand)
         self.rubberBand = None
         self.layer.startEditing()
@@ -146,18 +171,19 @@ class DuplicateTool(QgsMapTool):
             print "bad bad geometry"
         else:
             print "good geometry"
-        feature = QgsFeature()
+        feature = QgsFeature(self.layer.pendingFields())
         feature.setGeometry(geometry)
+        feature.setAttributes(self.attDlg.getAttributes())
         self.layer.addFeature(feature)
         self.layer.updateExtents()
         self.layer.commitChanges()
         self.isEditing = 0
         self.layer.removeSelection()
-        self.dlg.close()
 
     def canvasMoveEvent(self, event):
         if not self.isEditing:
-            if self.layer and (self.layer.wkbType() is not None) and (self.layer.wkbType() == QGis.WKBLineString or self.layer.wkbType() == QGis.WKBPolygon):
+            self.layer = self.iface.activeLayer()
+            if QGis is not None and self.layer is not None and (self.layer.wkbType() is not None) and (self.layer.wkbType() == QGis.WKBLineString or self.layer.wkbType() == QGis.WKBPolygon):
                 f = self.findFeatureAt(event.pos())
                 if f and self.lastFeatureId != f.id():
                     self.lastFeatureId = f.id()
@@ -175,8 +201,12 @@ class DuplicateTool(QgsMapTool):
                     return
                 self.selectedFeature = found_features[0]
                 self.isEditing = 1
-                self.dlg.distanceEdit.setText("5.0")
-                self.dlg.show()
+                if (self.layer.wkbType() == QGis.WKBPolygon) and (len(self.selectedFeature.geometry().asPolygon()) > 1):
+                    self.setDistanceDialog(True)
+                else:
+                    self.setDistanceDialog(False)
+                self.dstDlg.distanceEdit.setText("5.0")
+                self.dstDlg.show()
 
     def findFeatureAt(self, pos):
         mapPt,layerPt = self.transformCoordinates(pos)
