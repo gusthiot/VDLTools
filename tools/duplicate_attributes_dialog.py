@@ -61,7 +61,7 @@ class DuplicateAttributesDialog(QDialog):
                 if typeName == "Integer" or typeName == "Integer64":
                     edit.setValidator(QIntValidator(-1000, 1000, self))
                 elif typeName == "Real":
-                    edit.setValidator(QDoubleValidator(-1000, 1000, 2, self))
+                    edit.setValidator(QDoubleValidator(-1000, 1000, 4, self))
             self.attEdits.append(edit)
             self.layout.addWidget(self.attEdits[i], i, 2)
 

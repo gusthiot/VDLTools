@@ -25,6 +25,9 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 from math import *
+from shapely.validation import explain_validity
+from shapely.geometry import Polygon
+from shapely.geometry import LineString
 
 from duplicate_distance_dialog import DuplicateDistanceDialog
 from duplicate_attributes_dialog import DuplicateAttributesDialog
@@ -154,6 +157,7 @@ class DuplicateTool(QgsMapTool):
             nb += 1
 
     def dstOk(self):
+        self.dstPreview()
         self.dstDlg.close()
         self.setAttributesDialog(self.layer.pendingFields(), self.selectedFeature.attributes())
         self.attDlg.show()
@@ -165,12 +169,18 @@ class DuplicateTool(QgsMapTool):
         self.layer.startEditing()
         if self.layer.wkbType() == QGis.WKBPolygon:
             geometry = QgsGeometry.fromPolygon(self.newFeatures)
+            # sh_lines_p = []
+            # for ls in self.newFeatures:
+            #     sh_lines_p.append(ls.pop())
+            # print explain_validity(Polygon(sh_lines_p))
         else:
             geometry = QgsGeometry.fromPolyline(self.newFeatures)
-        if not geometry.isGeosValid():
-            print "bad bad geometry"
-        else:
-            print "good geometry"
+            # print explain_validity(LineString(self.newFeatures))
+        # if not geometry.isGeosValid():
+        #     print "bad bad geometry"
+        # else:
+        #     print "good geometry"
+
         feature = QgsFeature(self.layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.attDlg.getAttributes())

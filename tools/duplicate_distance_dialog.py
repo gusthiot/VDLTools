@@ -37,7 +37,7 @@ class DuplicateDistanceDialog(QDialog):
         self.distanceEdit = QLineEdit("inputMask")
         self.distanceEdit.setMinimumHeight(20)
         self.distanceEdit.setMinimumWidth(120)
-        self.distanceEdit.setValidator(QDoubleValidator(-1000, 1000, 2, self))
+        self.distanceEdit.setValidator(QDoubleValidator(-1000, 1000, 4, self))
 
         self.previewButton = QPushButton("Preview")
         self.previewButton.setMinimumHeight(20)
