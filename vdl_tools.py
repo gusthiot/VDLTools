@@ -24,6 +24,7 @@ from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
 from PyQt4.QtGui import QAction, QIcon
 
 from tools.duplicate_tool import DuplicateTool
+from tools.intersect_tool import IntersectTool
 
 # Initialize Qt resources from file resources.py
 import resources
@@ -45,6 +46,7 @@ class VDLTools:
         self.iface = iface
         self.mapCanvas = iface.mapCanvas()
         self.duplicateTool = None
+        self.intersectTool = None
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -101,9 +103,10 @@ class VDLTools:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        # TODO : add action for each tool
         self.duplicateTool = DuplicateTool(self.iface)
         self.add_action(self.duplicateTool, self.iface.mainWindow())
+        self.intersectTool = IntersectTool(self.iface)
+        self.add_action(self.intersectTool, self.iface.mainWindow())
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""

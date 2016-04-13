@@ -44,7 +44,7 @@ class DuplicateAttributesDialog(QDialog):
         self.attLabels = []
         self.attEdits = []
 
-        for i in xrange(len(attributes)):
+        for i in xrange(len(self.attributes)):
             label = QLabel("label" + str(i))
             label.setText(fields[i].name() + " :")
             label.setMinimumHeight(20)
@@ -54,10 +54,16 @@ class DuplicateAttributesDialog(QDialog):
             typeName = self.fields[i].typeName()
 
             if typeName == "Date":
-                edit = QDateEdit(attributes[i])
+                if str(self.attributes[i]) != "NULL":
+                    edit = QDateEdit(self.attributes[i])
+                else:
+                    edit = QDateEdit(None)
             else:
                 edit = QLineEdit("line" + str(i))
-                edit.setText(str(attributes[i]))
+                if str(self.attributes[i]) != "NULL":
+                    edit.setText(str(self.attributes[i]))
+                else:
+                    edit.setText("")
                 if typeName == "Integer" or typeName == "Integer64":
                     edit.setValidator(QIntValidator(-1000, 1000, self))
                 elif typeName == "Real":
@@ -72,12 +78,22 @@ class DuplicateAttributesDialog(QDialog):
     def getAttributes(self):
         for i in xrange(len(self.attributes)):
             typeName = self.fields[i].typeName()
+
             if typeName == "Date":
-                self.attributes[i] = self.attEdits[i].date()
+                if self.attEdits[i] is not None:
+                    self.attributes[i] = self.attEdits[i].date()
+                else:
+                    self.attributes[i] = None
             elif typeName == "Integer" or typeName == "Integer64":
-                self.attributes[i] = int(self.attEdits[i].text())
+                if self.attEdits[i].text() != "":
+                    self.attributes[i] = int(self.attEdits[i].text())
+                else:
+                    self.attributes[i] = None
             elif typeName == "Real":
-                self.attributes[i] = float(self.attEdits[i].text())
+                if self.attEdits[i].text() != "":
+                    self.attributes[i] = float(self.attEdits[i].text())
+                else:
+                    self.attributes[i] = None
             else:
                 self.attributes[i] = self.attEdits[i].text()
         return self.attributes

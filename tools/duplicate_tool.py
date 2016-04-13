@@ -25,9 +25,6 @@ from PyQt4.QtGui import *
 from qgis.core import *
 from qgis.gui import *
 from math import *
-from shapely.validation import explain_validity
-from shapely.geometry import Polygon
-from shapely.geometry import LineString
 
 from duplicate_distance_dialog import DuplicateDistanceDialog
 from duplicate_attributes_dialog import DuplicateAttributesDialog
@@ -149,7 +146,7 @@ class DuplicateTool(QgsMapTool):
                 angle = float(pi + angle1 + angle2) / 2
                 dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
                 newPoints.append(self.newPoint(angle, points[pos], dist))
-                self.newFeatures.append(newPoints)
+            self.newFeatures.append(newPoints)
             if nb == 0:
                 self.rubberBand.setToGeometry(QgsGeometry.fromPolyline(newPoints), None)
             else:
@@ -169,17 +166,12 @@ class DuplicateTool(QgsMapTool):
         self.layer.startEditing()
         if self.layer.wkbType() == QGis.WKBPolygon:
             geometry = QgsGeometry.fromPolygon(self.newFeatures)
-            # sh_lines_p = []
-            # for ls in self.newFeatures:
-            #     sh_lines_p.append(ls.pop())
-            # print explain_validity(Polygon(sh_lines_p))
         else:
             geometry = QgsGeometry.fromPolyline(self.newFeatures)
-            # print explain_validity(LineString(self.newFeatures))
-        # if not geometry.isGeosValid():
-        #     print "bad bad geometry"
-        # else:
-        #     print "good geometry"
+        if not geometry.isGeosValid():
+            print "bad bad geometry"
+        else:
+            print "good geometry"
 
         feature = QgsFeature(self.layer.pendingFields())
         feature.setGeometry(geometry)
