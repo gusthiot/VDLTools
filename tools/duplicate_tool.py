@@ -20,11 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
-from qgis.core import *
-from qgis.gui import *
-from math import *
+from PyQt4.QtCore import Qt, QPoint
+from PyQt4.QtGui import QColor
+from qgis.core import QgsPoint, QGis, QgsGeometry, QgsFeature, QgsRectangle, QgsFeatureRequest
+from qgis.gui import QgsMapTool, QgsRubberBand, QgsMessageBar
+from math import pi, atan2, cos, sin
 
 from duplicate_distance_dialog import DuplicateDistanceDialog
 from duplicate_attributes_dialog import DuplicateAttributesDialog
@@ -36,7 +36,6 @@ class DuplicateTool(QgsMapTool):
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.dstDlg = None
         self.icon_path = ':/plugins/VDLTools/tools/duplicate_icon.png'
         self.text = 'Duplicate a feature'
         self.setCursor(Qt.ArrowCursor)

@@ -21,8 +21,8 @@
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QDialog, QGridLayout, QPushButton, QLabel
+from PyQt4.QtGui import QLineEdit, QDoubleValidator, QRadioButton, QButtonGroup
 
 
 class DuplicateDistanceDialog(QDialog):
@@ -72,6 +72,3 @@ class DuplicateDistanceDialog(QDialog):
         self.layout.addWidget(self.okButton, 3, 1)
         self.layout.addWidget(self.cancelButton, 3, 2)
         self.setLayout(self.layout)
-
-
-
