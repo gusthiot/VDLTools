@@ -27,49 +27,61 @@ from PyQt4.QtGui import QDialog, QGridLayout, QPushButton, QLabel, QLineEdit, QD
 class IntersectDistanceDialog(QDialog):
     def __init__(self, mapPoint):
         QDialog.__init__(self)
-        self.mapPoint = mapPoint
+        self.__mapPoint = mapPoint
         self.setWindowTitle("Place distance")
         self.resize(275, 177)
-        self.gridLayout = QGridLayout()
+        self.__gridLayout = QGridLayout()
 
-        self.label = QLabel("Distance")
-        self.gridLayout.addWidget(self.label, 2, 1, 1, 1)
+        self.__label = QLabel("Distance")
+        self.__gridLayout.addWidget(self.__label, 2, 1, 1, 1)
 
-        self.observation = QDoubleSpinBox()
-        self.observation.setDecimals(4)
-        self.observation.setMaximum(999999.99)
-        self.observation.setSingleStep(1.0)
-        self.gridLayout.addWidget(self.observation, 2, 2, 1, 1)
+        self.__observation = QDoubleSpinBox()
+        self.__observation.setDecimals(4)
+        self.__observation.setMaximum(999999.99)
+        self.__observation.setSingleStep(1.0)
+        self.__gridLayout.addWidget(self.__observation, 2, 2, 1, 1)
 
-        self.label_3 = QLabel("m")
-        self.gridLayout.addWidget(self.label_3, 2, 3, 1, 1)
+        self.__label_3 = QLabel("m")
+        self.__gridLayout.addWidget(self.__label_3, 2, 3, 1, 1)
 
-        self.okButton = QPushButton("OK")
-        self.okButton.setMinimumHeight(20)
-        self.okButton.setMinimumWidth(100)
+        self.__okButton = QPushButton("OK")
+        self.__okButton.setMinimumHeight(20)
+        self.__okButton.setMinimumWidth(100)
 
-        self.cancelButton = QPushButton("Cancel")
-        self.cancelButton.setMinimumHeight(20)
-        self.cancelButton.setMinimumWidth(100)
+        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton.setMinimumHeight(20)
+        self.__cancelButton.setMinimumWidth(100)
 
-        self.gridLayout.addWidget(self.okButton, 5, 1)
-        self.gridLayout.addWidget(self.cancelButton, 5, 2)
+        self.__gridLayout.addWidget(self.__okButton, 5, 1)
+        self.__gridLayout.addWidget(self.__cancelButton, 5, 2)
 
-        self.label_5 = QLabel("y")
-        self.gridLayout.addWidget(self.label_5, 1, 1, 1, 1)
+        self.__label_5 = QLabel("y")
+        self.__gridLayout.addWidget(self.__label_5, 1, 1, 1, 1)
 
-        self.label_6 = QLabel("x")
-        self.gridLayout.addWidget(self.label_6, 0, 1, 1, 1)
+        self.__label_6 = QLabel("x")
+        self.__gridLayout.addWidget(self.__label_6, 0, 1, 1, 1)
 
-        self.x = QLineEdit("x")
-        self.x.setText(str(self.mapPoint.x()))
-        self.x.setEnabled(False)
-        self.gridLayout.addWidget(self.x, 0, 2, 1, 2)
+        self.__x = QLineEdit("x")
+        self.__x.setText(str(self.__mapPoint.x()))
+        self.__x.setEnabled(False)
+        self.__gridLayout.addWidget(self.__x, 0, 2, 1, 2)
 
-        self.y = QLineEdit("y")
-        self.y.setText(str(self.mapPoint.y()))
-        self.y.setEnabled(False)
-        self.gridLayout.addWidget(self.y, 1, 2, 1, 2)
+        self.__y = QLineEdit("y")
+        self.__y.setText(str(self.__mapPoint.y()))
+        self.__y.setEnabled(False)
+        self.__gridLayout.addWidget(self.__y, 1, 2, 1, 2)
 
-        self.setLayout(self.gridLayout)
+        self.setLayout(self.__gridLayout)
+
+    def observation(self):
+        return self.__observation
+
+    def okButton(self):
+        return self.__okButton
+
+    def cancelButton(self):
+        return self.__cancelButton
+
+    def mapPoint(self):
+        return self.__mapPoint
 

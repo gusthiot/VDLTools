@@ -27,74 +27,78 @@ from PyQt4.QtGui import QDialog, QGridLayout, QPushButton, QLabel, QDateEdit, QL
 class DuplicateAttributesDialog(QDialog):
     def __init__(self, fields, attributes):
         QDialog.__init__(self)
-        self.attributes = attributes
-        self.fields = fields
+        self.__attributes = attributes
+        self.__fields = fields
         self.setWindowTitle("Set attributes")
         self.resize(300, 100)
-        self.layout = QGridLayout()
-        self.okButton = QPushButton("OK")
-        self.okButton.setMinimumHeight(20)
-        self.okButton.setMinimumWidth(100)
+        self.__layout = QGridLayout()
+        self.__okButton = QPushButton("OK")
+        self.__okButton.setMinimumHeight(20)
+        self.__okButton.setMinimumWidth(100)
 
-        self.cancelButton = QPushButton("Cancel")
-        self.cancelButton.setMinimumHeight(20)
-        self.cancelButton.setMinimumWidth(100)
+        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton.setMinimumHeight(20)
+        self.__cancelButton.setMinimumWidth(100)
 
-        self.attLabels = []
-        self.attEdits = []
+        self.__attLabels = []
+        self.__attEdits = []
 
-        for i in xrange(len(self.attributes)):
+        for i in xrange(len(self.__attributes)):
             label = QLabel("label" + str(i))
             label.setText(fields[i].name() + " :")
             label.setMinimumHeight(20)
             label.setMinimumWidth(50)
-            self.attLabels.append(label)
-            self.layout.addWidget(self.attLabels[i], i, 1)
-            typeName = self.fields[i].typeName()
+            self.__attLabels.append(label)
+            self.__layout.addWidget(self.__attLabels[i], i, 1)
+            typeName = self.__fields[i].typeName()
 
             if typeName == "Date":
-                if str(self.attributes[i]) != "NULL":
-                    edit = QDateEdit(self.attributes[i])
+                if str(self.__attributes[i]) != "NULL":
+                    edit = QDateEdit(self.__attributes[i])
                 else:
                     edit = QDateEdit(None)
             else:
                 edit = QLineEdit("line" + str(i))
-                if str(self.attributes[i]) != "NULL":
-                    edit.setText(str(self.attributes[i]))
+                if str(self.__attributes[i]) != "NULL":
+                    edit.setText(str(self.__attributes[i]))
                 else:
                     edit.setText("")
                 if typeName == "Integer" or typeName == "Integer64":
                     edit.setValidator(QIntValidator(-1000, 1000, self))
                 elif typeName == "Real":
                     edit.setValidator(QDoubleValidator(-1000, 1000, 4, self))
-            self.attEdits.append(edit)
-            self.layout.addWidget(self.attEdits[i], i, 2)
+            self.__attEdits.append(edit)
+            self.__layout.addWidget(self.__attEdits[i], i, 2)
 
-        self.layout.addWidget(self.okButton, 100, 1)
-        self.layout.addWidget(self.cancelButton, 100, 2)
-        self.setLayout(self.layout)
+        self.__layout.addWidget(self.__okButton, 100, 1)
+        self.__layout.addWidget(self.__cancelButton, 100, 2)
+        self.setLayout(self.__layout)
+
+    def okButton(self):
+        return self.__okButton
+
+    def cancelButton(self):
+        return self.__cancelButton
 
     def getAttributes(self):
-        for i in xrange(len(self.attributes)):
-            typeName = self.fields[i].typeName()
+        for i in xrange(len(self.__attributes)):
+            typeName = self.__fields[i].typeName()
 
             if typeName == "Date":
-                if self.attEdits[i] is not None:
-                    self.attributes[i] = self.attEdits[i].date()
+                if self.__attEdits[i] is not None:
+                    self.__attributes[i] = self.__attEdits[i].date()
                 else:
-                    self.attributes[i] = None
+                    self.__attributes[i] = None
             elif typeName == "Integer" or typeName == "Integer64":
-                if self.attEdits[i].text() != "":
-                    self.attributes[i] = int(self.attEdits[i].text())
+                if self.__attEdits[i].text() != "":
+                    self.__attributes[i] = int(self.__attEdits[i].text())
                 else:
-                    self.attributes[i] = None
+                    self.__attributes[i] = None
             elif typeName == "Real":
-                if self.attEdits[i].text() != "":
-                    self.attributes[i] = float(self.attEdits[i].text())
+                if self.__attEdits[i].text() != "":
+                    self.__attributes[i] = float(self.__attEdits[i].text())
                 else:
-                    self.attributes[i] = None
+                    self.__attributes[i] = None
             else:
-                self.attributes[i] = self.attEdits[i].text()
-        return self.attributes
-
-
+                self.__attributes[i] = self.__attEdits[i].text()
+        return self.__attributes

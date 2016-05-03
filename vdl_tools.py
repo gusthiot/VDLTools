@@ -85,13 +85,13 @@ class VDLTools:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('VDLTools', message)
 
-    def add_action(self, tool, parent):
+    def add_action(self, tool, parent, enable=True):
 
-        icon = QIcon(tool.icon_path)
-        action = QAction(icon, tool.text, parent)
+        icon = QIcon(tool.icon_path())
+        action = QAction(icon, tool.text(), parent)
         tool.setAction(action)
         action.triggered.connect(tool.setTool)
-        action.setEnabled(True)
+        action.setEnabled(enable)
 
         self.toolbar.addAction(action)
         self.iface.addPluginToMenu(
@@ -104,9 +104,11 @@ class VDLTools:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         self.duplicateTool = DuplicateTool(self.iface)
-        self.add_action(self.duplicateTool, self.iface.mainWindow())
+        self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
         self.intersectTool = IntersectTool(self.iface)
         self.add_action(self.intersectTool, self.iface.mainWindow())
+
+        self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
