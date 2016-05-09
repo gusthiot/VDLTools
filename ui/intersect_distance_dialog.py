@@ -21,7 +21,12 @@
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QDialog, QGridLayout, QPushButton, QLabel, QLineEdit, QDoubleSpinBox
+from PyQt4.QtGui import (QDialog,
+                         QGridLayout,
+                         QPushButton,
+                         QLabel,
+                         QLineEdit,
+                         QDoubleSpinBox)
 
 
 class IntersectDistanceDialog(QDialog):

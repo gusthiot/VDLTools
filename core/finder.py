@@ -22,7 +22,9 @@
 """
 
 from PyQt4.QtCore import QPoint
-from qgis.core import QgsRectangle, QgsFeatureRequest, QgsFeature
+from qgis.core import (QgsRectangle,
+                       QgsFeatureRequest,
+                       QgsFeature)
 
 
 class Finder:
@@ -41,7 +43,6 @@ class Finder:
         for layer in layers:
             features += Finder.findFeaturesAt(pos, layer, mapTool)
         return features
-
 
     @staticmethod
     def findFeaturesAt(pos, layer, mapTool):

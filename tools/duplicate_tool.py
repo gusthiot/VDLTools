@@ -20,14 +20,22 @@
  *                                                                         *
  ***************************************************************************/
 """
+from math import (pi,
+                  atan2,
+                  cos,
+                  sin)
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import QgsPoint, QGis, QgsGeometry, QgsFeature, QgsMapLayer
-from qgis.gui import QgsMapTool, QgsRubberBand, QgsMessageBar
-from math import pi, atan2, cos, sin
-
-from duplicate_distance_dialog import DuplicateDistanceDialog
-from duplicate_attributes_dialog import DuplicateAttributesDialog
+from qgis.core import (QgsPoint,
+                       QGis,
+                       QgsGeometry,
+                       QgsFeature,
+                       QgsMapLayer)
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand,
+                      QgsMessageBar)
+from ui.duplicate_attributes_dialog import DuplicateAttributesDialog
+from ui.duplicate_distance_dialog import DuplicateDistanceDialog
 from ..core.finder import Finder
 
 
@@ -37,7 +45,7 @@ class DuplicateTool(QgsMapTool):
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
-        self.__icon_path = ':/plugins/VDLTools/tools/duplicate_icon.png'
+        self.__icon_path = ':/plugins/VDLTools/icons/duplicate_icon.png'
         self.__text = 'Duplicate a feature'
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = 0
@@ -47,6 +55,7 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand = None
         self.__newFeatures = None
         self.__oldTool = None
+        self.__vectorKind = QgsMapLayer.VectorLayer
 
     def icon_path(self):
         return self.__icon_path
@@ -56,6 +65,15 @@ class DuplicateTool(QgsMapTool):
 
     def setEnable(self, layer):
         self.__setLayer(layer)
+
+    def activate(self):
+        QgsMapTool.activate(self)
+
+    def deactivate(self):
+        if self.__layer is not None:
+            self.__layer.editingStarted.disconnect()
+            self.__layer.editingStopped.disconnect()
+        QgsMapTool.deactivate(self)
 
     def startEditing(self):
         self.action().setEnabled(True)
@@ -71,7 +89,7 @@ class DuplicateTool(QgsMapTool):
 
     def __setLayer(self, layer):
         if layer is not None\
-                and layer.type() == QgsMapLayer.VectorLayer\
+                and layer.type() == self.__vectorKind\
                 and (layer.wkbType() == QGis.WKBLineString or layer.wkbType() == QGis.WKBPolygon):
             self.__layer = layer
             if self.__layer.isEditable():

@@ -21,7 +21,14 @@
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import QDialog, QGridLayout, QPushButton, QLabel, QDateEdit, QLineEdit, QIntValidator, QDoubleValidator
+from PyQt4.QtGui import (QDialog,
+                         QGridLayout,
+                         QPushButton,
+                         QLabel,
+                         QDateEdit,
+                         QLineEdit,
+                         QIntValidator,
+                         QDoubleValidator)
 
 
 class DuplicateAttributesDialog(QDialog):

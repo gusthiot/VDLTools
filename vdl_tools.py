@@ -20,8 +20,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import (QSettings,
+                          QTranslator,
+                          qVersion,
+                          QCoreApplication)
+from PyQt4.QtGui import (QAction,
+                         QIcon)
 
 from tools.duplicate_tool import DuplicateTool
 from tools.intersect_tool import IntersectTool
