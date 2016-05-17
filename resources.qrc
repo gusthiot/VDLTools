@@ -5,4 +5,7 @@
     <qresource prefix="/plugins/VDLTools" >
         <file>icons/intersect_icon.png</file>
     </qresource>
+    <qresource prefix="/plugins/VDLTools" >
+        <file>icons/profile_icon.png</file>
+    </qresource>
 </RCC>

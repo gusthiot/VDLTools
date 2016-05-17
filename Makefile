@@ -33,4 +33,4 @@ resources.py: resources.qrc
 	pyrcc4 -o resources.py  resources.qrc
 
 clean:
-	rm -f resources.py i18n/*.qm
+	rm -f resources.py i18n/*.qm *.pyc */*.pyc

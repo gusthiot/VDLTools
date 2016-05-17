@@ -36,7 +36,7 @@ from qgis.core import (QgsMapLayer,
                        QgsVectorLayer)
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand)
-from ui.intersect_distance_dialog import IntersectDistanceDialog
+from ..ui.intersect_distance_dialog import IntersectDistanceDialog
 from ..core.finder import Finder
 
 

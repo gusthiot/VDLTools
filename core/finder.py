@@ -22,7 +22,8 @@
 """
 
 from PyQt4.QtCore import QPoint
-from qgis.core import (QgsRectangle,
+from qgis.core import (QgsPoint,
+                       QgsRectangle,
                        QgsFeatureRequest,
                        QgsFeature)
 
@@ -38,6 +39,26 @@ class Finder:
             return None
 
     @staticmethod
+    def findClosestFeatureLayersAt(pos, layers, mapTool):
+        features = []
+        for layer in layers:
+            feats = Finder.findFeaturesAt(pos, layer, mapTool)
+            for f in feats:
+                features.append([f, layer])
+        if len(features) > 0:
+            posP = QgsPoint(pos)
+            dst = posP.sqrDist(features[0][0].geometry().asPoint())
+            f = 0
+            for i in xrange(1,len(features)):
+                d = posP.sqrDist(features[i][0].geometry().asPoint())
+                if d < dst:
+                    dst = d
+                    f = i
+            return features[f]
+        else:
+            return None
+
+    @staticmethod
     def findFeaturesLayersAt(pos, layers, mapTool):
         features = []
         for layer in layers:
@@ -46,6 +67,8 @@ class Finder:
 
     @staticmethod
     def findFeaturesAt(pos, layer, mapTool):
+        if layer is None:
+            return None
         mapPt, layerPt = Finder.transformCoordinates(pos, layer, mapTool)
         tolerance = Finder.calcTolerance(pos, layer, mapTool)
         searchRect = QgsRectangle(layerPt.x() - tolerance, layerPt.y() - tolerance,

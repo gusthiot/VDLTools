@@ -34,8 +34,8 @@ from qgis.core import (QgsPoint,
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
                       QgsMessageBar)
-from ui.duplicate_attributes_dialog import DuplicateAttributesDialog
-from ui.duplicate_distance_dialog import DuplicateDistanceDialog
+from ..ui.duplicate_attributes_dialog import DuplicateAttributesDialog
+from ..ui.duplicate_distance_dialog import DuplicateDistanceDialog
 from ..core.finder import Finder
 
 
@@ -56,6 +56,8 @@ class DuplicateTool(QgsMapTool):
         self.__newFeatures = None
         self.__oldTool = None
         self.__vectorKind = QgsMapLayer.VectorLayer
+        self.__wkbLine = QGis.WKBLineString
+        self.__wkbPolygon = QGis.WKBPolygon
 
     def icon_path(self):
         return self.__icon_path
@@ -90,7 +92,11 @@ class DuplicateTool(QgsMapTool):
     def __setLayer(self, layer):
         if layer is not None\
                 and layer.type() == self.__vectorKind\
-                and (layer.wkbType() == QGis.WKBLineString or layer.wkbType() == QGis.WKBPolygon):
+                and (layer.wkbType() == self.__wkbLine or layer.wkbType() == self.__wkbPolygon):
+
+            if self.__layer is not None:
+                self.__layer.editingStarted.disconnect()
+                self.__layer.editingStopped.disconnect()
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
@@ -101,9 +107,7 @@ class DuplicateTool(QgsMapTool):
             self.__layer.editingStarted.connect(self.startEditing)
             self.__layer.editingStopped.connect(self.stopEditing)
             return
-        if self.__layer is not None:
-            self.__layer.editingStarted.disconnect()
-            self.__layer.editingStopped.disconnect()
+        self.action().setEnabled(False)
         self.__layer = None
 
     def __setDistanceDialog(self, isComplexPolygon):

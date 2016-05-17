@@ -29,6 +29,7 @@ from PyQt4.QtGui import (QAction,
 
 from tools.duplicate_tool import DuplicateTool
 from tools.intersect_tool import IntersectTool
+from tools.profile_tool import ProfileTool
 
 # Initialize Qt resources from file resources.py
 import resources
@@ -51,6 +52,7 @@ class VDLTools:
         self.mapCanvas = iface.mapCanvas()
         self.duplicateTool = None
         self.intersectTool = None
+        self.profileTool = None
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -111,7 +113,10 @@ class VDLTools:
         self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
         self.intersectTool = IntersectTool(self.iface)
         self.add_action(self.intersectTool, self.iface.mainWindow())
+        self.profileTool = ProfileTool(self.iface)
+        self.add_action(self.profileTool, self.iface.mainWindow(), False)
 
+        self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
         self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
 
     def unload(self):
