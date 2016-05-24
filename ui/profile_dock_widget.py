@@ -180,10 +180,6 @@ class ProfileDockWidget(QDockWidget):
             sizePolicy.setVerticalStretch(0)
             self.__plotWdg.setSizePolicy(sizePolicy)
             self.__frameLayout.addWidget(self.__plotWdg)
-            # mpltoolbar = NavigationToolbar2QTAgg(self.__plotWdg, self.__plotFrame)
-            # lstActions = mpltoolbar.actions()
-            # mpltoolbar.removeAction(lstActions[7])
-            # mpltoolbar.removeAction(lstActions[8])
 
     def setProfiles(self, profiles):
         self.__profiles = profiles
