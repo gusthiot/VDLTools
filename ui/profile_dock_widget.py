@@ -200,7 +200,7 @@ class ProfileDockWidget(QDockWidget):
             y1 = float(self.__profiles[i]['y'])
             x2 = float(self.__profiles[i+1]['x'])
             y2 = float(self.__profiles[i+1]['y'])
-            profileLen += sqrt (((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)))
+            profileLen += sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)))
             self.__profiles[i+1]['l'] = profileLen
             if self.__lib == 'Qwt5':
                 vertLine = QwtPlotMarker()
