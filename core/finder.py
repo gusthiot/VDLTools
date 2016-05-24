@@ -33,7 +33,7 @@ class Finder:
     @staticmethod
     def findClosestFeatureAt(pos, layer, mapTool):
         features = Finder.findFeaturesAt(pos, layer, mapTool)
-        if len(features) > 0 :
+        if features is not None and len(features) > 0:
             return features[0]
         else:
             return None
@@ -43,8 +43,9 @@ class Finder:
         features = []
         for layer in layers:
             feats = Finder.findFeaturesAt(pos, layer, mapTool)
-            for f in feats:
-                features.append([f, layer])
+            if feats is not None:
+                for f in feats:
+                    features.append([f, layer])
         if len(features) > 0:
             posP = QgsPoint(pos)
             dst = posP.sqrDist(features[0][0].geometry().asPoint())

@@ -65,16 +65,16 @@ class DuplicateTool(QgsMapTool):
     def text(self):
         return self.__text
 
-    def setEnable(self, layer):
-        self.__setLayer(layer)
-
     def activate(self):
         QgsMapTool.activate(self)
 
     def deactivate(self):
         if self.__layer is not None:
-            self.__layer.editingStarted.disconnect()
-            self.__layer.editingStopped.disconnect()
+            if self.__layer.isEditable():
+                self.__layer.editingStopped.disconnect()
+            else:
+                self.__layer.editingStarted.disconnect()
+            self.__layer = None
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -89,23 +89,25 @@ class DuplicateTool(QgsMapTool):
         self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
-    def __setLayer(self, layer):
+    def setEnable(self, layer):
         if layer is not None\
                 and layer.type() == self.__vectorKind\
                 and (layer.wkbType() == self.__wkbLine or layer.wkbType() == self.__wkbPolygon):
 
             if self.__layer is not None:
-                self.__layer.editingStarted.disconnect()
-                self.__layer.editingStopped.disconnect()
+                if self.__layer.isEditable():
+                    self.__layer.editingStopped.disconnect()
+                else:
+                    self.__layer.editingStarted.disconnect()
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
+                self.__layer.editingStopped.connect(self.stopEditing)
             else:
                 self.action().setEnabled(False)
+                self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool != self:
                     self.__canvas.setMapTool(self.__oldTool)
-            self.__layer.editingStarted.connect(self.startEditing)
-            self.__layer.editingStopped.connect(self.stopEditing)
             return
         self.action().setEnabled(False)
         self.__layer = None
@@ -241,10 +243,10 @@ class DuplicateTool(QgsMapTool):
     def canvasMoveEvent(self, event):
         if not self.__isEditing:
             f = Finder.findClosestFeatureAt(event.pos(), self.__layer, self)
-            if f and self.__lastFeatureId != f.id():
+            if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()
                 self.__layer.setSelectedFeatures([f.id()])
-            if not f:
+            if f is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
 

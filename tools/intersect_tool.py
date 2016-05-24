@@ -195,6 +195,8 @@ class IntersectTool(QgsMapTool):
     def __snapToIntersection(self, pixPoint):
         mousePoint = self.toMapCoordinates(pixPoint)
         features = Finder.findFeaturesLayersAt(pixPoint, self.__layerList, self)
+        if features is None:
+            return None
         nFeat = len(features)
         intersections = []
         for i in range(nFeat - 1):
