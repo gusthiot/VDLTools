@@ -25,8 +25,9 @@ from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
                          QLabel,
-                         QCheckBox,
-                         QComboBox)
+                         QCheckBox
+                         # , QComboBox
+                         )
 
 
 class ProfileLayersDialog(QDialog):

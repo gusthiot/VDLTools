@@ -30,6 +30,8 @@ from PyQt4.QtGui import (QAction,
 from tools.duplicate_tool import DuplicateTool
 from tools.intersect_tool import IntersectTool
 from tools.profile_tool import ProfileTool
+from tools.interpolate_tool import InterpolateTool
+from tools.extrapolate_tool import ExtrapolateTool
 
 # Initialize Qt resources from file resources.py
 import resources
@@ -115,6 +117,10 @@ class VDLTools:
         self.add_action(self.intersectTool, self.iface.mainWindow())
         self.profileTool = ProfileTool(self.iface)
         self.add_action(self.profileTool, self.iface.mainWindow(), False)
+        self.interpolateTool = InterpolateTool(self.iface)
+        self.add_action(self.interpolateTool, self.iface.mainWindow())
+        self.extrapolateTool = ExtrapolateTool(self.iface)
+        self.add_action(self.extrapolateTool, self.iface.mainWindow())
 
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
         self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)

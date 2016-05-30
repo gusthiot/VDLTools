@@ -22,14 +22,16 @@
 """
 from qgis.core import (QgsMapLayer,
                        QGis,
+                       QgsPoint,
                        QgsWKBTypes)
 from qgis.gui import (QgsMapTool,
                       QgsMessageBar)
 from PyQt4.QtCore import Qt
 from ..core.finder import Finder
-from ..core.wkt3d import Wkt3d
+from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
+from ..ui.profile_message_dialog import ProfileMessageDialog
 
 
 class ProfileTool(QgsMapTool):
@@ -48,6 +50,10 @@ class ProfileTool(QgsMapTool):
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__dockWdg = None
+        self.__layDlg = None
+        self.__msgDlg = None
+        self.__points = None
+        self.__layers = None
 
     def icon_path(self):
         return self.__icon_path
@@ -86,12 +92,29 @@ class ProfileTool(QgsMapTool):
         self.__layDlg.okButton().clicked.connect(self.__layOk)
         self.__layDlg.cancelButton().clicked.connect(self.__layCancel)
 
+    def __setMessageDialog(self, situations, names):
+        self.__msgDlg = ProfileMessageDialog(situations, names, self.__points)
+        self.__msgDlg.passButton().clicked.connect(self.__msgPass)
+        self.__msgDlg.onLineButton().clicked.connect(self.__onLine)
+        self.__msgDlg.onPointsButton().clicked.connect(self.__onPoints)
+
     def __getPointLayers(self):
         layerList = []
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == self.__vectorKind and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                     layerList.append(layer)
         return layerList
+
+    def __msgPass(self):
+        self.__msgDlg.close()
+
+    def __onLine(self):
+        self.__msgDlg.close()
+        print(self.__msgDlg.getSituations())
+
+    def __onPoints(self):
+        self.__msgDlg.close()
+        print(self.__msgDlg.getSituations())
 
     def __layCancel(self):
         self.__layDlg.close()
@@ -100,23 +123,23 @@ class ProfileTool(QgsMapTool):
 
     def __layOk(self):
         self.__layDlg.close()
-        layers = self.__layDlg.getLayers()
-        line_3d = Wkt3d.wkt3dLine(self.__selectedFeature.geometry().exportToWkt())
-        line = self.__selectedFeature.geometry().asPolyline()
-        points = []
-        for i in xrange(len(line)):
-            x = line_3d[i][0]
-            y = line_3d[i][1]
-            z = [line_3d[i][2]]
-            for layer in layers:
-                vertex = self.toCanvasCoordinates(line[i])
+        self.__layers = self.__layDlg.getLayers()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        self.__points = []
+        for i in xrange(line_v2.numPoints()):
+            pt_v2 = line_v2.pointN(i)
+            x = pt_v2.x()
+            y = pt_v2.y()
+            z = [pt_v2.z()]
+            for layer in self.__layers:
+                vertex = self.toCanvasCoordinates(QgsPoint(x, y))
                 point = Finder.findClosestFeatureAt(vertex, layer, self)
                 if point is None:
                     z.append(None)
                 else:
-                    point_3d = Wkt3d.wkt3dPoint(point.geometry().exportToWkt())
-                    z.append(point_3d[2])
-            points.append({'x': x, 'y': y, 'z': z})
+                    point_v2 = GeometryV2.asPointV2(point.geometry())
+                    z.append(point_v2.z())
+            self.__points.append({'x': x, 'y': y, 'z': z})
 
         # points = []
         # for key, p in pointz.items():
@@ -132,9 +155,9 @@ class ProfileTool(QgsMapTool):
         #         points.append({'x': pt.x(), 'y': pt.y(), 'z': z})
 
         names = [self.__lineLayer.name()]
-        for layer in layers:
+        for layer in self.__layers:
             names.append(layer.name())
-        self.__calculateProfile(points, names)
+        self.__calculateProfile(names)
 
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
@@ -162,12 +185,27 @@ class ProfileTool(QgsMapTool):
             self.__setLayerDialog(pointLayers)
             self.__layDlg.show()
 
-    def __calculateProfile(self, points, names):
-        if points is None:
+    def __calculateProfile(self, names):
+        if self.__points is None:
             return
         self.__dockWdg.clearData()
-        if len(points) == 0:
+        if len(self.__points) == 0:
             return
-        self.__dockWdg.setProfiles(points)
+        self.__dockWdg.setProfiles(self.__points)
         self.__dockWdg.drawVertLine()						# Plotting vertical lines at the node of polyline draw
         self.__dockWdg.attachCurves(names)
+
+        situations = []
+        for p in xrange(len(self.__points)):
+            pt = self.__points[p]
+            z0 = pt['z'][0]
+            tol = 0.01 * z0
+            for i in xrange(1, len(pt['z'])):
+                if abs(pt['z'][i]-z0) > tol:
+                    situations.append({'point': p, 'layer': i})
+                    # msg.append("- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
+                    #     .format(p, names[i], pt['z'][i], z0))
+        if len(situations) > 0:
+            self.__setMessageDialog(situations, names)
+            self.__msgDlg.show()
+

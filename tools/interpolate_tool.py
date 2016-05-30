@@ -4,7 +4,7 @@
  VDLTools
                                  A QGIS plugin for the Ville de Lausanne
                               -------------------
-        begin                : 2016-05-23
+        begin                : 2016-05-30
         git sha              : $Format:%H$
         copyright            : (C) 2016 Ville de Lausanne
         author               : Christophe Gusthiot
@@ -21,37 +21,25 @@
  ***************************************************************************/
 """
 
+from qgis.gui import QgsMapTool
 
-class Wkt3d:
 
-    @staticmethod
-    def wkt3dLine(wktLine):
-        if 'LineStringZ' not in wktLine:
-            return None
-        line = wktLine.replace('LineStringZ', '')
-        line = line.replace(')', '')
-        line = line.replace('(', '')
-        points = line.split(',')
-        if len(points) < 2:
-            return None
-        pointsZ = []
-        for pt in points:
-            pt_tab = pt.strip().split()
-            pt_num = []
-            for p in pt_tab:
-                pt_num.append(float(p))
-            pointsZ.append(pt_num)
-        return pointsZ
+class InterpolateTool(QgsMapTool):
 
-    @staticmethod
-    def wkt3dPoint(wktPoint):
-        if 'PointZ' not in wktPoint:
-            return None
-        point = wktPoint.replace('PointZ', '')
-        point = point.replace(')', '')
-        point = point.replace('(', '')
-        pt_tab = point.strip().split()
-        pt_num = []
-        for p in pt_tab:
-            pt_num.append(float(p))
-        return pt_num
+    def __init__(self, iface):
+        QgsMapTool.__init__(self, iface.mapCanvas())
+        self.__iface = iface
+        self.__canvas = iface.mapCanvas()
+        self.__icon_path = ':/plugins/VDLTools/icons/interpolate_icon.png'
+        self.__text = 'Interpolate the elevation of a vertex and a point in the middle of a line'
+        self.__oldTool = None
+
+    def icon_path(self):
+        return self.__icon_path
+
+    def text(self):
+        return self.__text
+
+    def setTool(self):
+        self.__oldTool = self.__canvas.mapTool()
+        self.__canvas.setMapTool(self)

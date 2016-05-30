@@ -69,10 +69,13 @@ class ProfileDockWidget(QDockWidget):
         self.__types = ['PDF', 'PNG', 'SVG', 'PS']
         self.__libs = ['Qwt5', 'Matplotlib']
         self.__lib = self.__libs[0]
-        self.doTracking = False
-        self.vline = None
+        self.__doTracking = False
+        self.__vline = None
 
         self.__profiles = None
+
+        self.__rubberband = None
+        self.__tabmouseevent = None
 
         self.__contentWidget = QWidget()
         self.setWidget(self.__contentWidget)
@@ -85,7 +88,7 @@ class ProfileDockWidget(QDockWidget):
         self.__plotFrame.setLayout(self.__frameLayout)
 
         self.__plotWdg = None
-        self.changePlotWidget()
+        self.__changePlotWidget()
 
         size = QSize(150, 20)
 
@@ -133,8 +136,8 @@ class ProfileDockWidget(QDockWidget):
         self.__maxSpin.setEnabled(False)
         self.__minSpin.setEnabled(False)
 
-    def changePlotWidget(self):
-        self.activateMouseTracking(False)
+    def __changePlotWidget(self):
+        self.__activateMouseTracking(False)
         while self.__frameLayout.count():
             child = self.__frameLayout.takeAt(0)
             child.widget().deleteLater()
@@ -181,10 +184,16 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.setSizePolicy(sizePolicy)
             self.__frameLayout.addWidget(self.__plotWdg)
 
+            # mpltoolbar = NavigationToolbar2QTAgg(self.__plotWdg, self.__plotFrame)
+            # self.__frameLayout.addWidget(mpltoolbar)
+            # lstActions = mpltoolbar.actions()
+            # mpltoolbar.removeAction(lstActions[7])
+            # mpltoolbar.removeAction(lstActions[8])
+
     def setProfiles(self, profiles):
         self.__profiles = profiles
         if self.__lib == 'Matplotlib':
-            self.prepare_points()
+            self.__prepare_points()
 
     def drawVertLine(self):
         if (self.__profiles is None) or (len(self.__profiles) == 0):
@@ -273,8 +282,8 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.figure.legend(self.__plotWdg.figure.get_axes()[0].get_lines(), names, 'center left')
             self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
             self.__plotWdg.draw()
-            self.activateMouseTracking(True)
-            self.rubberband.show()
+            self.__activateMouseTracking(True)
+            self.__rubberband.show()
 
     def __reScalePlot(self):  # called when spinbox value changed
         if (self.__profiles is None) or (self.__profiles == 0):
@@ -298,10 +307,10 @@ class ProfileDockWidget(QDockWidget):
             maximumValue = -1000000000
 
             for i in range(len(self.__profiles)):
-                mini = self.minTab(self.__profiles[i]['z'])
+                mini = self.__minTab(self.__profiles[i]['z'])
                 if int(mini) < minimumValue:
                     minimumValue = int(mini) - 1
-                maxi = self.maxTab(self.__profiles[i]['z'])
+                maxi = self.__maxTab(self.__profiles[i]['z'])
                 if int(maxi) > maximumValue:
                     maximumValue = int(maxi) + 1
             self.__maxSpin.setValue(maximumValue)
@@ -321,14 +330,14 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
                 self.__plotWdg.draw()
 
-    def minTab(self, tab):
+    def __minTab(self, tab):
         mini = 1000000000
         for t in tab:
             if t < mini:
                 mini = t
         return mini
 
-    def maxTab(self, tab):
+    def __maxTab(self, tab):
         maxi = -1000000000
         for t in tab:
             if t > maxi:
@@ -337,7 +346,7 @@ class ProfileDockWidget(QDockWidget):
 
     def __setLib(self):
         self.__lib = self.__libs[self.__libCombo.currentIndex()]
-        self.changePlotWidget()
+        self.__changePlotWidget()
 
     def __save(self):
         idx = self.__typeCombo.currentIndex()
@@ -426,64 +435,64 @@ class ProfileDockWidget(QDockWidget):
         axe.tick_params(axis="both", which="minor", direction="out", length=5, width=1, bottom=True, top=False,
                          left=True, right=False)
 
-    def activateMouseTracking(self, activate):
+    def __activateMouseTracking(self, activate):
         if activate:
-            self.doTracking = True
-            self.loadRubber()
-            self.cid = self.__plotWdg.mpl_connect('motion_notify_event', self.mouseevent_mpl)
-        elif self.doTracking:
-            self.doTracking = False
+            self.__doTracking = True
+            self.__loadRubber()
+            self.cid = self.__plotWdg.mpl_connect('motion_notify_event', self.__mouseevent_mpl)
+        elif self.__doTracking:
+            self.__doTracking = False
             self.__plotWdg.mpl_disconnect(self.cid)
-            if self.rubberband:
-                self.__canvas.scene().removeItem(self.rubberband)
+            if self.__rubberband:
+                self.__canvas.scene().removeItem(self.__rubberband)
             try:
-                if self.vline is not None:
-                    self.__plotWdg.figure.get_axes()[0].lines.remove(self.vline)
+                if self.__vline is not None:
+                    self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
             except Exception, e:
                 print str(e)
 
-    def mouseevent_mpl(self, event):
+    def __mouseevent_mpl(self, event):
         if event.xdata:
             try:
-                if self.vline is not None:
-                    self.__plotWdg.figure.get_axes()[0].lines.remove(self.vline)
+                if self.__vline is not None:
+                    self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
             except Exception, e:
                 print str(e)
             xdata = float(event.xdata)
-            self.vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')
+            self.__vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')
             self.__plotWdg.draw()
             i = 1
-            while i < len(self.tabmouseevent)-1 and xdata > self.tabmouseevent[i][0]:
+            while i < len(self.__tabmouseevent)-1 and xdata > self.__tabmouseevent[i][0]:
                 i += 1
             i -= 1
 
-            x = self.tabmouseevent[i][1] + (self.tabmouseevent[i + 1][1] - self.tabmouseevent[i][1]) / (
-            self.tabmouseevent[i + 1][0] - self.tabmouseevent[i][0]) * (xdata - self.tabmouseevent[i][0])
-            y = self.tabmouseevent[i][2] + (self.tabmouseevent[i + 1][2] - self.tabmouseevent[i][2]) / (
-            self.tabmouseevent[i + 1][0] - self.tabmouseevent[i][0]) * (xdata - self.tabmouseevent[i][0])
-            self.rubberband.show()
+            x = self.__tabmouseevent[i][1] + (self.__tabmouseevent[i + 1][1] - self.__tabmouseevent[i][1]) / (
+            self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
+            y = self.__tabmouseevent[i][2] + (self.__tabmouseevent[i + 1][2] - self.__tabmouseevent[i][2]) / (
+            self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
+            self.__rubberband.show()
             point = QgsPoint(x, y)
-            self.rubberband.setCenter(point)
+            self.__rubberband.setCenter(point)
 
-    def loadRubber(self):
-        self.rubberband = QgsVertexMarker(self.__canvas)
-        self.rubberband.setIconSize(5)
-        self.rubberband.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
-        self.rubberband.setPenWidth(3)
+    def __loadRubber(self):
+        self.__rubberband = QgsVertexMarker(self.__canvas)
+        self.__rubberband.setIconSize(5)
+        self.__rubberband.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
+        self.__rubberband.setPenWidth(3)
 
-    def prepare_points(self):
-        self.tabmouseevent = []
+    def __prepare_points(self):
+        self.__tabmouseevent = []
         length = 0
         for i, point in enumerate(self.__profiles):
             if i == 0:
-                self.tabmouseevent.append([0, point['x'], point['y']])
+                self.__tabmouseevent.append([0, point['x'], point['y']])
             else:
                 length += ((self.__profiles[i]['x'] - self.__profiles[i-1]['x']) ** 2 +
                            (self.__profiles[i]['y'] - self.__profiles[i-1]['y']) ** 2) ** 0.5
-                self.tabmouseevent.append([float(length), float(point['x']), float(point['y'])])
+                self.__tabmouseevent.append([float(length), float(point['x']), float(point['y'])])
 
-        # self.tabmouseevent = self.tabmouseevent[:-1]
+        # self.__tabmouseevent = self.__tabmouseevent[:-1]
 
     def closeEvent(self, event):
         if self.__maxSpin is not None:
