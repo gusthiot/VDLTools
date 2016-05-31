@@ -30,6 +30,7 @@ class ProfileMessageDialog(QDialog):
         self.__situations = situations
         self.__names = names
         self.__points = points
+        self.setWindowTitle("Elevations situations")
         self.resize(300, 100)
         self.__layout = QGridLayout()
 

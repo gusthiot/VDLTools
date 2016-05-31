@@ -21,17 +21,20 @@
  ***************************************************************************/
 """
 from qgis.core import (QgsMapLayer,
+                       QgsGeometry,
                        QGis,
                        QgsPoint,
                        QgsWKBTypes)
 from qgis.gui import (QgsMapTool,
                       QgsMessageBar)
 from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QMessageBox
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
+from ..ui.profile_confirm_dialog import ProfileConfirmDialog
 
 
 class ProfileTool(QgsMapTool):
@@ -52,8 +55,10 @@ class ProfileTool(QgsMapTool):
         self.__dockWdg = None
         self.__layDlg = None
         self.__msgDlg = None
+        self.__confDlg = None
         self.__points = None
         self.__layers = None
+        self.__features = None
 
     def icon_path(self):
         return self.__icon_path
@@ -98,6 +103,17 @@ class ProfileTool(QgsMapTool):
         self.__msgDlg.onLineButton().clicked.connect(self.__onLine)
         self.__msgDlg.onPointsButton().clicked.connect(self.__onPoints)
 
+    def __setConfirmDialog(self, origin):
+        self.__confDlg = ProfileConfirmDialog()
+        if origin == 0:
+            message = "Do you really want to edit the LineString layer ?"
+            self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
+        else:
+            message = "Do you really want to edit the Point layer(s) ?"
+            self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
+        self.__confDlg.setMessage(message)
+        self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+
     def __getPointLayers(self):
         layerList = []
         for layer in self.__iface.mapCanvas().layers():
@@ -108,13 +124,54 @@ class ProfileTool(QgsMapTool):
     def __msgPass(self):
         self.__msgDlg.close()
 
+    def __onCloseConfirm(self):
+        self.__confDlg.close()
+
     def __onLine(self):
-        self.__msgDlg.close()
-        print(self.__msgDlg.getSituations())
+        self.__setConfirmDialog(0)
+        self.__confDlg.show()
 
     def __onPoints(self):
+        self.__setConfirmDialog(1)
+        self.__confDlg.show()
+
+    def __onConfirmedLine(self):
+        self.__confDlg.close()
+        situations = self.__msgDlg.getSituations()
+        points = []
+        for s in situations:
+            if s['point'] not in points:
+                points.append(s['point'])
+            else:
+                QMessageBox("There is more than one elevation for the point " + str(s['point']))
+                return
         self.__msgDlg.close()
-        print(self.__msgDlg.getSituations())
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        for s in situations:
+            z = self.__points[s['point']]['z'][s['layer']]
+            line_v2.setZAt(s['point'], z)
+        self.__lineLayer.startEditing()
+        self.__lineLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+        self.__lineLayer.updateExtents()
+        self.__lineLayer.commitChanges()
+        self.__dockWdg.clearData()
+
+
+    def __onConfirmedPoints(self):
+        self.__confDlg.close()
+        self.__msgDlg.close()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        situations = self.__msgDlg.getSituations()
+        for s in situations:
+            layer = self.__layers[s['layer']-1]
+            point = self.__features[s['point']][s['layer']-1]
+            point_v2 = GeometryV2.asPointV2(point.geometry())
+            point_v2.setZ(line_v2.zAt(s['point']))
+            layer.startEditing()
+            layer.changeGeometry(point.id(), QgsGeometry(point_v2))
+            layer.updateExtents()
+            layer.commitChanges()
+        self.__dockWdg.clearData()
 
     def __layCancel(self):
         self.__layDlg.close()
@@ -125,21 +182,25 @@ class ProfileTool(QgsMapTool):
         self.__layDlg.close()
         self.__layers = self.__layDlg.getLayers()
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        self.__features = []
         self.__points = []
         for i in xrange(line_v2.numPoints()):
             pt_v2 = line_v2.pointN(i)
             x = pt_v2.x()
             y = pt_v2.y()
             z = [pt_v2.z()]
+            feat = []
             for layer in self.__layers:
                 vertex = self.toCanvasCoordinates(QgsPoint(x, y))
                 point = Finder.findClosestFeatureAt(vertex, layer, self)
+                feat.append(point)
                 if point is None:
                     z.append(None)
                 else:
                     point_v2 = GeometryV2.asPointV2(point.geometry())
                     z.append(point_v2.z())
             self.__points.append({'x': x, 'y': y, 'z': z})
+            self.__features.append(feat)
 
         # points = []
         # for key, p in pointz.items():
