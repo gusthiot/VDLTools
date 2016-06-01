@@ -118,11 +118,13 @@ class VDLTools:
         self.profileTool = ProfileTool(self.iface)
         self.add_action(self.profileTool, self.iface.mainWindow(), False)
         self.interpolateTool = InterpolateTool(self.iface)
-        self.add_action(self.interpolateTool, self.iface.mainWindow())
+        self.add_action(self.interpolateTool, self.iface.mainWindow(), False)
         self.extrapolateTool = ExtrapolateTool(self.iface)
-        self.add_action(self.extrapolateTool, self.iface.mainWindow())
+        self.add_action(self.extrapolateTool, self.iface.mainWindow(), False)
 
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
+        self.iface.currentLayerChanged.connect(self.interpolateTool.setEnable)
+        self.iface.currentLayerChanged.connect(self.extrapolateTool.setEnable)
         self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
 
     def unload(self):

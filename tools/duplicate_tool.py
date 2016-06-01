@@ -55,9 +55,6 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand = None
         self.__newFeatures = None
         self.__oldTool = None
-        self.__vectorKind = QgsMapLayer.VectorLayer
-        self.__wkbLine = QGis.WKBLineString
-        self.__wkbPolygon = QGis.WKBPolygon
 
     def icon_path(self):
         return self.__icon_path
@@ -69,36 +66,46 @@ class DuplicateTool(QgsMapTool):
         QgsMapTool.activate(self)
 
     def deactivate(self):
-        if self.__layer is not None:
-            if self.__layer.isEditable():
-                self.__layer.editingStopped.disconnect()
-            else:
-                self.__layer.editingStarted.disconnect()
-            self.__layer = None
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
         self.action().setEnabled(True)
+        self.__layer.editingStarted.disconnect(self.startEditing)
+        self.__layer.editingStopped.connect(self.stopEditing)
 
     def stopEditing(self):
         self.action().setEnabled(False)
-        if self.__canvas.mapTool != self:
+        self.__layer.editingStopped.disconnect(self.stopEditing)
+        self.__layer.editingStarted.connect(self.startEditing)
+        if self.__canvas.mapTool == self:
             self.__canvas.setMapTool(self.__oldTool)
 
     def setTool(self):
         self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
+    def removeLayer(self):
+        if self.__layer is not None:
+            if self.__layer.isEditable():
+                self.__layer.editingStopped.disconnect(self.stopEditing)
+            else:
+                self.__layer.editingStarted.disconnect(self.startEditing)
+            self.__layer = None
+
     def setEnable(self, layer):
+        types = [QGis.Line, QGis.Polygon]
         if layer is not None\
-                and layer.type() == self.__vectorKind\
-                and (layer.wkbType() == self.__wkbLine or layer.wkbType() == self.__wkbPolygon):
+                and layer.type() == QgsMapLayer.VectorLayer\
+                and layer.geometryType() in types:
+
+            if layer == self.__layer:
+                return
 
             if self.__layer is not None:
                 if self.__layer.isEditable():
-                    self.__layer.editingStopped.disconnect()
+                    self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
-                    self.__layer.editingStarted.disconnect()
+                    self.__layer.editingStarted.disconnect(self.startEditing)
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
@@ -106,11 +113,11 @@ class DuplicateTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool != self:
+                if self.__canvas.mapTool == self:
                     self.__canvas.setMapTool(self.__oldTool)
             return
         self.action().setEnabled(False)
-        self.__layer = None
+        self.removeLayer()
 
     def __setDistanceDialog(self, isComplexPolygon):
         self.__dstDlg = DuplicateDistanceDialog(isComplexPolygon)

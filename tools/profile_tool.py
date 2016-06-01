@@ -47,7 +47,6 @@ class ProfileTool(QgsMapTool):
         self.__text = 'Profile of a line'
         self.__oldTool = None
         self.__lineLayer = None
-        self.__vectorKind = QgsMapLayer.VectorLayer
         self.setCursor(Qt.ArrowCursor)
         self.__isChoosed = False
         self.__lastFeatureId = None
@@ -82,7 +81,7 @@ class ProfileTool(QgsMapTool):
             QgsMapTool.deactivate(self)
 
     def setEnable(self, layer):
-        if layer is not None and layer.type() == self.__vectorKind and \
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
                         QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             self.__lineLayer = layer
             self.action().setEnabled(True)
@@ -97,11 +96,22 @@ class ProfileTool(QgsMapTool):
         self.__layDlg.okButton().clicked.connect(self.__layOk)
         self.__layDlg.cancelButton().clicked.connect(self.__layCancel)
 
+    def __closeLayerDialog(self):
+        self.__layDlg.close()
+        self.__layDlg.okButton().clicked.disconnect()
+        self.__layDlg.cancelButton().clicked.disconnect()
+
     def __setMessageDialog(self, situations, names):
         self.__msgDlg = ProfileMessageDialog(situations, names, self.__points)
         self.__msgDlg.passButton().clicked.connect(self.__msgPass)
         self.__msgDlg.onLineButton().clicked.connect(self.__onLine)
         self.__msgDlg.onPointsButton().clicked.connect(self.__onPoints)
+
+    def __closeMessageDialog(self):
+        self.__msgDlg.close()
+        self.__msgDlg.passButton().clicked.disconnect(self.__msgPass)
+        self.__msgDlg.onLineButton().clicked.disconnect(self.__onLine)
+        self.__msgDlg.onPointsButton().clicked.disconnect(self.__onPoints)
 
     def __setConfirmDialog(self, origin):
         self.__confDlg = ProfileConfirmDialog()
@@ -114,18 +124,23 @@ class ProfileTool(QgsMapTool):
         self.__confDlg.setMessage(message)
         self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
 
+    def __closeConfirmDialog(self):
+        self.__confDlg.close()
+        self.__confDlg.okButton().clicked.disconnect(self.__onConfirmedPoints)
+        self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
+
     def __getPointLayers(self):
         layerList = []
         for layer in self.__iface.mapCanvas().layers():
-            if layer.type() == self.__vectorKind and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                     layerList.append(layer)
         return layerList
 
     def __msgPass(self):
-        self.__msgDlg.close()
+        self.__closeMessageDialog()
 
     def __onCloseConfirm(self):
-        self.__confDlg.close()
+        self.__closeConfirmDialog()
 
     def __onLine(self):
         self.__setConfirmDialog(0)
@@ -136,7 +151,7 @@ class ProfileTool(QgsMapTool):
         self.__confDlg.show()
 
     def __onConfirmedLine(self):
-        self.__confDlg.close()
+        self.__closeConfirmDialog()
         situations = self.__msgDlg.getSituations()
         points = []
         for s in situations:
@@ -145,7 +160,7 @@ class ProfileTool(QgsMapTool):
             else:
                 QMessageBox("There is more than one elevation for the point " + str(s['point']))
                 return
-        self.__msgDlg.close()
+        self.__closeMessageDialog()
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']]
@@ -158,8 +173,8 @@ class ProfileTool(QgsMapTool):
 
 
     def __onConfirmedPoints(self):
-        self.__confDlg.close()
-        self.__msgDlg.close()
+        self.__closeConfirmDialog()
+        self.__closeMessageDialog()
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         situations = self.__msgDlg.getSituations()
         for s in situations:
@@ -174,12 +189,12 @@ class ProfileTool(QgsMapTool):
         self.__dockWdg.clearData()
 
     def __layCancel(self):
-        self.__layDlg.close()
+        self.__closeLayerDialog()
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
 
     def __layOk(self):
-        self.__layDlg.close()
+        self.__closeLayerDialog()
         self.__layers = self.__layDlg.getLayers()
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         self.__features = []
@@ -214,12 +229,10 @@ class ProfileTool(QgsMapTool):
         #         attName = attributes[i]
         #         z = p[0].attribute(attName)
         #         points.append({'x': pt.x(), 'y': pt.y(), 'z': z})
-
         names = [self.__lineLayer.name()]
         for layer in self.__layers:
             names.append(layer.name())
         self.__calculateProfile(names)
-
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
 
@@ -253,7 +266,7 @@ class ProfileTool(QgsMapTool):
         if len(self.__points) == 0:
             return
         self.__dockWdg.setProfiles(self.__points)
-        self.__dockWdg.drawVertLine()						# Plotting vertical lines at the node of polyline draw
+        self.__dockWdg.drawVertLine()
         self.__dockWdg.attachCurves(names)
 
         situations = []
@@ -262,6 +275,8 @@ class ProfileTool(QgsMapTool):
             z0 = pt['z'][0]
             tol = 0.01 * z0
             for i in xrange(1, len(pt['z'])):
+                if pt['z'][i] is None:
+                    continue
                 if abs(pt['z'][i]-z0) > tol:
                     situations.append({'point': p, 'layer': i})
                     # msg.append("- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\

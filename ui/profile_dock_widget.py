@@ -52,6 +52,7 @@ from PyQt4.Qwt5 import (QwtPlot,
                         QwtSymbol,
                         QwtPlotCurve)
 import itertools
+import traceback
 import sys
 from math import sqrt
 from matplotlib import rc
@@ -218,19 +219,15 @@ class ProfileDockWidget(QDockWidget):
     def attachCurves(self, names):
         if (self.__profiles is None) or (self.__profiles == 0):
             return
-        # print(self.__profiles)
         colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
         for i in xrange(len(self.__profiles[0]['z'])):
             name = names[i]
             xx = []
             yy = []
             for prof in self.__profiles:
-                xx.append(prof['l'])
-                yy.append(prof['z'][i])
-
-            for j in range(len(yy)):
-                if yy[j] is None:
-                    xx[j] = None
+                if prof['z'][i] is not None:
+                    xx.append(prof['l'])
+                    yy.append(prof['z'][i])
 
             if i < len(colors):
                 color = colors[i]
@@ -275,7 +272,7 @@ class ProfileDockWidget(QDockWidget):
         try:
             self.__reScalePlot()
         except:
-            print("rescale problem : ", sys.exc_info()[0])
+            print("rescale problem : ", sys.exc_info()[0], traceback.format_exc())
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
@@ -333,6 +330,8 @@ class ProfileDockWidget(QDockWidget):
     def __minTab(self, tab):
         mini = 1000000000
         for t in tab:
+            if t is None:
+                continue
             if t < mini:
                 mini = t
         return mini
@@ -340,6 +339,8 @@ class ProfileDockWidget(QDockWidget):
     def __maxTab(self, tab):
         maxi = -1000000000
         for t in tab:
+            if t is None:
+                continue
             if t > maxi:
                 maxi = t
         return maxi
@@ -492,20 +493,18 @@ class ProfileDockWidget(QDockWidget):
                            (self.__profiles[i]['y'] - self.__profiles[i-1]['y']) ** 2) ** 0.5
                 self.__tabmouseevent.append([float(length), float(point['x']), float(point['y'])])
 
-        # self.__tabmouseevent = self.__tabmouseevent[:-1]
-
     def closeEvent(self, event):
         if self.__maxSpin is not None:
-            self.__maxSpin.valueChanged.disconnect()
+            self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__maxSpin = None
         if self.__minSpin is not None:
-            self.__minSpin.valueChanged.disconnect()
+            self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__minSpin = None
         if self.__saveButton is not None:
-            self.__saveButton.clicked.disconnect()
+            self.__saveButton.clicked.disconnect(self.__save)
             self.__saveButton = None
         if self.__libCombo is not None:
-            self.__libCombo.currentIndexChanged.disconnect()
+            self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
             self.__libCombo = None
         if QDockWidget is not None:
             QDockWidget.closeEvent(self, event)
