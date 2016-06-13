@@ -23,12 +23,13 @@
 
 from qgis.gui import (QgsMapTool, QgsMessageBar)
 from qgis.core import (QGis,
-                       QgsMapLayer, QgsGeometry, QgsPointV2, QgsVertexId,
+                       QgsMapLayer, QgsFeature, QgsGeometry, QgsPointV2, QgsVertexId,
                        QgsWKBTypes)
 from PyQt4.QtCore import Qt
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from math import sqrt, pow
+from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
 
 
@@ -45,6 +46,10 @@ class InterpolateTool(QgsMapTool):
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = 0
         self.__lastFeatureId = None
+        self.__layerList = None
+        self.__lastLayer = None
+        self.__confDlg = None
+        self.__mapPoint = None
 
     def icon_path(self):
         return self.__icon_path
@@ -64,11 +69,13 @@ class InterpolateTool(QgsMapTool):
 
     def startEditing(self):
         self.action().setEnabled(True)
+        self.__canvas.layersChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
     def stopEditing(self):
         self.action().setEnabled(False)
+        self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
         if self.__canvas.mapTool == self:
@@ -85,7 +92,7 @@ class InterpolateTool(QgsMapTool):
     def setEnable(self, layer):
         if layer is not None \
                 and layer.type() == QgsMapLayer.VectorLayer \
-                and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+                and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
 
             if layer == self.__layer:
                 return
@@ -99,8 +106,11 @@ class InterpolateTool(QgsMapTool):
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
                 self.__layer.editingStopped.connect(self.stopEditing)
+                self.__updateList()
+                self.__canvas.layersChanged.connect(self.__updateList)
             else:
                 self.action().setEnabled(False)
+                self.__canvas.layersChanged.disconnect(self.__updateList)
                 self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool == self:
                     self.__canvas.setMapTool(self.__oldTool)
@@ -108,29 +118,70 @@ class InterpolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.removeLayer()
 
+    def __updateList(self):
+        self.__layerList = []
+        for layer in self.__iface.mapCanvas().layers():
+            if layer is not None \
+                    and layer.type() == QgsMapLayer.VectorLayer \
+                    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+                self.__layerList.append(layer)
+
     def canvasMoveEvent(self, event):
         if not self.__isEditing:
-            f = Finder.findClosestFeatureAt(event.pos(), self.__layer, self)
-            if f is not None and self.__lastFeatureId != f.id():
+            f_l = Finder.findClosestFeatureLayersAt(event.pos(), self.__layerList, self)
+
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+                f = f_l[0]
+                l = f_l[1]
                 self.__lastFeatureId = f.id()
-                self.__layer.setSelectedFeatures([f.id()])
-            if f is None:
-                self.__layer.removeSelection()
+                self.__lastLayer = l
+                self.__lastLayer.setSelectedFeatures([f.id()])
+            if f_l is None and self.__lastLayer is not None:
+                self.__lastLayer.removeSelection()
                 self.__lastFeatureId = None
 
     def canvasReleaseEvent(self, event):
-        found_features = self.__layer.selectedFeatures()
-        if len(found_features) > 0:
-            if len(found_features) < 1:
-                self.__iface.messageBar().pushMessage(u"Une seule feature à la fois",
-                                                      level=QgsMessageBar.INFO)
-                return
-            self.__selectedFeature = found_features[0]
+        if self.__lastLayer is not None:
+            found_features = self.__lastLayer.selectedFeatures()
+            if len(found_features) > 0:
+                if len(found_features) < 1:
+                    self.__iface.messageBar().pushMessage(u"Une seule feature à la fois",
+                                                          level=QgsMessageBar.INFO)
+                    return
+                self.__selectedFeature = found_features[0]
+                self.__mapPoint = event.mapPoint()
+                if self.__lastLayer.isEditable() is not True:
+                    self.__confDlg = InterpolateConfirmDialog()
+                    self.__confDlg.allButton().clicked.connect(self.__onConfirmedAll)
+                    self.__confDlg.ptButton().clicked.connect(self.__onConfirmedPoint)
+                    self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+                    self.__confDlg.show()
+                else:
+                    self.__createElements(True)
+
+    def __closeConfirmDialog(self):
+        self.__confDlg.close()
+        self.__confDlg.allButton().clicked.disconnect(self.__onConfirmedAll)
+        self.__confDlg.ptButton().clicked.disconnect(self.__onConfirmedPoint)
+        self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
+
+    def __onCloseConfirm(self):
+        self.__closeConfirmDialog()
+
+    def __onConfirmedPoint(self):
+        self.__closeConfirmDialog()
+        self.__createElements(False)
+
+    def __onConfirmedAll(self):
+        self.__closeConfirmDialog()
+        self.__createElements(True)
+
+    def __createElements(self, withVertex):
             self.__isEditing = 1
             line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
             vertex_v2 = QgsPointV2()
             vertexId = QgsVertexId()
-            line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertexId, 0)
+            line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertexId, 0)
 
             x0 = line_v2.xAt(vertexId.vertex-1)
             y0 = line_v2.yAt(vertexId.vertex-1)
@@ -142,14 +193,24 @@ class InterpolateTool(QgsMapTool):
             z1 = line_v2.zAt(vertexId.vertex)
 
             vertex_v2.addZValue((d0*z1 + d1*z0)/(d0 + d1))
-            line_v2.insertVertex(vertexId, vertex_v2)
-            self.__layer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+            pt_feat = QgsFeature(self.__layer.pendingFields())
+            pt_feat.setGeometry(QgsGeometry(vertex_v2))
+            self.__layer.addFeature(pt_feat)
+            if withVertex:
+                if self.__lastLayer.isEditable() is not True:
+                    self.__lastLayer.startEditing()
+                    line_v2.insertVertex(vertexId, vertex_v2)
+                    self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+                    self.__lastLayer.updateExtents()
+                    self.__lastLayer.commitChanges()
+                else:
+                    line_v2.insertVertex(vertexId, vertex_v2)
+                    self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
 
-            self.__layer.removeSelection()
+            self.__canvas.refresh()
+            self.__lastLayer.removeSelection()
             self.__lastFeatureId = None
             self.__isEditing = 0
-
-
 
     @staticmethod
     def distance(x1, x2, y1, y2):

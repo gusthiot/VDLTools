@@ -159,7 +159,7 @@ class IntersectTool(QgsMapTool):
             self.__messageWidget.setText(message)
 
     def canvasMoveEvent(self, mouseEvent):
-        if self.__counter > 9:
+        if self.__counter > 2:
             self.__rubber.reset()
             snappedIntersection = self.__snapToIntersection(mouseEvent.pos())
             if snappedIntersection is None:

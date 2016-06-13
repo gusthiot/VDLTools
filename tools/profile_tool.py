@@ -279,8 +279,6 @@ class ProfileTool(QgsMapTool):
                     continue
                 if abs(pt['z'][i]-z0) > tol:
                     situations.append({'point': p, 'layer': i})
-                    # msg.append("- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
-                    #     .format(p, names[i], pt['z'][i], z0))
         if len(situations) > 0:
             self.__setMessageDialog(situations, names)
             self.__msgDlg.show()
