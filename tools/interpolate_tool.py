@@ -62,6 +62,7 @@ class InterpolateTool(QgsMapTool):
 
     def activate(self):
         QgsMapTool.activate(self)
+        self.__updateList()
 
     def deactivate(self):
         QgsMapTool.deactivate(self)
@@ -105,7 +106,6 @@ class InterpolateTool(QgsMapTool):
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
                 self.__layer.editingStopped.connect(self.stopEditing)
-                self.__updateList()
                 self.__canvas.layersChanged.connect(self.__updateList)
             else:
                 self.action().setEnabled(False)
