@@ -30,7 +30,6 @@ from qgis.gui import (QgsMapTool,
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QMessageBox
 from ..core.finder import Finder
-from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
@@ -87,6 +86,8 @@ class ProfileTool(QgsMapTool):
             self.action().setEnabled(True)
             return
         self.action().setEnabled(False)
+        if self.__canvas.mapTool == self:
+            self.__canvas.setMapTool(self.__oldTool)
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         self.__lineLayer = None
@@ -115,14 +116,26 @@ class ProfileTool(QgsMapTool):
 
     def __setConfirmDialog(self, origin):
         self.__confDlg = ProfileConfirmDialog()
-        if origin == 0:
-            message = "Do you really want to edit the LineString layer ?"
+        if origin == 0 and self.__lineLayer.isEditable is not True:
+            self.__confDlg.setMessage("Do you really want to edit the LineString layer ?")
             self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
+            self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+        elif origin != 0:
+            situations = self.__msgDlg.getSituations()
+            case = True
+            for s in situations:
+                layer = self.__layers[s['layer'] - 1]
+                if layer.isEditable is not True:
+                    case = False
+                    break
+            if case is not True:
+                self.__confDlg.setMessage("Do you really want to edit the Point layer(s) ?")
+                self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
+                self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+            else:
+                self.__onConfirmedPoints()
         else:
-            message = "Do you really want to edit the Point layer(s) ?"
-            self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
-        self.__confDlg.setMessage(message)
-        self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+            self.__onConfirmedLine()
 
     def __closeConfirmDialog(self):
         self.__confDlg.close()
@@ -161,7 +174,7 @@ class ProfileTool(QgsMapTool):
                 QMessageBox("There is more than one elevation for the point " + str(s['point']))
                 return
         self.__closeMessageDialog()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        line_v2 = self.__selectedFeature.geometry().geometry()
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']]
             line_v2.setZAt(s['point'], z)
@@ -175,12 +188,12 @@ class ProfileTool(QgsMapTool):
     def __onConfirmedPoints(self):
         self.__closeConfirmDialog()
         self.__closeMessageDialog()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        line_v2 = self.__selectedFeature.geometry().geometry()
         situations = self.__msgDlg.getSituations()
         for s in situations:
             layer = self.__layers[s['layer']-1]
             point = self.__features[s['point']][s['layer']-1]
-            point_v2 = GeometryV2.asPointV2(point.geometry())
+            point_v2 = point.geometry().geometry()
             point_v2.setZ(line_v2.zAt(s['point']))
             layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
@@ -196,7 +209,7 @@ class ProfileTool(QgsMapTool):
     def __layOk(self):
         self.__closeLayerDialog()
         self.__layers = self.__layDlg.getLayers()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        line_v2 = self.__selectedFeature.geometry().geometry()
         self.__features = []
         self.__points = []
         for i in xrange(line_v2.numPoints()):
@@ -212,7 +225,7 @@ class ProfileTool(QgsMapTool):
                 if point is None:
                     z.append(None)
                 else:
-                    point_v2 = GeometryV2.asPointV2(point.geometry())
+                    point_v2 = point.geometry().geometry()
                     z.append(point_v2.z())
             self.__points.append({'x': x, 'y': y, 'z': z})
             self.__features.append(feat)

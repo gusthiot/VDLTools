@@ -26,7 +26,10 @@ from math import (pi,
                   sin)
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from qgis.core import (QgsPoint,
+from qgis.core import (QgsPointV2,
+                       QgsLineStringV2,
+                       QgsCurveV2,
+                       QgsPolygonV2,
                        QGis,
                        QgsGeometry,
                        QgsFeature,
@@ -53,7 +56,7 @@ class DuplicateTool(QgsMapTool):
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__rubberBand = None
-        self.__newFeatures = None
+        self.__newFeature = None
         self.__oldTool = None
 
     def icon_path(self):
@@ -61,6 +64,9 @@ class DuplicateTool(QgsMapTool):
 
     def text(self):
         return self.__text
+
+    def toolName(self):
+        return "Duplicate"
 
     def activate(self):
         QgsMapTool.activate(self)
@@ -152,7 +158,9 @@ class DuplicateTool(QgsMapTool):
     def newPoint(angle, point, distance):
         x = point.x() + cos(angle)*distance
         y = point.y() + sin(angle)*distance
-        return QgsPoint(x,y)
+        pt = QgsPointV2(x, y)
+        pt.addZValue(point.z())
+        return pt
 
     def __dstPreview(self):
         if self.__rubberBand:
@@ -160,7 +168,7 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand = None
         if self.__dstDlg.distanceEditText():
             distance = float(self.__dstDlg.distanceEditText())
-            if self.__layer.wkbType() == QGis.WKBPolygon:
+            if self.__layer.geometryType() == QGis.Polygon:
                 self.__polygonPreview(distance)
             else:
                 self.__linePreview(distance)
@@ -172,55 +180,59 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand.show()
 
     def __linePreview(self, distance):
-        points = self.__selectedFeature.geometry().asPolyline()
-        self.__newFeatures = []
+        line_v2 = self.__selectedFeature.geometry().geometry()
+        self.__newFeature = QgsLineStringV2()
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
-        for pos in range(0, len(points)):
+        for pos in xrange(line_v2.numPoints()):
             if pos == 0:
-                angle = self.angle(points[pos], points[pos + 1]) + pi / 2
+                angle = self.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1)) + pi / 2
                 dist = distance
-            elif pos == (len(points) - 1):
-                angle = self.angle(points[pos - 1], points[pos]) + pi / 2
+            elif pos == (line_v2.numPoints() - 1):
+                angle = self.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos)) + pi / 2
                 dist = distance
             else:
-                angle1 = self.angle(points[pos - 1], points[pos])
-                angle2 = self.angle(points[pos], points[pos + 1])
+                angle1 = self.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos))
+                angle2 = self.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1))
                 angle = float(pi + angle1 + angle2) / 2
                 dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
-            self.__newFeatures.append(self.newPoint(angle, points[pos], dist))
-        self.__rubberBand.setToGeometry(QgsGeometry.fromPolyline(self.__newFeatures), None)
+            self.__newFeature.addVertex(self.newPoint(angle, line_v2.pointN(pos), dist))
+        self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __polygonPreview(self, distance):
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Polygon)
-        lines = self.__selectedFeature.geometry().asPolygon()
-        self.__newFeatures = []
-        nb = 0
-        for points in lines:
-            newPoints = []
-            if nb == 1:
-                if self.__dstDlg.isInverted():
-                    distance = -distance
-            for pos in range(0, len(points)):
-                if pos == 0:
-                    pos1 = len(points) - 2
-                else:
-                    pos1 = pos - 1
-                pos2 = pos
-                if pos == (len(points) - 1):
-                    pos3 = 1
-                else:
-                    pos3 = pos + 1
-                angle1 = self.angle(points[pos1], points[pos2])
-                angle2 = self.angle(points[pos], points[pos3])
-                angle = float(pi + angle1 + angle2) / 2
-                dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
-                newPoints.append(self.newPoint(angle, points[pos], dist))
-            self.__newFeatures.append(newPoints)
-            if nb == 0:
-                self.__rubberBand.setToGeometry(QgsGeometry.fromPolyline(newPoints), None)
+        polygon_v2 = self.__selectedFeature.geometry().geometry()
+        self.__newFeature = QgsPolygonV2()
+        line_v2 = self.__newLine(polygon_v2.exteriorRing(), distance)
+        self.__newFeature.setExteriorRing(line_v2)
+        self.__rubberBand.setToGeometry(QgsGeometry(line_v2.clone()), None)
+        print(polygon_v2)
+        print(polygon_v2.numInteriorRings())
+        for num in xrange(polygon_v2.numInteriorRings()):
+            if self.__dstDlg.isInverted():
+                distance = -distance
+            line_v2 = self.__newLine(polygon_v2.interiorRing(num), distance)
+            self.__newFeature.addInteriorRing(line_v2)
+            self.__rubberBand.addGeometry(QgsGeometry(line_v2.clone()), None)
+
+    def __newLine(self, curve_v2, distance):
+        new_line_v2 = QgsLineStringV2()
+        line_v2 = curve_v2.curveToLine()
+        for pos in xrange(line_v2.numPoints()):
+            if pos == 0:
+                pos1 = curve_v2.numPoints() - 2
             else:
-                self.__rubberBand.addGeometry(QgsGeometry.fromPolyline(newPoints), None)
-            nb += 1
+                pos1 = pos - 1
+            pos2 = pos
+            if pos == (curve_v2.numPoints() - 1):
+                pos3 = 1
+            else:
+                pos3 = pos + 1
+            angle1 = self.angle(line_v2.pointN(pos1), line_v2.pointN(pos2))
+            angle2 = self.angle(line_v2.pointN(pos), line_v2.pointN(pos3))
+            angle = float(pi + angle1 + angle2) / 2
+            dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
+            new_line_v2.addVertex(self.newPoint(angle, line_v2.pointN(pos), dist))
+        return new_line_v2
 
     def __dstOk(self):
         self.__dstPreview()
@@ -231,14 +243,13 @@ class DuplicateTool(QgsMapTool):
     def __attOk(self):
         self.__attDlg.close()
         self.__canvas.scene().removeItem(self.__rubberBand)
-        self.__rubberBand = None
-        if self.__layer.wkbType() == QGis.WKBPolygon:
-            geometry = QgsGeometry.fromPolygon(self.__newFeatures)
+        if self.__layer.geometryType() == QGis.Polygon:
+            geometry = QgsGeometry(self.__newFeature)
         else:
-            geometry = QgsGeometry.fromPolyline(self.__newFeatures)
+            geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             print "geometry problem"
-
+        self.__rubberBand = None
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.__attDlg.getAttributes())
@@ -265,7 +276,7 @@ class DuplicateTool(QgsMapTool):
                 return
             self.__selectedFeature = found_features[0]
             self.__isEditing = 1
-            if (self.__layer.wkbType() == QGis.WKBPolygon)\
+            if (self.__layer.geometryType() == QGis.Polygon)\
                     and (len(self.__selectedFeature.geometry().asPolygon()) > 1):
                 self.__setDistanceDialog(True)
             else:

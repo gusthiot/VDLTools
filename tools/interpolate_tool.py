@@ -27,7 +27,6 @@ from qgis.core import (QGis,
                        QgsWKBTypes)
 from PyQt4.QtCore import Qt
 from ..core.finder import Finder
-from ..core.geometry_v2 import GeometryV2
 from math import sqrt, pow
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
@@ -178,7 +177,7 @@ class InterpolateTool(QgsMapTool):
 
     def __createElements(self, withVertex):
             self.__isEditing = 1
-            line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+            line_v2 = self.__selectedFeature.geometry().geometry()
             vertex_v2 = QgsPointV2()
             vertexId = QgsVertexId()
             line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertexId, 0)
