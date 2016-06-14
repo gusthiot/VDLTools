@@ -109,7 +109,6 @@ class InterpolateTool(QgsMapTool):
                 self.__canvas.layersChanged.connect(self.__updateList)
             else:
                 self.action().setEnabled(False)
-                self.__canvas.layersChanged.disconnect(self.__updateList)
                 self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool == self:
                     self.__canvas.setMapTool(self.__oldTool)
@@ -126,7 +125,7 @@ class InterpolateTool(QgsMapTool):
                 self.__layerList.append(layer)
 
     def canvasMoveEvent(self, event):
-        if not self.__isEditing:
+        if not self.__isEditing and self.__layerList is not None:
             f_l = Finder.findClosestFeatureLayersAt(event.pos(), self.__layerList, self)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
