@@ -201,27 +201,53 @@ class IntersectTool(QgsMapTool):
         intersections = []
         for i in range(nFeat - 1):
             for j in range(i + 1, nFeat):
-                intersection = features[i].geometry().intersection(features[j].geometry())
-                intersectionMP = intersection.asMultiPoint()
-                intersectionP = intersection.asPoint()
-                if len(intersectionMP) == 0:
-                    intersectionMP = intersection.asPolyline()
-                if len(intersectionMP) == 0 and intersectionP == QgsPoint(0, 0):
-                    continue
-                if len(intersectionMP) > 1:
-                    intersectionP = intersectionMP[0]
-                    for point in intersectionMP[1:]:
-                        if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                            intersectionP = QgsPoint(point.x(), point.y())
-                if intersectionP != QgsPoint(0, 0):
-                    intersections.append(intersectionP)
+                geometry1 = features[i].geometry()
+                geometry2 = features[j].geometry()
+                if geometry1.type() == QGis.Polygon:
+                    for curve1 in geometry1.asPolygon():
+                        if geometry2.type() == QGis.Polygon:
+                            for curve2 in geometry2.asPolygon():
+                                intersect = self.__intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mousePoint)
+                                if intersect is not None:
+                                    intersections.append(intersect)
+                        else:
+                            intersect = self.__intersect(QgsGeometry.fromPolyline(curve1), geometry2, mousePoint)
+                            if intersect is not None:
+                                intersections.append(intersect)
+                elif geometry2.type() == QGis.Polygon:
+                    for curve2 in geometry2.asPolygon():
+                        intersect = self.__intersect(geometry1, QgsGeometry.fromPolyline(curve2), mousePoint)
+                        if intersect is not None:
+                            intersections.append(intersect)
+                else:
+                    intersect = self.__intersect(geometry1, geometry2, mousePoint)
+                    if intersect is not None:
+                        intersections.append(intersect)
         if len(intersections) == 0:
             return None
-        intersectionP = intersections[0]
+        intersect = intersections[0]
         for point in intersections[1:]:
-            if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                intersectionP = QgsPoint(point.x(), point.y())
-        return intersectionP
+            if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersect):
+                intersect = QgsPoint(point.x(), point.y())
+        return intersect
+
+    def __intersect(self,geometry1, geometry2, mousePoint):
+        intersection = geometry1.intersection(geometry2)
+        intersectionMP = intersection.asMultiPoint()
+        intersectionP = intersection.asPoint()
+        if len(intersectionMP) == 0:
+            intersectionMP = intersection.asPolyline()
+        if len(intersectionMP) == 0 and intersectionP == QgsPoint(0, 0):
+            return None
+        if len(intersectionMP) > 1:
+            intersectionP = intersectionMP[0]
+            for point in intersectionMP[1:]:
+                if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                    intersectionP = QgsPoint(point.x(), point.y())
+        if intersectionP != QgsPoint(0, 0):
+            return intersectionP
+        else:
+            return None
 
     def __snapToLayers(self, pixPoint):
         if len(self.__snapperList) == 0:
