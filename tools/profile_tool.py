@@ -110,13 +110,14 @@ class ProfileTool(QgsMapTool):
 
     def __closeMessageDialog(self):
         self.__msgDlg.close()
-        self.__msgDlg.passButton().clicked.disconnect(self.__msgPass)
-        self.__msgDlg.onLineButton().clicked.disconnect(self.__onLine)
-        self.__msgDlg.onPointsButton().clicked.disconnect(self.__onPoints)
+        self.__msgDlg.passButton().clicked.disconnect()
+        self.__msgDlg.onLineButton().clicked.disconnect()
+        self.__msgDlg.onPointsButton().clicked.disconnect()
 
     def __setConfirmDialog(self, origin):
         self.__confDlg = ProfileConfirmDialog()
-        if origin == 0 and self.__lineLayer.isEditable is not True:
+        print(self.__lineLayer.isEditable())
+        if origin == 0 and self.__lineLayer.isEditable() is False:
             self.__confDlg.setMessage("Do you really want to edit the LineString layer ?")
             self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
             self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
@@ -125,22 +126,22 @@ class ProfileTool(QgsMapTool):
             case = True
             for s in situations:
                 layer = self.__layers[s['layer'] - 1]
-                if layer.isEditable is not True:
+                if layer.isEditable() is False:
                     case = False
                     break
-            if case is not True:
+            if case is False:
                 self.__confDlg.setMessage("Do you really want to edit the Point layer(s) ?")
                 self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
                 self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
             else:
-                self.__onConfirmedPoints()
+                self.__confirmPoints()
         else:
-            self.__onConfirmedLine()
+            self.__confirmLine()
 
     def __closeConfirmDialog(self):
         self.__confDlg.close()
-        self.__confDlg.okButton().clicked.disconnect(self.__onConfirmedPoints)
-        self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
+        self.__confDlg.okButton().clicked.disconnect()
+        self.__confDlg.cancelButton().clicked.disconnect()
 
     def __getPointLayers(self):
         layerList = []
@@ -165,6 +166,9 @@ class ProfileTool(QgsMapTool):
 
     def __onConfirmedLine(self):
         self.__closeConfirmDialog()
+        self.__confirmLine()
+
+    def __confirmLine(self):
         situations = self.__msgDlg.getSituations()
         points = []
         for s in situations:
@@ -184,9 +188,11 @@ class ProfileTool(QgsMapTool):
         self.__lineLayer.commitChanges()
         self.__dockWdg.clearData()
 
-
     def __onConfirmedPoints(self):
         self.__closeConfirmDialog()
+        self.__confirmePoints()
+
+    def __confirmePoints(self):
         self.__closeMessageDialog()
         line_v2 = self.__selectedFeature.geometry().geometry()
         situations = self.__msgDlg.getSituations()
@@ -207,11 +213,17 @@ class ProfileTool(QgsMapTool):
         self.__lineLayer.removeSelection()
 
     def __layOk(self):
+        print("close")
         self.__closeLayerDialog()
+        print("get")
         self.__layers = self.__layDlg.getLayers()
+        print(self.__selectedFeature)
+        print(self.__selectedFeature.geometry())
+        print("geom")
         line_v2 = self.__selectedFeature.geometry().geometry()
         self.__features = []
         self.__points = []
+        print("for")
         for i in xrange(line_v2.numPoints()):
             pt_v2 = line_v2.pointN(i)
             x = pt_v2.x()
@@ -243,10 +255,13 @@ class ProfileTool(QgsMapTool):
         #         z = p[0].attribute(attName)
         #         points.append({'x': pt.x(), 'y': pt.y(), 'z': z})
         names = [self.__lineLayer.name()]
+        print("for2")
         for layer in self.__layers:
             names.append(layer.name())
+        print("calculate")
         self.__calculateProfile(names)
         self.__isChoosed = 0
+        print("remove")
         self.__lineLayer.removeSelection()
 
     def canvasMoveEvent(self, event):

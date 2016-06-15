@@ -31,7 +31,6 @@ from math import sqrt, pow
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
 
-
 class InterpolateTool(QgsMapTool):
 
     def __init__(self, iface):
@@ -148,7 +147,7 @@ class InterpolateTool(QgsMapTool):
                     return
                 self.__selectedFeature = found_features[0]
                 self.__mapPoint = event.mapPoint()
-                if self.__lastLayer.isEditable() is not True:
+                if self.__lastLayer.isEditable() is False:
                     self.__confDlg = InterpolateConfirmDialog()
                     self.__confDlg.allButton().clicked.connect(self.__onConfirmedAll)
                     self.__confDlg.ptButton().clicked.connect(self.__onConfirmedPoint)
@@ -172,43 +171,46 @@ class InterpolateTool(QgsMapTool):
 
     def __onConfirmedAll(self):
         self.__closeConfirmDialog()
+        self.__lastLayer.startEditing()
         self.__createElements(True)
 
     def __createElements(self, withVertex):
-            self.__isEditing = 1
-            line_v2 = self.__selectedFeature.geometry().geometry()
-            vertex_v2 = QgsPointV2()
-            vertexId = QgsVertexId()
-            line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertexId, 0)
+        self.__isEditing = 1
+        print("take geom")
+        line = self.__selectedFeature.geometry()
+        print("after take")
+        line_v2 = line.geometry()
+        vertex_v2 = QgsPointV2()
+        vertex_id = QgsVertexId()
+        line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertex_id, 0)
 
-            x0 = line_v2.xAt(vertexId.vertex-1)
-            y0 = line_v2.yAt(vertexId.vertex-1)
-            d0 = self.distance(x0, vertex_v2.x(), y0, vertex_v2.y())
-            x1 = line_v2.xAt(vertexId.vertex)
-            y1 = line_v2.yAt(vertexId.vertex)
-            d1 = self.distance(x1, vertex_v2.x(), y1, vertex_v2.y())
-            z0 = line_v2.zAt(vertexId.vertex-1)
-            z1 = line_v2.zAt(vertexId.vertex)
+        x0 = line_v2.xAt(vertex_id.vertex-1)
+        y0 = line_v2.yAt(vertex_id.vertex-1)
+        d0 = self.distance(x0, vertex_v2.x(), y0, vertex_v2.y())
+        x1 = line_v2.xAt(vertex_id.vertex)
+        y1 = line_v2.yAt(vertex_id.vertex)
+        d1 = self.distance(x1, vertex_v2.x(), y1, vertex_v2.y())
+        z0 = line_v2.zAt(vertex_id.vertex-1)
+        z1 = line_v2.zAt(vertex_id.vertex)
 
-            vertex_v2.addZValue((d0*z1 + d1*z0)/(d0 + d1))
-            pt_feat = QgsFeature(self.__layer.pendingFields())
-            pt_feat.setGeometry(QgsGeometry(vertex_v2))
-            self.__layer.addFeature(pt_feat)
-            if withVertex:
-                if self.__lastLayer.isEditable() is not True:
-                    self.__lastLayer.startEditing()
-                    line_v2.insertVertex(vertexId, vertex_v2)
-                    self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-                    self.__lastLayer.updateExtents()
-                    self.__lastLayer.commitChanges()
-                else:
-                    line_v2.insertVertex(vertexId, vertex_v2)
-                    self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-
-            self.__canvas.refresh()
-            self.__lastLayer.removeSelection()
-            self.__lastFeatureId = None
-            self.__isEditing = 0
+        print("add point")
+        vertex_v2.addZValue((d0*z1 + d1*z0)/(d0 + d1))
+        pt_feat = QgsFeature(self.__layer.pendingFields())
+        pt_feat.setGeometry(QgsGeometry(vertex_v2))
+        self.__layer.addFeature(pt_feat)
+        if withVertex:
+            print("insert")
+            line_v2.insertVertex(vertex_id, vertex_v2)
+            print("change geom")
+            if self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2)) is False:
+                print("False")
+            self.__lastLayer.updateExtents()
+        self.__layer.updateExtents()
+        print("refresh")
+        self.__canvas.refresh()
+        self.__lastLayer.removeSelection()
+        self.__lastFeatureId = None
+        self.__isEditing = 0
 
     @staticmethod
     def distance(x1, x2, y1, y2):

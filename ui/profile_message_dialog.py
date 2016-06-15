@@ -44,7 +44,6 @@ class ProfileMessageDialog(QDialog):
                 .format(line['point'], self.__names[line['layer']], ptz[line['layer']], ptz[0])
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
-            print(i+1)
             self.__layout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
             msgCheck = QCheckBox()
             msgCheck.setChecked(True)
