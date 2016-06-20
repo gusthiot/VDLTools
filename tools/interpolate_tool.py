@@ -27,6 +27,7 @@ from qgis.core import (QGis,
                        QgsWKBTypes)
 from PyQt4.QtCore import Qt
 from ..core.finder import Finder
+from ..core.geometry_v2 import GeometryV2
 from math import sqrt, pow
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
@@ -176,10 +177,7 @@ class InterpolateTool(QgsMapTool):
 
     def __createElements(self, withVertex):
         self.__isEditing = 1
-        print("take geom")
-        line = self.__selectedFeature.geometry()
-        print("after take")
-        line_v2 = line.geometry()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
         line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertex_id, 0)
@@ -193,20 +191,15 @@ class InterpolateTool(QgsMapTool):
         z0 = line_v2.zAt(vertex_id.vertex-1)
         z1 = line_v2.zAt(vertex_id.vertex)
 
-        print("add point")
         vertex_v2.addZValue((d0*z1 + d1*z0)/(d0 + d1))
         pt_feat = QgsFeature(self.__layer.pendingFields())
         pt_feat.setGeometry(QgsGeometry(vertex_v2))
         self.__layer.addFeature(pt_feat)
         if withVertex:
-            print("insert")
             line_v2.insertVertex(vertex_id, vertex_v2)
-            print("change geom")
-            if self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2)) is False:
-                print("False")
+            self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
             self.__lastLayer.updateExtents()
         self.__layer.updateExtents()
-        print("refresh")
         self.__canvas.refresh()
         self.__lastLayer.removeSelection()
         self.__lastFeatureId = None

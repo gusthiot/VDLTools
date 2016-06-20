@@ -28,7 +28,6 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
-                       QgsCurveV2,
                        QgsPolygonV2,
                        QGis,
                        QgsGeometry,
@@ -40,6 +39,7 @@ from qgis.gui import (QgsMapTool,
 from ..ui.duplicate_attributes_dialog import DuplicateAttributesDialog
 from ..ui.duplicate_distance_dialog import DuplicateDistanceDialog
 from ..core.finder import Finder
+from ..core.geometry_v2 import GeometryV2
 
 
 class DuplicateTool(QgsMapTool):
@@ -180,7 +180,7 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand.show()
 
     def __linePreview(self, distance):
-        line_v2 = self.__selectedFeature.geometry().geometry()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsLineStringV2()
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
         for pos in xrange(line_v2.numPoints()):
@@ -200,13 +200,11 @@ class DuplicateTool(QgsMapTool):
 
     def __polygonPreview(self, distance):
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Polygon)
-        polygon_v2 = self.__selectedFeature.geometry().geometry()
+        polygon_v2 = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsPolygonV2()
         line_v2 = self.__newLine(polygon_v2.exteriorRing(), distance)
         self.__newFeature.setExteriorRing(line_v2)
         self.__rubberBand.setToGeometry(QgsGeometry(line_v2.clone()), None)
-        print(polygon_v2)
-        print(polygon_v2.numInteriorRings())
         for num in xrange(polygon_v2.numInteriorRings()):
             if self.__dstDlg.isInverted():
                 distance = -distance

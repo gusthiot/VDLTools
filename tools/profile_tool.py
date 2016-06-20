@@ -30,6 +30,7 @@ from qgis.gui import (QgsMapTool,
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QMessageBox
 from ..core.finder import Finder
+from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
@@ -116,7 +117,6 @@ class ProfileTool(QgsMapTool):
 
     def __setConfirmDialog(self, origin):
         self.__confDlg = ProfileConfirmDialog()
-        print(self.__lineLayer.isEditable())
         if origin == 0 and self.__lineLayer.isEditable() is False:
             self.__confDlg.setMessage("Do you really want to edit the LineString layer ?")
             self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
@@ -178,7 +178,7 @@ class ProfileTool(QgsMapTool):
                 QMessageBox("There is more than one elevation for the point " + str(s['point']))
                 return
         self.__closeMessageDialog()
-        line_v2 = self.__selectedFeature.geometry().geometry()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']]
             line_v2.setZAt(s['point'], z)
@@ -194,12 +194,12 @@ class ProfileTool(QgsMapTool):
 
     def __confirmePoints(self):
         self.__closeMessageDialog()
-        line_v2 = self.__selectedFeature.geometry().geometry()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         situations = self.__msgDlg.getSituations()
         for s in situations:
             layer = self.__layers[s['layer']-1]
             point = self.__features[s['point']][s['layer']-1]
-            point_v2 = point.geometry().geometry()
+            point_v2 = GeometryV2.asPointV2(point.geometry())
             point_v2.setZ(line_v2.zAt(s['point']))
             layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
@@ -213,17 +213,11 @@ class ProfileTool(QgsMapTool):
         self.__lineLayer.removeSelection()
 
     def __layOk(self):
-        print("close")
         self.__closeLayerDialog()
-        print("get")
         self.__layers = self.__layDlg.getLayers()
-        print(self.__selectedFeature)
-        print(self.__selectedFeature.geometry())
-        print("geom")
-        line_v2 = self.__selectedFeature.geometry().geometry()
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         self.__features = []
         self.__points = []
-        print("for")
         for i in xrange(line_v2.numPoints()):
             pt_v2 = line_v2.pointN(i)
             x = pt_v2.x()
@@ -237,7 +231,7 @@ class ProfileTool(QgsMapTool):
                 if point is None:
                     z.append(None)
                 else:
-                    point_v2 = point.geometry().geometry()
+                    point_v2 = GeometryV2.asPointV2(point.geometry())
                     z.append(point_v2.z())
             self.__points.append({'x': x, 'y': y, 'z': z})
             self.__features.append(feat)
@@ -255,13 +249,10 @@ class ProfileTool(QgsMapTool):
         #         z = p[0].attribute(attName)
         #         points.append({'x': pt.x(), 'y': pt.y(), 'z': z})
         names = [self.__lineLayer.name()]
-        print("for2")
         for layer in self.__layers:
             names.append(layer.name())
-        print("calculate")
         self.__calculateProfile(names)
         self.__isChoosed = 0
-        print("remove")
         self.__lineLayer.removeSelection()
 
     def canvasMoveEvent(self, event):
