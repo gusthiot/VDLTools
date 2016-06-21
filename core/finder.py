@@ -94,3 +94,22 @@ class Finder:
         mapPt2, layerPt2 = Finder.transformCoordinates(pt2, layer, mapTool)
         tolerance = layerPt2.x() - layerPt1.x()
         return tolerance
+
+    @staticmethod
+    def intersect(geometry1, geometry2, mousePoint):
+        intersection = geometry1.intersection(geometry2)
+        intersectionMP = intersection.asMultiPoint()
+        intersectionP = intersection.asPoint()
+        if len(intersectionMP) == 0:
+            intersectionMP = intersection.asPolyline()
+        if len(intersectionMP) == 0 and intersectionP == QgsPoint(0, 0):
+            return None
+        if len(intersectionMP) > 1:
+            intersectionP = intersectionMP[0]
+            for point in intersectionMP[1:]:
+                if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                    intersectionP = QgsPoint(point.x(), point.y())
+        if intersectionP != QgsPoint(0, 0):
+            return intersectionP
+        else:
+            return None

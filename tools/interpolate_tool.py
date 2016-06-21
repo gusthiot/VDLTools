@@ -44,7 +44,7 @@ class InterpolateTool(QgsMapTool):
         self.__oldTool = None
         self.__layer = None
         self.setCursor(Qt.ArrowCursor)
-        self.__isEditing = 0
+        self.__isEditing = False
         self.__lastFeatureId = None
         self.__layerList = None
         self.__lastLayer = None
@@ -151,12 +151,17 @@ class InterpolateTool(QgsMapTool):
             if f_l is not None:
                 if self.__counter > 2:
                     self.__rubber.reset()
-                    self.__rubber.setIcon(4)
-                    line_v2 = GeometryV2.asLineStringV2(f_l[0].geometry())
-                    vertex_v2 = QgsPointV2()
-                    vertex_id = QgsVertexId()
-                    line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
-                    self.__rubber.setToGeometry(QgsGeometry(vertex_v2), None)
+                    snappedIntersection = self.__snapToIntersection(event.mapPoint(), f_l[0])
+                    if snappedIntersection is None:
+                        self.__rubber.setIcon(4)
+                        line_v2 = GeometryV2.asLineStringV2(f_l[0].geometry())
+                        vertex_v2 = QgsPointV2()
+                        vertex_id = QgsVertexId()
+                        line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
+                        self.__rubber.setToGeometry(QgsGeometry(vertex_v2), None)
+                    else:
+                        self.__rubber.setIcon(1)
+                        self.__rubber.setToGeometry(QgsGeometry(snappedIntersection), None)
                     self.__counter = 0
                 else:
                     self.__counter += 1
@@ -174,6 +179,7 @@ class InterpolateTool(QgsMapTool):
                                                           level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
+                self.__isEditing = True
                 self.__mapPoint = event.mapPoint()
                 if self.__lastLayer.isEditable() is False:
                     self.__confDlg = InterpolateConfirmDialog()
@@ -192,6 +198,10 @@ class InterpolateTool(QgsMapTool):
 
     def __onCloseConfirm(self):
         self.__closeConfirmDialog()
+        self.__lastLayer.removeSelection()
+        self.__rubber.reset()
+        self.__lastFeatureId = None
+        self.__isEditing = False
 
     def __onConfirmedPoint(self):
         self.__closeConfirmDialog()
@@ -203,11 +213,14 @@ class InterpolateTool(QgsMapTool):
         self.__createElements(True)
 
     def __createElements(self, withVertex):
-        self.__isEditing = 1
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
         line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertex_id, 0)
+
+        snappedIntersection = self.__snapToIntersection(self.__mapPoint, self.__selectedFeature)
+        if snappedIntersection is not None:
+            vertex_v2 = snappedIntersection
 
         x0 = line_v2.xAt(vertex_id.vertex-1)
         y0 = line_v2.yAt(vertex_id.vertex-1)
@@ -225,12 +238,20 @@ class InterpolateTool(QgsMapTool):
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-        self.__layer.updateExtents()
-        self.__canvas.refresh()
         self.__lastLayer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None
-        self.__isEditing = 0
+        self.__isEditing = False
+
+    def __snapToIntersection(self, mapPoint, selectedFeature):
+        if self.__ownSettings is None:
+            return None
+        if self.__ownSettings.linesLayer() is None:
+            return None
+        f = Finder.findClosestFeatureAt(self.toCanvasCoordinates(mapPoint), self.__ownSettings.linesLayer(),self)
+        if f is None:
+            return None
+        return QgsPointV2(Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint))
 
     @staticmethod
     def distance(x1, x2, y1, y2):
