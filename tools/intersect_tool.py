@@ -51,6 +51,8 @@ class IntersectTool(QgsMapTool):
         self.__lineLayerID = None
         self.__pointLayerID = None
         self.__counter = 0
+        self.__rubber = None
+        self.__ownSettings = None
 
     def icon_path(self):
         return self.__icon_path
@@ -60,6 +62,9 @@ class IntersectTool(QgsMapTool):
 
     def setTool(self):
         self.__mapCanvas.setMapTool(self)
+
+    def setOwnSettings(self, settings):
+        self.__ownSettings = settings
 
     def __setDistanceDialog(self, mapPoint):
         self.__dstDlg = IntersectDistanceDialog(mapPoint)
@@ -104,14 +109,14 @@ class IntersectTool(QgsMapTool):
         color.setAlphaF(0.78)
         self.__rubber.setColor(color)
         self.__rubber.setIcon(4)
-        self.__rubber.setIconSize(12)
+        self.__rubber.setIconSize(20)
         self.__updateSnapperList()
         self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
-        self.__messageWidget = self.__iface.messageBar().createMessage("Intersect Tool", "Not snapped.")
-        self.__messageWidgetExist = True
-        self.__messageWidget.destroyed.connect(self.__messageWidgetRemoved)
-        self.__iface.messageBar().pushWidget(self.__messageWidget)
+        # self.__messageWidget = self.__iface.messageBar().createMessage("Intersect Tool", "Not snapped.")
+        # self.__messageWidgetExist = True
+        # self.__messageWidget.destroyed.connect(self.__messageWidgetRemoved)
+        # self.__iface.messageBar().pushWidget(self.__messageWidget)
 
     def __updateSnapperList(self):
         self.__snapperList = []
@@ -129,34 +134,34 @@ class IntersectTool(QgsMapTool):
                     self.__layerList.append(layer)
 
     def deactivate(self):
-        self.__iface.messageBar().popWidget(self.__messageWidget)
+        # self.__iface.messageBar().popWidget(self.__messageWidget)
         self.__rubber.reset()
         self.__mapCanvas.layersChanged.disconnect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
         QgsMapTool.deactivate(self)
 
-    def __messageWidgetRemoved(self):
-        self.__messageWidgetExist = False
-
-    def __displaySnapInfo(self, snappingResults):
-        if not self.__messageWidgetExist:
-            return
-        nSnappingResults = len(snappingResults)
-        if nSnappingResults == 0:
-            message = "No snap"
-        else:
-            message = "Snapped to: <b>%s" % snappingResults[0].layer.name() + "</b>"
-            if nSnappingResults > 1:
-                layers = []
-                message += " Nearby: "
-                for res in snappingResults[1:]:
-                    layerName = res.layer.name()
-                    if layerName not in layers:
-                        message += res.layer.name() + ", "
-                        layers.append(layerName)
-                message = message[:-2]
-        if self.__messageWidgetExist:
-            self.__messageWidget.setText(message)
+    # def __messageWidgetRemoved(self):
+    #     self.__messageWidgetExist = False
+    #
+    # def __displaySnapInfo(self, snappingResults):
+    #     if not self.__messageWidgetExist:
+    #         return
+    #     nSnappingResults = len(snappingResults)
+    #     if nSnappingResults == 0:
+    #         message = "No snap"
+    #     else:
+    #         message = "Snapped to: <b>%s" % snappingResults[0].layer.name() + "</b>"
+    #         if nSnappingResults > 1:
+    #             layers = []
+    #             message += " Nearby: "
+    #             for res in snappingResults[1:]:
+    #                 layerName = res.layer.name()
+    #                 if layerName not in layers:
+    #                     message += res.layer.name() + ", "
+    #                     layers.append(layerName)
+    #             message = message[:-2]
+    #     if self.__messageWidgetExist:
+    #         self.__messageWidget.setText(message)
 
     def canvasMoveEvent(self, mouseEvent):
         if self.__counter > 2:
@@ -166,6 +171,7 @@ class IntersectTool(QgsMapTool):
                 snappedPoint = self.__snapToLayers(mouseEvent.pos())
                 if snappedPoint is not None:
                     self.__rubber.setIcon(4)
+                    print(snappedPoint)
                     self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
             else:
                 self.__rubber.setIcon(1)
@@ -256,13 +262,18 @@ class IntersectTool(QgsMapTool):
         snapper.setSnapLayers(self.__snapperList)
         snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
         ok, snappingResults = snapper.snapPoint(pixPoint, [])
-        self.__displaySnapInfo(snappingResults)
+        # self.__displaySnapInfo(snappingResults)
         if ok == 0 and len(snappingResults) > 0:
             return QgsPoint(snappingResults[0].snappedVertex)
         else:
             return None
 
     def __lineLayer(self):
+        if self.__ownSettings is not None:
+            if self.__ownSettings.linesLayer() is not None:
+                layer = self.__ownSettings.linesLayer()
+                self.__lineLayerID = layer.id()
+                return layer
         layer = QgsMapLayerRegistry.instance().mapLayer(self.__lineLayerID)
         if layer is None:
             epsg = self.__iface.mapCanvas().mapRenderer().destinationCrs().authid()
@@ -270,6 +281,8 @@ class IntersectTool(QgsMapTool):
             QgsMapLayerRegistry.instance().addMapLayer(layer)
             layer.layerDeleted.connect(self.__lineLayerDeleted)
             self.__lineLayerID = layer.id()
+            if self.__ownSettings is not None:
+                self.__ownSettings.setLinesLayer(layer)
         else:
             self.__iface.legendInterface().setLayerVisible(layer, True)
         return layer
@@ -278,6 +291,11 @@ class IntersectTool(QgsMapTool):
         self.lineLayerID = None
 
     def __pointLayer(self):
+        if self.__ownSettings is not None:
+            if self.__ownSettings.pointsLayer() is not None:
+                layer = self.__ownSettings.pointsLayer()
+                self.__pointLayerID = layer.id()
+                return layer
         layer = QgsMapLayerRegistry.instance().mapLayer(self.__pointLayerID)
         if layer is None:
             epsg = self.__iface.mapCanvas().mapRenderer().destinationCrs().authid()
@@ -285,6 +303,8 @@ class IntersectTool(QgsMapTool):
             QgsMapLayerRegistry.instance().addMapLayer(layer)
             layer.layerDeleted.connect(self.__pointLayerDeleted)
             self.__pointLayerID = layer.id()
+            if self.__ownSettings is not None:
+                self.__ownSettings.setPointsLayer(layer)
         else:
             self.__iface.legendInterface().setLayerVisible(layer, True)
         return layer

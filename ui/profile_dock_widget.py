@@ -225,9 +225,12 @@ class ProfileDockWidget(QDockWidget):
             xx = []
             yy = []
             for prof in self.__profiles:
-                if prof['z'][i] is not None:
+                if prof['l'] is not None:
                     xx.append(prof['l'])
-                    yy.append(prof['z'][i])
+                    if prof['z'][i] is not None:
+                        yy.append(prof['z'][i])
+                    else:
+                        yy.append(0)
 
             if i < len(colors):
                 color = colors[i]

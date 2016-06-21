@@ -21,11 +21,12 @@
  ***************************************************************************/
 """
 
-from qgis.gui import (QgsMapTool, QgsMessageBar)
+from qgis.gui import (QgsMapTool, QgsMessageBar, QgsRubberBand)
 from qgis.core import (QGis,
                        QgsMapLayer, QgsFeature, QgsGeometry, QgsPointV2, QgsVertexId,
                        QgsWKBTypes)
 from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from math import sqrt, pow
@@ -49,6 +50,9 @@ class InterpolateTool(QgsMapTool):
         self.__lastLayer = None
         self.__confDlg = None
         self.__mapPoint = None
+        self.__rubber = None
+        self.__counter = 0
+        self.__ownSettings = None
 
     def icon_path(self):
         return self.__icon_path
@@ -60,11 +64,21 @@ class InterpolateTool(QgsMapTool):
         self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
+    def setOwnSettings(self, settings):
+        self.__ownSettings = settings
+
     def activate(self):
         QgsMapTool.activate(self)
         self.__updateList()
+        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
+        color = QColor("red")
+        color.setAlphaF(0.78)
+        self.__rubber.setColor(color)
+        self.__rubber.setIcon(4)
+        self.__rubber.setIconSize(20)
 
     def deactivate(self):
+        self.__rubber.reset()
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -134,8 +148,21 @@ class InterpolateTool(QgsMapTool):
                 self.__lastFeatureId = f.id()
                 self.__lastLayer = l
                 self.__lastLayer.setSelectedFeatures([f.id()])
+            if f_l is not None:
+                if self.__counter > 2:
+                    self.__rubber.reset()
+                    self.__rubber.setIcon(4)
+                    line_v2 = GeometryV2.asLineStringV2(f_l[0].geometry())
+                    vertex_v2 = QgsPointV2()
+                    vertex_id = QgsVertexId()
+                    line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
+                    self.__rubber.setToGeometry(QgsGeometry(vertex_v2), None)
+                    self.__counter = 0
+                else:
+                    self.__counter += 1
             if f_l is None and self.__lastLayer is not None:
                 self.__lastLayer.removeSelection()
+                self.__rubber.reset()
                 self.__lastFeatureId = None
 
     def canvasReleaseEvent(self, event):
@@ -198,10 +225,10 @@ class InterpolateTool(QgsMapTool):
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-            self.__lastLayer.updateExtents()
         self.__layer.updateExtents()
         self.__canvas.refresh()
         self.__lastLayer.removeSelection()
+        self.__rubber.reset()
         self.__lastFeatureId = None
         self.__isEditing = 0
 
