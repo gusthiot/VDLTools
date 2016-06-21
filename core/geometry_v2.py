@@ -20,7 +20,7 @@
  ***************************************************************************/
 """
 
-from qgis.core import QgsPointV2, QgsLineStringV2, QgsPolygonV2
+from qgis.core import QgsPointV2, QgsLineStringV2, QgsPolygonV2, QgsPoint
 
 
 class GeometryV2:
@@ -91,3 +91,9 @@ class GeometryV2:
         if len(tab) > 3:
             pointV2.addMValue(float(tab[3]))
         return pointV2
+
+    @staticmethod
+    def sqrDist(pt1_v2, pt2_v2):
+        pt1 = QgsPoint(pt1_v2.x(), pt1_v2.y())
+        pt2 = QgsPoint(pt2_v2.x(), pt2_v2.y())
+        return pt1.sqrDist(pt2)
