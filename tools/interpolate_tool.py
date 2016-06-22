@@ -53,6 +53,7 @@ class InterpolateTool(QgsMapTool):
         self.__rubber = None
         self.__counter = 0
         self.__ownSettings = None
+        self.__selectedFeature = None
 
     def icon_path(self):
         return self.__icon_path
@@ -241,6 +242,7 @@ class InterpolateTool(QgsMapTool):
         self.__lastLayer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None
+        self.__selectedFeature = None
         self.__isEditing = False
 
     def __snapToIntersection(self, mapPoint, selectedFeature):
