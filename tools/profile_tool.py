@@ -21,14 +21,14 @@
  ***************************************************************************/
 """
 from qgis.core import (QgsMapLayer,
+                       QgsFeature,
                        QgsGeometry,
                        QGis,
                        QgsPoint,
                        QgsWKBTypes)
-from qgis.gui import (QgsMapTool,
-                      QgsMessageBar)
+from qgis.gui import QgsMapTool, QgsRubberBand
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QMessageBox
+from PyQt4.QtGui import QMessageBox, QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
@@ -50,7 +50,7 @@ class ProfileTool(QgsMapTool):
         self.setCursor(Qt.ArrowCursor)
         self.__isChoosed = False
         self.__lastFeatureId = None
-        self.__selectedFeature = None
+        self.__lastFeature = None
         self.__dockWdg = None
         self.__layDlg = None
         self.__msgDlg = None
@@ -58,6 +58,12 @@ class ProfileTool(QgsMapTool):
         self.__points = None
         self.__layers = None
         self.__features = None
+        self.__inSelection = False
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__rubber = None
 
     def icon_path(self):
         return self.__icon_path
@@ -73,8 +79,15 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
+        color = QColor("red")
+        color.setAlphaF(0.78)
+        self.__rubber.setColor(color)
+        self.__rubber.setIcon(4)
+        self.__rubber.setIconSize(20)
 
     def deactivate(self):
+        self.__rubber.reset()
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         if QgsMapTool is not None:
@@ -178,12 +191,12 @@ class ProfileTool(QgsMapTool):
                 QMessageBox("There is more than one elevation for the point " + str(s['point']))
                 return
         self.__closeMessageDialog()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry()) ###
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']]
             line_v2.setZAt(s['point'], z)
         self.__lineLayer.startEditing()
-        self.__lineLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+        self.__lineLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2)) ###
         self.__lineLayer.updateExtents()
         self.__lineLayer.commitChanges()
         self.__dockWdg.clearData()
@@ -194,7 +207,7 @@ class ProfileTool(QgsMapTool):
 
     def __confirmePoints(self):
         self.__closeMessageDialog()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry()) ###
         situations = self.__msgDlg.getSituations()
         for s in situations:
             layer = self.__layers[s['layer']-1]
@@ -211,30 +224,68 @@ class ProfileTool(QgsMapTool):
         self.__closeLayerDialog()
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
 
     def __layOk(self):
         self.__closeLayerDialog()
         self.__layers = self.__layDlg.getLayers()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         self.__features = []
         self.__points = []
-        for i in xrange(line_v2.numPoints()):
-            pt_v2 = line_v2.pointN(i)
-            x = pt_v2.x()
-            y = pt_v2.y()
-            z = [pt_v2.z()]
-            feat = []
-            for layer in self.__layers:
-                vertex = self.toCanvasCoordinates(QgsPoint(x, y))
-                point = Finder.findClosestFeatureAt(vertex, layer, self)
-                feat.append(point)
-                if point is None:
-                    z.append(None)
-                else:
-                    point_v2 = GeometryV2.asPointV2(point.geometry())
-                    z.append(point_v2.z())
-            self.__points.append({'x': x, 'y': y, 'z': z})
-            self.__features.append(feat)
+        num = 0
+        num_lines = len(self.__selectedIds)
+        for iden in self.__selectedIds:
+            direction = self.__selectedDirections[num]
+            selected = None
+            for f in self.__lineLayer.selectedFeatures():
+                if f.id() == iden:
+                    selected = f
+                    break
+            if selected is None:
+                print("error on selected")
+                continue
+            line_v2 = GeometryV2.asLineStringV2(selected.geometry())
+            if direction:
+                rg = xrange(line_v2.numPoints())
+            else:
+                rg = xrange(line_v2.numPoints()-1, -1, -1)
+            for i in rg:
+                pt_v2 = line_v2.pointN(i)
+                x = pt_v2.x()
+                y = pt_v2.y()
+                doublon = False
+                for item in self.__points:
+                    if item['x'] == x and item['y'] == y:
+                        item['z'][num] = pt_v2.z()
+                        doublon = True
+                        break
+                if not doublon:
+                    z = []
+                    for j in xrange(num_lines):
+                        if j == num:
+                            z.append(pt_v2.z())
+                        else:
+                            z.append(None)
+                    feat = []
+                    for layer in self.__layers:
+                        vertex = self.toCanvasCoordinates(QgsPoint(x, y))
+                        point = Finder.findClosestFeatureAt(vertex, layer, self)
+                        feat.append(point)
+                        if point is None:
+                            z.append(None)
+                        else:
+                            point_v2 = GeometryV2.asPointV2(point.geometry())
+                            zp = point_v2.z()
+                            if zp is None or zp != zp:
+                                z.append(0)
+                            else:
+                                z.append(zp)
+                    self.__points.append({'x': x, 'y': y, 'z': z})
+                    self.__features.append(feat)
+            num += 1
 
         # points = []
         # for key, p in pointz.items():
@@ -254,29 +305,102 @@ class ProfileTool(QgsMapTool):
         self.__calculateProfile(names)
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
+
+    @staticmethod
+    def contains(line, point):
+        pos = 0
+        for pt in line:
+            if pt.x() == point.x() and pt.y() == point.y():
+                return pos
+            pos += 1
+        return -1
 
     def canvasMoveEvent(self, event):
         if not self.__isChoosed:
-            if Finder is not None and self.__lineLayer is not None:
+            if self.__lineLayer is not None:
                 f = Finder.findClosestFeatureAt(event.pos(), self.__lineLayer, self)
-                if f is not None and self.__lastFeatureId != f.id():
-                    self.__lastFeatureId = f.id()
-                    self.__lineLayer.setSelectedFeatures([f.id()])
-                if f is None:
-                    self.__lineLayer.removeSelection()
-                    self.__lastFeatureId = None
+                if not self.__inSelection:
+                    if f is not None and self.__lastFeatureId != f.id():
+                        self.__lastFeature = f
+                        self.__lastFeatureId = f.id()
+                        self.__lineLayer.setSelectedFeatures([f.id()])
+                    if f is None:
+                        self.__lineLayer.removeSelection()
+                        self.__lastFeatureId = None
+                        self.__selectedIds = None
+                        self.__selectedDirections = None
+                        self.__startVertex = None
+                        self.__endVertex = None
+                else:
+                    if f is not None and self.__lastFeatureId != f.id():
+                        line = f.geometry().asPolyline()
+                        if self.contains(line, self.__endVertex) > -1:
+                            self.__lastFeature = f
+                            self.__lastFeatureId = f.id()
+                            features = self.__selectedIds + [f.id()]
+                            self.__lineLayer.setSelectedFeatures(features)
+
+                        elif self.contains(line, self.__startVertex) > -1:
+                            self.__lastFeature = f
+                            self.__lastFeatureId = f.id()
+                            features = self.__selectedIds + [f.id()]
+                            self.__lineLayer.setSelectedFeatures(features)
+
+                        else:
+                            self.__lineLayer.setSelectedFeatures(self.__selectedIds)
+                            self.__lastFeatureId = None
+                            self.__lastFeature = None
+
+                    if f is None and self.__selectedIds is not None:
+                        self.__lineLayer.setSelectedFeatures(self.__selectedIds)
+                        self.__lastFeatureId = None
+                        self.__lastFeature = None
 
     def canvasReleaseEvent(self, event):
-        found_features = self.__lineLayer.selectedFeatures()
-        if len(found_features) > 0:
-            if len(found_features) < 1:
-                self.__iface.messageBar().pushMessage(u"Une seule feature à la fois", level=QgsMessageBar.INFO)
-                return
-            self.__selectedFeature = found_features[0]
-            self.__isChoosed = 1
-            pointLayers = self.__getPointLayers()
-            self.__setLayerDialog(pointLayers)
-            self.__layDlg.show()
+        if event.button() == Qt.RightButton:
+            if self.__lineLayer.selectedFeatures():
+                self.__isChoosed = 1
+                pointLayers = self.__getPointLayers()
+                self.__setLayerDialog(pointLayers)
+                self.__layDlg.show()
+        elif event.button() == Qt.LeftButton:
+            if self.__lastFeature:
+                self.__inSelection = True
+                line = self.__lastFeature.geometry().asPolyline()
+                if self.__selectedIds is None:
+                    self.__selectedIds = []
+                    self.__startVertex = line[0]
+                    self.__endVertex = line[-1]
+                    self.__selectedDirections = []
+                    self.__selectedDirections.append(True)  # direction du premier prime
+                    self.__selectedIds.append(self.__lastFeatureId)
+                else:
+                    pos = self.contains(line, self.__startVertex)
+                    if pos > -1:
+                        self.__selectedIds = [self.__lastFeatureId] + self.__selectedIds
+                        if pos == 0:
+                            direction = False
+                            self.__startVertex = line[-1]
+                        else:
+                            direction = True
+                            self.__startVertex = line[0]
+                        self.__selectedDirections = [direction] + self.__selectedDirections
+                    else:
+                        pos = self.contains(line, self.__endVertex)
+                        self.__selectedIds.append(self.__lastFeatureId)
+                        if pos == 0:
+                            direction = True
+                            self.__endVertex = line[-1]
+                        else:
+                            direction = False
+                            self.__endVertex = line[0]
+                        self.__selectedDirections.append(direction)
+                self.__lineLayer.setSelectedFeatures(self.__selectedIds)
 
     def __calculateProfile(self, names):
         if self.__points is None:
@@ -286,19 +410,51 @@ class ProfileTool(QgsMapTool):
             return
         self.__dockWdg.setProfiles(self.__points)
         self.__dockWdg.drawVertLine()
-        self.__dockWdg.attachCurves(names)
+        self.__dockWdg.attachCurves(names, len(self.__selectedIds))
 
         situations = []
         for p in xrange(len(self.__points)):
             pt = self.__points[p]
-            z0 = pt['z'][0]
-            tol = 0.01 * z0
-            for i in xrange(1, len(pt['z'])):
-                if pt['z'][i] is None:
-                    continue
-                if abs(pt['z'][i]-z0) > tol:
-                    situations.append({'point': p, 'layer': i})
+            num_lines = len(self.__selectedIds)
+            zz = []
+            for i in xrange(num_lines):
+                if pt['z'][i] is not None:
+                    zz.append(i)
+            if len(zz) == 0:
+                print("no line z ?!?")
+            elif len(zz) == 1:
+                z0 = pt['z'][zz[0]]
+                tol = 0.01 * z0
+                for i in xrange(num_lines, len(pt['z'])):
+                    if pt['z'][i] is None:
+                        continue
+                    if abs(pt['z'][i]-z0) > tol:
+                        situations.append({'point': p, 'layer': (i-num_lines+1)})
+            elif len(zz) == 2:
+                z0 = pt['z'][zz[0]]
+                tol = 0.01 * z0
+                if abs(pt['z'][zz[1]] - z0) > tol:
+                    situations.append({'point': p, 'layer': 0})
+                else:
+                    for i in xrange(num_lines, len(pt['z'])):
+                        if pt['z'][i] is None:
+                            continue
+                        if abs(pt['z'][i]-z0) > tol:
+                            situations.append({'point': p, 'layer': (i-num_lines+1)})
+            else:
+                print("more tha 2 lines z ?!?")
+
         if len(situations) > 0:
             self.__setMessageDialog(situations, names)
+            self.__rubber.reset()
+            for situation in situations:
+                pt = self.__points[situation['point']]
+                point = QgsPoint(pt['x'], pt['y'])
+                print(point)
+                if self.__rubber.numberOfVertices() == 0:
+                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
+                else:
+                    self.__rubber.addPoint(point)
+
             self.__msgDlg.show()
 

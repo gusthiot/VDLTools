@@ -95,6 +95,9 @@ class ProfileDockWidget(QDockWidget):
 
         self.__boxLayout.addWidget(self.__plotFrame)
 
+        self.__legendLayout = QVBoxLayout()
+        self.__boxLayout.addLayout(self.__legendLayout)
+
         self.__vertLayout = QVBoxLayout()
 
         self.__libCombo = QComboBox()
@@ -158,7 +161,7 @@ class ProfileDockWidget(QDockWidget):
             self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
                                    self.__plotWdg.canvas())
             self.__zoomer.setRubberBandPen(QPen(Qt.blue))
-            self.__plotWdg.insertLegend(QwtLegend())
+            # self.__plotWdg.insertLegend(QwtLegend())
             grid = Qwt.QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
@@ -216,27 +219,35 @@ class ProfileDockWidget(QDockWidget):
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.get_axes()[0].vlines(profileLen, 0, 1000, linewidth=1)
 
-    def attachCurves(self, names):
+    def attachCurves(self, names, num_lines):
         if (self.__profiles is None) or (self.__profiles == 0):
             return
         colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
         for i in xrange(len(self.__profiles[0]['z'])):
-            name = names[i]
+            if i < num_lines:
+                v = 0
+            else:
+                v = i - num_lines + 1
+            name = names[v]
             xx = []
             yy = []
             for prof in self.__profiles:
-                if prof['l'] is not None:
-                    xx.append(prof['l'])
-                    if prof['z'][i] is not None:
-                        yy.append(prof['z'][i])
-                    else:
-                        yy.append(0)
+                xx.append(prof['l'])
+                yy.append(prof['z'][i])
 
-            if i < len(colors):
-                color = colors[i]
+            for j in range(len(yy)):
+                if yy[j] is None:
+                    xx[j] = None
+
+            if v < len(colors):
+                color = colors[v]
             else:
-                d = i / len(colors)
-                color = colors[i - int(d * len(colors))]
+                d = v / len(colors)
+                color = colors[v - int(d * len(colors))]
+
+            if i == 0 or i > (num_lines-1):
+                legend = QLabel("<font color='" + QColor(color).name() + "'>" + name + "</font>")
+                self.__legendLayout.addWidget(legend)
 
             if self.__lib == 'Qwt5':
 
@@ -249,7 +260,7 @@ class ProfileDockWidget(QDockWidget):
                     curve = QwtPlotCurve(name)
                     curve.setData(xx[j], yy[j])
                     curve.setPen(QPen(color, 3))
-                    if i > 0:
+                    if i > (num_lines-1):
                         curve.setStyle(QwtPlotCurve.NoCurve)
                         symbol = QwtSymbol()
                         symbol.setStyle(QwtSymbol.Ellipse)
@@ -259,7 +270,7 @@ class ProfileDockWidget(QDockWidget):
 
             elif self.__lib == 'Matplotlib':
                 qcol = QColor(color)
-                if i == 0:
+                if i < num_lines:
                     self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name,linewidth=3)
                 else:
                     self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name,linewidth=5, marker='o', linestyle='None')
@@ -279,7 +290,7 @@ class ProfileDockWidget(QDockWidget):
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
-            self.__plotWdg.figure.legend(self.__plotWdg.figure.get_axes()[0].get_lines(), names, 'center left')
+            # self.__plotWdg.figure.legend(self.__plotWdg.figure.get_axes()[0].get_lines(), names, 'center left')
             self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
             self.__plotWdg.draw()
             self.__activateMouseTracking(True)
@@ -430,6 +441,11 @@ class ProfileDockWidget(QDockWidget):
         self.__minSpin.setEnabled(False)
         self.__maxSpin.setValue(0)
         self.__minSpin.setValue(0)
+
+        # clear legend
+        while self.__legendLayout.count():
+            child = self.__legendLayout.takeAt(0)
+            child.widget().deleteLater()
 
     def __manageMatplotlibAxe(self, axe):
         axe.grid()

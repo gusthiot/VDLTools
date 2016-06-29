@@ -29,6 +29,7 @@ class ProfileMessageDialog(QDialog):
         QDialog.__init__(self)
         self.__situations = situations
         self.__names = names
+        num_lines = len(points[0]['z']) - len(names) + 1
         self.__points = points
         self.setWindowTitle("Elevations situations")
         self.resize(300, 100)
@@ -40,8 +41,20 @@ class ProfileMessageDialog(QDialog):
         for i in xrange(len(self.__situations)):
             line = self.__situations[i]
             ptz = self.__points[line['point']]['z']
-            msg = "- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
-                .format(line['point'], self.__names[line['layer']], ptz[line['layer']], ptz[0])
+            zz = []
+            for j in xrange(num_lines):
+                if ptz[j] is not None:
+                    zz.append(j)
+            if line['layer'] > 0:
+                if len(zz) != 1:
+                    print("z number problem")
+                msg = "- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
+                    .format(line['point'], self.__names[line['layer']], ptz[line['layer']+num_lines-1], ptz[zz[0]])
+            else:
+                if len(zz) != 2:
+                    print("z number problem")
+                msg = "- point {} in line layer : different elevations on same position ({}m and {}m) \n"\
+                    .format(line['point'], ptz[zz[0]], ptz[zz[1]])
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__layout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
