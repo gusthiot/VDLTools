@@ -182,19 +182,22 @@ class InterpolateTool(QgsMapTool):
                 self.__selectedFeature = found_features[0]
                 self.__isEditing = True
                 self.__mapPoint = event.mapPoint()
-                if self.__lastLayer.isEditable() is False:
-                    self.__confDlg = InterpolateConfirmDialog()
-                    self.__confDlg.allButton().clicked.connect(self.__onConfirmedAll)
-                    self.__confDlg.ptButton().clicked.connect(self.__onConfirmedPoint)
-                    self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
-                    self.__confDlg.show()
-                else:
-                    self.__createElements(True)
+                self.__confDlg = InterpolateConfirmDialog()
+                if self.__lastLayer.isEditable() is True:
+                    self.__confDlg.setMainLabel("What do you want to do ?")
+                    self.__confDlg.setAllLabel("Create point and new vertex")
+                    self.__confDlg.setVtLabel("Create only the vertex")
+                self.__confDlg.allButton().clicked.connect(self.__onConfirmedAll)
+                self.__confDlg.ptButton().clicked.connect(self.__onConfirmedPoint)
+                self.__confDlg.vtButton().clicked.connect(self.__onConfirmedVertex)
+                self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+                self.__confDlg.show()
 
     def __closeConfirmDialog(self):
         self.__confDlg.close()
         self.__confDlg.allButton().clicked.disconnect(self.__onConfirmedAll)
         self.__confDlg.ptButton().clicked.disconnect(self.__onConfirmedPoint)
+        self.__confDlg.vtButton().clicked.disconnect(self.__onConfirmedVertex)
         self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
 
     def __onCloseConfirm(self):
@@ -206,14 +209,21 @@ class InterpolateTool(QgsMapTool):
 
     def __onConfirmedPoint(self):
         self.__closeConfirmDialog()
-        self.__createElements(False)
+        self.__createElements(True, False)
 
     def __onConfirmedAll(self):
         self.__closeConfirmDialog()
-        self.__lastLayer.startEditing()
-        self.__createElements(True)
+        if self.__lastLayer.isEditable() is False:
+            self.__lastLayer.startEditing()
+        self.__createElements(True, True)
 
-    def __createElements(self, withVertex):
+    def __onConfirmedVertex(self):
+        self.__closeConfirmDialog()
+        if self.__lastLayer.isEditable() is False:
+            self.__lastLayer.startEditing()
+        self.__createElements(False, True)
+
+    def __createElements(self, withPoint, withVertex):
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
@@ -231,11 +241,13 @@ class InterpolateTool(QgsMapTool):
         d1 = self.distance(x1, vertex_v2.x(), y1, vertex_v2.y())
         z0 = line_v2.zAt(vertex_id.vertex-1)
         z1 = line_v2.zAt(vertex_id.vertex)
-
         vertex_v2.addZValue((d0*z1 + d1*z0)/(d0 + d1))
-        pt_feat = QgsFeature(self.__layer.pendingFields())
-        pt_feat.setGeometry(QgsGeometry(vertex_v2))
-        self.__layer.addFeature(pt_feat)
+
+        if withPoint:
+            pt_feat = QgsFeature(self.__layer.pendingFields())
+            pt_feat.setGeometry(QgsGeometry(vertex_v2))
+            self.__layer.addFeature(pt_feat)
+
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))

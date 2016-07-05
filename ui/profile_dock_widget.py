@@ -199,7 +199,7 @@ class ProfileDockWidget(QDockWidget):
         if self.__lib == 'Matplotlib':
             self.__prepare_points()
 
-    def drawVertLine(self):
+    def drawVertLine(self, num_lines):
         if (self.__profiles is None) or (len(self.__profiles) == 0):
             return
         profileLen = 0
@@ -211,13 +211,32 @@ class ProfileDockWidget(QDockWidget):
             y2 = float(self.__profiles[i+1]['y'])
             profileLen += sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)))
             self.__profiles[i+1]['l'] = profileLen
+
+            zz = []
+            for j in xrange(num_lines):
+                if self.__profiles[i+1]['z'][j] is not None:
+                    zz.append(j)
+            if len(zz) == 2:
+                width = 3
+            else:
+                width = 1
+
             if self.__lib == 'Qwt5':
                 vertLine = QwtPlotMarker()
                 vertLine.setLineStyle(QwtPlotMarker.VLine)
+                pen = vertLine.linePen()
+                pen.setWidth(width)
+                vertLine.setLinePen(pen)
                 vertLine.setXValue(profileLen)
+                label = vertLine.label()
+                label.setText(str(i+1))
+                vertLine.setLabel(label)
+                vertLine.setLabelAlignment(Qt.AlignLeft)
                 vertLine.attach(self.__plotWdg)
             elif self.__lib == 'Matplotlib':
-                self.__plotWdg.figure.get_axes()[0].vlines(profileLen, 0, 1000, linewidth=1)
+                self.__plotWdg.figure.get_axes()[0].vlines(profileLen, 0, 1000, linewidth=width)
+                self.__subplot.text(profileLen, 2, i+1)
+                # self.__plotWdg.figure.get_axes()[0].axvline(profileLen, 0, 1000, linewidth=width)
 
     def attachCurves(self, names, num_lines):
         if (self.__profiles is None) or (self.__profiles == 0):
@@ -271,9 +290,9 @@ class ProfileDockWidget(QDockWidget):
             elif self.__lib == 'Matplotlib':
                 qcol = QColor(color)
                 if i < num_lines:
-                    self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name,linewidth=3)
+                    self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=3)
                 else:
-                    self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name,linewidth=5, marker='o', linestyle='None')
+                    self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=5, marker='o', linestyle='None')
                 tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                 for t in range(len(tmp)):
                     if name == str(tmp[t].get_gid()):

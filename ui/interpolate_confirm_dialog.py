@@ -33,7 +33,7 @@ class InterpolateConfirmDialog(QDialog):
 
         self.__confirmLabel = QLabel("This LineString layer is not editable, what do you want to do ?")
 
-        self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 2)
+        self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 3)
 
         self.__allButton = QPushButton("Create point, and edit line with new vertex")
         self.__allButton.setMinimumHeight(20)
@@ -43,15 +43,29 @@ class InterpolateConfirmDialog(QDialog):
         self.__ptButton.setMinimumHeight(20)
         self.__ptButton.setMinimumWidth(200)
 
+        self.__vtButton = QPushButton("Just edit line with new vertex")
+        self.__vtButton.setMinimumHeight(20)
+        self.__vtButton.setMinimumWidth(200)
+
         self.__cancelButton = QPushButton("Cancel")
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
         self.__layout.addWidget(self.__allButton, 1, 1)
         self.__layout.addWidget(self.__ptButton, 1, 2)
-        self.__layout.addWidget(self.__cancelButton, 1, 3)
+        self.__layout.addWidget(self.__vtButton, 1, 3)
+        self.__layout.addWidget(self.__cancelButton, 1, 4)
 
         self.setLayout(self.__layout)
+
+    def setMainLabel(self, label):
+        self.__confirmLabel.setText(label)
+
+    def setAllLabel(self, label):
+        self.__allButton.setText(label)
+
+    def setVtLabel(self, label):
+        self.__vtButton.setText(label)
 
     def allButton(self):
         return self.__allButton
@@ -61,3 +75,6 @@ class InterpolateConfirmDialog(QDialog):
 
     def cancelButton(self):
         return self.__cancelButton
+
+    def vtButton(self):
+        return self.__vtButton

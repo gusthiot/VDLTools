@@ -21,8 +21,7 @@
  ***************************************************************************/
 """
 from qgis.core import (QgsMapLayer,
-                       QgsFeature,
-                       QgsGeometry,
+                       QgsGeometry, QgsPointV2,
                        QGis,
                        QgsPoint,
                        QgsWKBTypes)
@@ -60,10 +59,12 @@ class ProfileTool(QgsMapTool):
         self.__features = None
         self.__inSelection = False
         self.__selectedIds = None
+        self.__selectedStarts = None
         self.__selectedDirections = None
         self.__startVertex = None
         self.__endVertex = None
-        self.__rubber = None
+        self.__rubberSit = None
+        self.__rubberDif = None
 
     def icon_path(self):
         return self.__icon_path
@@ -79,15 +80,20 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
-        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
+        self.__rubberSit = QgsRubberBand(self.__canvas, QGis.Point)
+        self.__rubberDif = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
         color.setAlphaF(0.78)
-        self.__rubber.setColor(color)
-        self.__rubber.setIcon(4)
-        self.__rubber.setIconSize(20)
+        self.__rubberSit.setColor(color)
+        self.__rubberSit.setIcon(4)
+        self.__rubberSit.setIconSize(20)
+        self.__rubberDif.setColor(color)
+        self.__rubberDif.setIcon(2)
+        self.__rubberDif.setIconSize(20)
 
     def deactivate(self):
-        self.__rubber.reset()
+        self.__rubberSit.reset()
+        self.__rubberDif.reset()
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         if QgsMapTool is not None:
@@ -116,8 +122,8 @@ class ProfileTool(QgsMapTool):
         self.__layDlg.okButton().clicked.disconnect()
         self.__layDlg.cancelButton().clicked.disconnect()
 
-    def __setMessageDialog(self, situations, names):
-        self.__msgDlg = ProfileMessageDialog(situations, names, self.__points)
+    def __setMessageDialog(self, situations, differences, names):
+        self.__msgDlg = ProfileMessageDialog(situations, differences, names, self.__points)
         self.__msgDlg.passButton().clicked.connect(self.__msgPass)
         self.__msgDlg.onLineButton().clicked.connect(self.__onLine)
         self.__msgDlg.onPointsButton().clicked.connect(self.__onPoints)
@@ -165,9 +171,19 @@ class ProfileTool(QgsMapTool):
 
     def __msgPass(self):
         self.__closeMessageDialog()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
 
     def __onCloseConfirm(self):
         self.__closeConfirmDialog()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
 
     def __onLine(self):
         self.__setConfirmDialog(0)
@@ -183,6 +199,7 @@ class ProfileTool(QgsMapTool):
 
     def __confirmLine(self):
         situations = self.__msgDlg.getSituations()
+        num_lines = len(self.__selectedIds)
         points = []
         for s in situations:
             if s['point'] not in points:
@@ -191,34 +208,62 @@ class ProfileTool(QgsMapTool):
                 QMessageBox("There is more than one elevation for the point " + str(s['point']))
                 return
         self.__closeMessageDialog()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry()) ###
+        lines = []
+        for iden in self.__selectedIds:
+            for f in self.__lineLayer.selectedFeatures():
+                if f.id() == iden:
+                    lines.append(GeometryV2.asLineStringV2(f.geometry()))
+                    break
         for s in situations:
-            z = self.__points[s['point']]['z'][s['layer']]
-            line_v2.setZAt(s['point'], z)
+            z = self.__points[s['point']]['z'][s['layer']+num_lines-1]
+            for i in xrange(num_lines):
+                if self.__points[s['point']]['z'][i] is not None:
+                    index = s['point']-self.__selectedStarts[i]
+                    if self.__selectedDirections[i] is False:
+                        index = lines[i].numPoints()-1-index
+                    lines[i].setZAt(index, z)
         self.__lineLayer.startEditing()
-        self.__lineLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2)) ###
+        for i in xrange(len(lines)):
+            geom = QgsGeometry(lines[i].clone())
+            self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
         self.__lineLayer.updateExtents()
         self.__lineLayer.commitChanges()
         self.__dockWdg.clearData()
+        self.__lineLayer.removeSelection()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
 
     def __onConfirmedPoints(self):
         self.__closeConfirmDialog()
-        self.__confirmePoints()
+        self.__confirmPoints()
 
-    def __confirmePoints(self):
+    def __confirmPoints(self):
         self.__closeMessageDialog()
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry()) ###
         situations = self.__msgDlg.getSituations()
+        num_lines = len(self.__selectedIds)
         for s in situations:
             layer = self.__layers[s['layer']-1]
             point = self.__features[s['point']][s['layer']-1]
             point_v2 = GeometryV2.asPointV2(point.geometry())
-            point_v2.setZ(line_v2.zAt(s['point']))
+            newZ = point_v2.z()
+            for i in xrange(num_lines):
+                if self.__points[s['point']]['z'][i] is not None:
+                    newZ = self.__points[s['point']]['z'][i]
+                    break
+            point_v2.setZ(newZ)
             layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
             layer.updateExtents()
             layer.commitChanges()
         self.__dockWdg.clearData()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
 
     def __layCancel(self):
         self.__closeLayerDialog()
@@ -235,9 +280,11 @@ class ProfileTool(QgsMapTool):
         self.__layers = self.__layDlg.getLayers()
         self.__features = []
         self.__points = []
+        self.__selectedStarts = []
         num = 0
         num_lines = len(self.__selectedIds)
         for iden in self.__selectedIds:
+            self.__selectedStarts.append(max(0,len(self.__points)-1))
             direction = self.__selectedDirections[num]
             selected = None
             for f in self.__lineLayer.selectedFeatures():
@@ -304,12 +351,6 @@ class ProfileTool(QgsMapTool):
             names.append(layer.name())
         self.__calculateProfile(names)
         self.__isChoosed = 0
-        self.__lineLayer.removeSelection()
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
-        self.__inSelection = False
 
     @staticmethod
     def contains(line, point):
@@ -363,7 +404,7 @@ class ProfileTool(QgsMapTool):
 
     def canvasReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
-            if self.__lineLayer.selectedFeatures():
+            if self.__lineLayer.selectedFeatures() and self.__selectedIds:
                 self.__isChoosed = 1
                 pointLayers = self.__getPointLayers()
                 self.__setLayerDialog(pointLayers)
@@ -409,10 +450,11 @@ class ProfileTool(QgsMapTool):
         if len(self.__points) == 0:
             return
         self.__dockWdg.setProfiles(self.__points)
-        self.__dockWdg.drawVertLine()
+        self.__dockWdg.drawVertLine(len(self.__selectedIds))
         self.__dockWdg.attachCurves(names, len(self.__selectedIds))
 
         situations = []
+        differences = []
         for p in xrange(len(self.__points)):
             pt = self.__points[p]
             num_lines = len(self.__selectedIds)
@@ -429,32 +471,45 @@ class ProfileTool(QgsMapTool):
                     if pt['z'][i] is None:
                         continue
                     if abs(pt['z'][i]-z0) > tol:
-                        situations.append({'point': p, 'layer': (i-num_lines+1)})
+                        situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             elif len(zz) == 2:
                 z0 = pt['z'][zz[0]]
                 tol = 0.01 * z0
                 if abs(pt['z'][zz[1]] - z0) > tol:
-                    situations.append({'point': p, 'layer': 0})
+                    differences.append({'point': p, 'v1': z0, 'v2': pt['z'][zz[1]]})
                 else:
                     for i in xrange(num_lines, len(pt['z'])):
                         if pt['z'][i] is None:
                             continue
                         if abs(pt['z'][i]-z0) > tol:
-                            situations.append({'point': p, 'layer': (i-num_lines+1)})
+                            situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
-                print("more tha 2 lines z ?!?")
+                print("more than 2 lines z ?!?")
 
-        if len(situations) > 0:
-            self.__setMessageDialog(situations, names)
-            self.__rubber.reset()
+        if (len(situations) > 0) or (len(differences) > 0):
+            self.__setMessageDialog(situations, differences, names)
+            self.__rubberSit.reset()
+            self.__rubberDif.reset()
             for situation in situations:
                 pt = self.__points[situation['point']]
                 point = QgsPoint(pt['x'], pt['y'])
-                print(point)
-                if self.__rubber.numberOfVertices() == 0:
-                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
+                if self.__rubberSit.numberOfVertices() == 0:
+                    self.__rubberSit.setToGeometry(QgsGeometry().fromPoint(point), None)
                 else:
-                    self.__rubber.addPoint(point)
+                    self.__rubberSit.addPoint(point)
+            for difference in differences:
+                pt = self.__points[difference['point']]
+                point = QgsPoint(pt['x'], pt['y'])
+                if self.__rubberDif.numberOfVertices() == 0:
+                    self.__rubberDif.setToGeometry(QgsGeometry().fromPoint(point), None)
+                else:
+                    self.__rubberDif.addPoint(point)
 
             self.__msgDlg.show()
+        else:
+            self.__selectedIds = None
+            self.__selectedDirections = None
+            self.__startVertex = None
+            self.__endVertex = None
+            self.__inSelection = False
 

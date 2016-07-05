@@ -25,9 +25,10 @@ from PyQt4.QtGui import (QDialog, QGridLayout, QPushButton, QLabel, QCheckBox)
 
 
 class ProfileMessageDialog(QDialog):
-    def __init__(self, situations, names, points):
+    def __init__(self, situations, differences, names, points):
         QDialog.__init__(self)
         self.__situations = situations
+        self.__differences = differences
         self.__names = names
         num_lines = len(points[0]['z']) - len(names) + 1
         self.__points = points
@@ -37,24 +38,14 @@ class ProfileMessageDialog(QDialog):
 
         self.__msgLabels = []
         self.__msgChecks = []
+        self.__difLabels = []
 
         for i in xrange(len(self.__situations)):
             line = self.__situations[i]
             ptz = self.__points[line['point']]['z']
-            zz = []
-            for j in xrange(num_lines):
-                if ptz[j] is not None:
-                    zz.append(j)
-            if line['layer'] > 0:
-                if len(zz) != 1:
-                    print("z number problem")
-                msg = "- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
-                    .format(line['point'], self.__names[line['layer']], ptz[line['layer']+num_lines-1], ptz[zz[0]])
-            else:
-                if len(zz) != 2:
-                    print("z number problem")
-                msg = "- point {} in line layer : different elevations on same position ({}m and {}m) \n"\
-                    .format(line['point'], ptz[zz[0]], ptz[zz[1]])
+            msg = "- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
+                .format(line['point'], self.__names[line['layer']], ptz[line['layer']+num_lines-1], line['vertex'])
+
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__layout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
@@ -62,6 +53,14 @@ class ProfileMessageDialog(QDialog):
             msgCheck.setChecked(True)
             self.__msgChecks.append(msgCheck)
             self.__layout.addWidget(self.__msgChecks[i], i+1, 2)
+
+        for i in xrange(len(self.__differences)):
+            line = self.__differences[i]
+            msg = "- point {} in line layer : different elevations on same position ({}m and {}m) \n" \
+                .format(line['point'], line['v1'], line['v2'])
+            difLabel = QLabel(msg)
+            self.__difLabels.append(difLabel)
+            self.__layout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)
 
         self.__passButton = QPushButton("Pass")
         self.__passButton.setMinimumHeight(20)
@@ -75,7 +74,7 @@ class ProfileMessageDialog(QDialog):
         self.__onLineButton.setMinimumHeight(20)
         self.__onLineButton.setMinimumWidth(200)
 
-        pos = len(self.__situations) + 1
+        pos = len(self.__situations) + len(self.__differences) + 1
         self.__layout.addWidget(self.__passButton, pos, 0)
         self.__layout.addWidget(self.__onLineButton, pos, 1)
         self.__layout.addWidget(self.__onPointsButton, pos, 2)
@@ -88,7 +87,6 @@ class ProfileMessageDialog(QDialog):
             if self.__msgChecks[i].isChecked():
                 situations.append(self.__situations[i])
         return situations
-
 
     def passButton(self):
         return self.__passButton
