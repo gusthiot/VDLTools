@@ -32,6 +32,7 @@ from tools.intersect_tool import IntersectTool
 from tools.profile_tool import ProfileTool
 from tools.interpolate_tool import InterpolateTool
 from tools.extrapolate_tool import ExtrapolateTool
+from tools.move_tool import MoveTool
 from tools.show_settings import ShowSettings
 
 # Initialize Qt resources from file resources.py
@@ -56,6 +57,7 @@ class VDLTools:
         self.duplicateTool = None
         self.intersectTool = None
         self.profileTool = None
+        self.moveTool = None
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -117,7 +119,7 @@ class VDLTools:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         self.showSettings = ShowSettings(self.iface)
-        self.add_action(self.showSettings, self.iface.mainWindow(), None, False)
+        self.add_action(self.showSettings, self.iface.mainWindow(), True, False)
         self.duplicateTool = DuplicateTool(self.iface)
         self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
         self.intersectTool = IntersectTool(self.iface)
@@ -128,11 +130,14 @@ class VDLTools:
         self.add_action(self.interpolateTool, self.iface.mainWindow(), False)
         self.extrapolateTool = ExtrapolateTool(self.iface)
         self.add_action(self.extrapolateTool, self.iface.mainWindow(), False)
+        self.moveTool = MoveTool(self.iface)
+        self.add_action(self.moveTool, self.iface.mainWindow(), False)
 
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
         self.iface.currentLayerChanged.connect(self.interpolateTool.setEnable)
         self.iface.currentLayerChanged.connect(self.extrapolateTool.setEnable)
         self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
+        self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
 
         self.intersectTool.setOwnSettings(self.showSettings)
         self.interpolateTool.setOwnSettings(self.showSettings)
