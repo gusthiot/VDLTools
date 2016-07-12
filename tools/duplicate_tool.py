@@ -235,11 +235,11 @@ class DuplicateTool(QgsMapTool):
     def __dstOk(self):
         self.__dstPreview()
         self.__dstDlg.close()
-        self.__setAttributesDialog(self.__layer.pendingFields(), self.__selectedFeature.attributes())
-        self.__attDlg.show()
-
-    def __attOk(self):
-        self.__attDlg.close()
+    #     self.__setAttributesDialog(self.__layer.pendingFields(), self.__selectedFeature.attributes())
+    #     self.__attDlg.show()
+    #
+    # def __attOk(self):
+    #     self.__attDlg.close()
         self.__canvas.scene().removeItem(self.__rubberBand)
         if self.__layer.geometryType() == QGis.Polygon:
             geometry = QgsGeometry(self.__newFeature)
@@ -250,7 +250,14 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand = None
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
-        feature.setAttributes(self.__attDlg.getAttributes())
+        fields = self.__layer.pendingFields()
+        for field in fields:
+            name = field.name()
+            index = fields.indexFromName(name)
+            print(name, fields.fieldOrigin(index))
+
+        feature.setAttributes(self.__selectedFeature.attributes())
+        # feature.setAttributes(self.__attDlg.getAttributes())
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__isEditing = 0
