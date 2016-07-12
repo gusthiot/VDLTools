@@ -66,8 +66,9 @@ class DuplicateAttributesDialog(QDialog):
                     edit = QDateEdit(None)
             else:
                 edit = QLineEdit("line" + str(i))
-                if str(self.__attributes[i]) != "NULL":
-                    edit.setText(str(self.__attributes[i]))
+                att = self.__attributes[i].encode('utf8', 'replace')
+                if att != "NULL":
+                    edit.setText(att)
                 else:
                     edit.setText("")
                 if typeName == "Integer" or typeName == "Integer64":
