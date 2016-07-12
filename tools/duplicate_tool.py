@@ -250,12 +250,6 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand = None
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
-        fields = self.__layer.pendingFields()
-        for field in fields:
-            name = field.name()
-            index = fields.indexFromName(name)
-            print(name, fields.fieldOrigin(index))
-
         feature.setAttributes(self.__selectedFeature.attributes())
         # feature.setAttributes(self.__attDlg.getAttributes())
         self.__layer.addFeature(feature)
