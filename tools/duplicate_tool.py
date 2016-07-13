@@ -241,10 +241,7 @@ class DuplicateTool(QgsMapTool):
     # def __attOk(self):
     #     self.__attDlg.close()
         self.__canvas.scene().removeItem(self.__rubberBand)
-        if self.__layer.geometryType() == QGis.Polygon:
-            geometry = QgsGeometry(self.__newFeature)
-        else:
-            geometry = QgsGeometry(self.__newFeature)
+        geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             print "geometry problem"
         self.__rubberBand = None

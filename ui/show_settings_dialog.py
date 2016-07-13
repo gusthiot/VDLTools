@@ -24,8 +24,11 @@
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
-                         QPushButton, QLabel, QComboBox)
-from qgis.core import (QgsMapLayer, QGis)
+                         QPushButton,
+                         QLabel,
+                         QComboBox)
+from qgis.core import (QgsMapLayer,
+                       QGis)
 
 class ShowSettingsDialog(QDialog):
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer):

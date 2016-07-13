@@ -21,7 +21,11 @@
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (QDialog, QGridLayout, QPushButton, QLabel, QCheckBox)
+from PyQt4.QtGui import (QDialog,
+                         QGridLayout,
+                         QPushButton,
+                         QLabel,
+                         QCheckBox)
 
 
 class ProfileMessageDialog(QDialog):

@@ -21,9 +21,12 @@
  ***************************************************************************/
 """
 
-from qgis.gui import QgsMapTool, QgsRubberBand, QgsMessageBar
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand,
+                      QgsMessageBar)
 from qgis.core import (QGis,
-                       QgsMapLayer, QgsGeometry,
+                       QgsMapLayer,
+                       QgsGeometry,
                        QgsWKBTypes)
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor

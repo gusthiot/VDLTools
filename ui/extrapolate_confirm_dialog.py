@@ -21,7 +21,10 @@
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (QDialog, QGridLayout, QPushButton, QLabel)
+from PyQt4.QtGui import (QDialog,
+                         QGridLayout,
+                         QPushButton,
+                         QLabel)
 
 
 class ExtrapolateConfirmDialog(QDialog):

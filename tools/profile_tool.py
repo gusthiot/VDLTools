@@ -21,13 +21,15 @@
  ***************************************************************************/
 """
 from qgis.core import (QgsMapLayer,
-                       QgsGeometry, QgsPointV2,
+                       QgsGeometry,
                        QGis,
                        QgsPoint,
                        QgsWKBTypes)
-from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand)
 from PyQt4.QtCore import Qt
-from PyQt4.QtGui import QMessageBox, QColor
+from PyQt4.QtGui import (QMessageBox,
+                         QColor)
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
