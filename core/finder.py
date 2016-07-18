@@ -23,6 +23,9 @@
 
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
+                       QGis,
+                       QgsSnapper,
+                       QgsGeometry,
                        QgsRectangle,
                        QgsFeatureRequest,
                        QgsFeature)
@@ -111,5 +114,58 @@ class Finder:
                     intersectionP = QgsPoint(point.x(), point.y())
         if intersectionP != QgsPoint(0, 0):
             return intersectionP
+        else:
+            return None
+
+    @staticmethod
+    def snapToIntersection(pixPoint, mapTool, layers):
+        mousePoint = mapTool.toMapCoordinates(pixPoint)
+        features = Finder.findFeaturesLayersAt(pixPoint, layers, mapTool)
+        if features is None:
+            return None
+        nFeat = len(features)
+        intersections = []
+        for i in range(nFeat - 1):
+            for j in range(i + 1, nFeat):
+                geometry1 = features[i].geometry()
+                geometry2 = features[j].geometry()
+                if geometry1.type() == QGis.Polygon:
+                    for curve1 in geometry1.asPolygon():
+                        if geometry2.type() == QGis.Polygon:
+                            for curve2 in geometry2.asPolygon():
+                                intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mousePoint)
+                                if intersect is not None:
+                                    intersections.append(intersect)
+                        else:
+                            intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mousePoint)
+                            if intersect is not None:
+                                intersections.append(intersect)
+                elif geometry2.type() == QGis.Polygon:
+                    for curve2 in geometry2.asPolygon():
+                        intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mousePoint)
+                        if intersect is not None:
+                            intersections.append(intersect)
+                else:
+                    intersect = Finder.intersect(geometry1, geometry2, mousePoint)
+                    if intersect is not None:
+                        intersections.append(intersect)
+        if len(intersections) == 0:
+            return None
+        intersect = intersections[0]
+        for point in intersections[1:]:
+            if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersect):
+                intersect = QgsPoint(point.x(), point.y())
+        return intersect
+
+    @staticmethod
+    def snapToLayers(pixPoint, snapperList, mapCanvas):
+        if len(snapperList) == 0:
+            return None
+        snapper = QgsSnapper(mapCanvas.mapRenderer())
+        snapper.setSnapLayers(snapperList)
+        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
+        ok, snappingResults = snapper.snapPoint(pixPoint, [])
+        if ok == 0 and len(snappingResults) > 0:
+            return QgsPoint(snappingResults[0].snappedVertex)
         else:
             return None

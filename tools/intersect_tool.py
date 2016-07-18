@@ -116,10 +116,6 @@ class IntersectTool(QgsMapTool):
         self.__updateSnapperList()
         self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
-        # self.__messageWidget = self.__iface.messageBar().createMessage("Intersect Tool", "Not snapped.")
-        # self.__messageWidgetExist = True
-        # self.__messageWidget.destroyed.connect(self.__messageWidgetRemoved)
-        # self.__iface.messageBar().pushWidget(self.__messageWidget)
 
     def __updateSnapperList(self):
         self.__snapperList = []
@@ -137,42 +133,18 @@ class IntersectTool(QgsMapTool):
                     self.__layerList.append(layer)
 
     def deactivate(self):
-        # self.__iface.messageBar().popWidget(self.__messageWidget)
         self.__rubber.reset()
         self.__mapCanvas.layersChanged.disconnect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
         QgsMapTool.deactivate(self)
 
-    # def __messageWidgetRemoved(self):
-    #     self.__messageWidgetExist = False
-    #
-    # def __displaySnapInfo(self, snappingResults):
-    #     if not self.__messageWidgetExist:
-    #         return
-    #     nSnappingResults = len(snappingResults)
-    #     if nSnappingResults == 0:
-    #         message = "No snap"
-    #     else:
-    #         message = "Snapped to: <b>%s" % snappingResults[0].layer.name() + "</b>"
-    #         if nSnappingResults > 1:
-    #             layers = []
-    #             message += " Nearby: "
-    #             for res in snappingResults[1:]:
-    #                 layerName = res.layer.name()
-    #                 if layerName not in layers:
-    #                     message += res.layer.name() + ", "
-    #                     layers.append(layerName)
-    #             message = message[:-2]
-    #     if self.__messageWidgetExist:
-    #         self.__messageWidget.setText(message)
-
     def canvasMoveEvent(self, mouseEvent):
         if not self.__isEditing:
             if self.__counter > 2:
                 self.__rubber.reset()
-                snappedIntersection = self.__snapToIntersection(mouseEvent.pos())
+                snappedIntersection = Finder.snapToIntersection(mouseEvent.pos(), self, self.__layerList)
                 if snappedIntersection is None:
-                    snappedPoint = self.__snapToLayers(mouseEvent.pos())
+                    snappedPoint = Finder.snapToLayers(mouseEvent.pos(), self.__snapperList, self.__mapCanvas)
                     if snappedPoint is not None:
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
@@ -187,67 +159,15 @@ class IntersectTool(QgsMapTool):
         if mouseEvent.button() != Qt.LeftButton:
             return
         # snap to layers
-        snappedIntersection = self.__snapToIntersection(mouseEvent.pos())
+        snappedIntersection = Finder.snapToIntersection(mouseEvent.pos(), self, self.__layerList)
         if snappedIntersection is None:
-            snappedPoint = self.__snapToLayers(mouseEvent.pos())
+            snappedPoint = Finder.snapToLayers(mouseEvent.pos(), self.__snapperList, self.__mapCanvas)
             if snappedPoint is not None:
                 self.__isEditing = True
                 self.__setDistanceDialog(snappedPoint)
         else:
             self.__isEditing = True
             self.__setDistanceDialog(snappedIntersection)
-
-    def __snapToIntersection(self, pixPoint):
-        mousePoint = self.toMapCoordinates(pixPoint)
-        features = Finder.findFeaturesLayersAt(pixPoint, self.__layerList, self)
-        if features is None:
-            return None
-        nFeat = len(features)
-        intersections = []
-        for i in range(nFeat - 1):
-            for j in range(i + 1, nFeat):
-                geometry1 = features[i].geometry()
-                geometry2 = features[j].geometry()
-                if geometry1.type() == QGis.Polygon:
-                    for curve1 in geometry1.asPolygon():
-                        if geometry2.type() == QGis.Polygon:
-                            for curve2 in geometry2.asPolygon():
-                                intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mousePoint)
-                                if intersect is not None:
-                                    intersections.append(intersect)
-                        else:
-                            intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mousePoint)
-                            if intersect is not None:
-                                intersections.append(intersect)
-                elif geometry2.type() == QGis.Polygon:
-                    for curve2 in geometry2.asPolygon():
-                        intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mousePoint)
-                        if intersect is not None:
-                            intersections.append(intersect)
-                else:
-                    intersect = Finder.intersect(geometry1, geometry2, mousePoint)
-                    if intersect is not None:
-                        intersections.append(intersect)
-        if len(intersections) == 0:
-            return None
-        intersect = intersections[0]
-        for point in intersections[1:]:
-            if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersect):
-                intersect = QgsPoint(point.x(), point.y())
-        return intersect
-
-    def __snapToLayers(self, pixPoint):
-        if len(self.__snapperList) == 0:
-            return None
-        snapper = QgsSnapper(self.__mapCanvas.mapRenderer())
-        snapper.setSnapLayers(self.__snapperList)
-        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
-        ok, snappingResults = snapper.snapPoint(pixPoint, [])
-        # self.__displaySnapInfo(snappingResults)
-        if ok == 0 and len(snappingResults) > 0:
-            return QgsPoint(snappingResults[0].snappedVertex)
-        else:
-            return None
 
     def __lineLayer(self):
         if self.__ownSettings is not None:

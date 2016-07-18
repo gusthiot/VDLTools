@@ -20,11 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (Qt,
+                          QSettings)
 from PyQt4.QtGui import QColor
+from PyQt4.QtSql import QSqlDatabase
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
                        QgsVertexId,
+                       QgsSnapper,
+                       QgsTolerance,
                        QgsFeature,
                        QgsPolygonV2,
                        QGis,
@@ -35,6 +39,7 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar)
 from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
+from ..core.db_connector import DBConnector
 from ..core.geometry_v2 import GeometryV2
 
 
@@ -50,12 +55,14 @@ class MoveTool(QgsMapTool):
         self.__isEditing = 0
         self.__findVertex = 0
         self.__onMove = 0
+        self.__counter = 0
         self.__layer = None
         self.__oldTool = None
         self.__confDlg = None
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__rubberBand = None
+        self.__rubberSnap = None
         self.__newFeature = None
         self.__selectedVertex = None
 
@@ -123,7 +130,6 @@ class MoveTool(QgsMapTool):
         self.removeLayer()
 
     def __pointPreview(self, point):
-        print "point preview"
         point_v2 = GeometryV2.asPointV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsPointV2(point.x(), point.y())
         self.__newFeature.addZValue(point_v2.z())
@@ -131,7 +137,6 @@ class MoveTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __linePreview(self, point):
-        print "line preview"
         line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
         vertex = line_v2.pointN(self.__selectedVertex)
         dx = vertex.x() - point.x()
@@ -147,7 +152,6 @@ class MoveTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __polygonPreview(self, point):
-        print "polygon preview"
         polygon_v2 = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
         vertex = polygon_v2.vertexAt(self.__polygonVertexId(polygon_v2))
         dx = vertex.x() - point.x()
@@ -165,13 +169,13 @@ class MoveTool(QgsMapTool):
     def __polygonVertexId(self, polygon_v2):
         eR = polygon_v2.exteriorRing()
         if self.__selectedVertex < eR.numPoints():
-            return QgsVertexId(0, 0, 1, self.__selectedVertex)
+            return QgsVertexId(0, 0, self.__selectedVertex, 1)
         else:
             sel = self.__selectedVertex - eR.numPoints()
-            for num in polygon_v2.numInteriorRings():
+            for num in xrange(polygon_v2.numInteriorRings()):
                 iR = polygon_v2.interiorRing(num)
                 if sel < iR.numPoints():
-                    return QgsVertexId(0, num+1, 1, sel)
+                    return QgsVertexId(0, num+1, sel, 1)
                 sel -= iR.numPoints()
 
     def __newLine(self, curve_v2, dx, dy):
@@ -185,23 +189,20 @@ class MoveTool(QgsMapTool):
             new_line_v2.addVertex(pt)
         return new_line_v2
 
-    # def __ok(self):
-    #     self.__preview()
-    #     self.__canvas.scene().removeItem(self.__rubberBand)
-    #     if self.__layer.geometryType() == QGis.Polygon:
-    #         geometry = QgsGeometry(self.__newFeature)
-    #     else:
-    #         geometry = QgsGeometry(self.__newFeature)
-    #     if not geometry.isGeosValid():
-    #         print "geometry problem"
-    #     self.__rubberBand = None
-    #     feature = QgsFeature(self.__layer.pendingFields())
-    #     feature.setGeometry(geometry)
-    #     feature.setAttributes(self.__selectedFeature.attributes())
-    #     self.__layer.addFeature(feature)
-    #     self.__layer.updateExtents()
-    #     self.__isEditing = 0
-    #     self.__layer.removeSelection()
+    def __updateSnapperList(self):
+        self.__snapperList = []
+        self.__layerList = []
+        scale = self.__iface.mapCanvas().mapRenderer().scale()
+        for layer in self.__iface.mapCanvas().layers():
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    snapLayer = QgsSnapper.SnapLayer()
+                    snapLayer.mLayer = layer
+                    snapLayer.mSnapTo = QgsSnapper.SnapToVertex
+                    snapLayer.mTolerance = 7
+                    snapLayer.mUnitType = QgsTolerance.Pixels
+                    self.__snapperList.append(snapLayer)
+                    self.__layerList.append(layer)
 
     def __onCloseConfirm(self):
         self.__confDlg.close()
@@ -209,10 +210,12 @@ class MoveTool(QgsMapTool):
         self.__confDlg.copyButton().clicked.disconnect(self.__onConfirmedCopy)
         self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
         self.__rubberBand.reset()
+        self.__rubberSnap.reset()
         self.__isEditing = 0
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__rubberBand = None
+        self.__rubberSnap = None
         self.__newFeature = None
         self.__selectedVertex = None
         self.__layer.removeSelection()
@@ -232,6 +235,10 @@ class MoveTool(QgsMapTool):
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
+        primary = DBConnector.getPrimaryField(self.__layer)
+        if primary:
+            last = DBConnector.getLastPrimaryValue(primary, self.__layer)
+            feature.setAttribute(primary, last+1)
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__onCloseConfirm()
@@ -248,7 +255,6 @@ class MoveTool(QgsMapTool):
         elif self.__findVertex:
             self.__rubberBand.reset()
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
-
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
@@ -273,6 +279,25 @@ class MoveTool(QgsMapTool):
             else:
                 self.__rubberBand.setIcon(4)
                 self.__rubberBand.setIconSize(20)
+            if self.__counter > 2:
+                if self.__rubberSnap:
+                    self.__rubberSnap.reset()
+                else:
+                    self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
+                self.__rubberSnap.setColor(color)
+                self.__rubberSnap.setIconSize(20)
+                snappedIntersection = Finder.snapToIntersection(event.pos(), self, self.__layerList)
+                if snappedIntersection is None:
+                    snappedPoint = Finder.snapToLayers(event.pos(), self.__snapperList, self.__canvas)
+                    if snappedPoint is not None:
+                        self.__rubberSnap.setIcon(4)
+                        self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
+                else:
+                    self.__rubberSnap.setIcon(1)
+                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
+                self.__counter = 0
+            else:
+                self.__counter += 1
 
     def canvasReleaseEvent(self, event):
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
@@ -282,28 +307,37 @@ class MoveTool(QgsMapTool):
                     self.__iface.messageBar().pushMessage(u"Une seule feature à la fois", level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
-                print self.__layer.geometryType()
                 if self.__layer.geometryType() != QGis.Point:
                     self.__findVertex = 1
                     self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
                 else:
                     self.__onMove = 1
+                    self.__updateSnapperList()
         elif self.__findVertex:
             self.__findVertex = 0
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             self.__selectedVertex = closest[1]
             self.__onMove = 1
+            self.__updateSnapperList()
         elif self.__onMove:
             self.__onMove = 0
+            mapPoint = event.mapPoint()
+            snappedIntersection = Finder.snapToIntersection(event.pos(), self, self.__layerList)
+            if snappedIntersection is None:
+                snappedPoint = Finder.snapToLayers(event.pos(), self.__snapperList, self.__canvas)
+                if snappedPoint is not None:
+                    mapPoint = snappedPoint
+            else:
+                mapPoint = snappedIntersection
             self.__isEditing = 1
             if self.__rubberBand:
                 self.__rubberBand.reset()
             if self.__layer.geometryType() == QGis.Polygon:
-                self.__polygonPreview(event.mapPoint())
+                self.__polygonPreview(mapPoint)
             elif self.__layer.geometryType() == QGis.Line:
-                self.__linePreview(event.mapPoint())
+                self.__linePreview(mapPoint)
             else:
-                self.__pointPreview(event.mapPoint())
+                self.__pointPreview(mapPoint)
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
