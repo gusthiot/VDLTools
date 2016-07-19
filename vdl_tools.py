@@ -34,6 +34,7 @@ from tools.interpolate_tool import InterpolateTool
 from tools.extrapolate_tool import ExtrapolateTool
 from tools.move_tool import MoveTool
 from tools.show_settings import ShowSettings
+from tools.import_measures import ImportMeasures
 
 # Initialize Qt resources from file resources.py
 import resources
@@ -58,6 +59,8 @@ class VDLTools:
         self.intersectTool = None
         self.profileTool = None
         self.moveTool = None
+        self.showSettings = None
+        self.importMeasures = None
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -96,7 +99,7 @@ class VDLTools:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('VDLTools', message)
 
-    def add_action(self, tool, parent, enable=True, isMapTool=True):
+    def add_action(self, tool, parent, enable=True, isMapTool=True, inToolBar=True):
 
         icon = QIcon(tool.icon_path())
         action = QAction(icon, tool.text(), parent)
@@ -105,9 +108,10 @@ class VDLTools:
             tool.setAction(action)
             action.triggered.connect(tool.setTool)
             action.setEnabled(enable)
-            self.toolbar.addAction(action)
         else:
             action.triggered.connect(tool.start)
+        if inToolBar:
+            self.toolbar.addAction(action)
 
         self.iface.addPluginToMenu(
             self.menu,
@@ -119,7 +123,7 @@ class VDLTools:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         self.showSettings = ShowSettings(self.iface)
-        self.add_action(self.showSettings, self.iface.mainWindow(), True, False)
+        self.add_action(self.showSettings, self.iface.mainWindow(), True, False, False)
         self.duplicateTool = DuplicateTool(self.iface)
         self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
         self.intersectTool = IntersectTool(self.iface)
@@ -132,6 +136,8 @@ class VDLTools:
         self.add_action(self.extrapolateTool, self.iface.mainWindow(), False)
         self.moveTool = MoveTool(self.iface)
         self.add_action(self.moveTool, self.iface.mainWindow(), False)
+        self.importMeasures = ImportMeasures(self.iface)
+        self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
 
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
         self.iface.currentLayerChanged.connect(self.interpolateTool.setEnable)
@@ -141,6 +147,7 @@ class VDLTools:
 
         self.intersectTool.setOwnSettings(self.showSettings)
         self.interpolateTool.setOwnSettings(self.showSettings)
+        self.importMeasures.setOwnSettings(self.showSettings)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""

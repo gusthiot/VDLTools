@@ -29,16 +29,27 @@ from PyQt4.QtGui import (QDialog,
                          QComboBox)
 from qgis.core import (QgsMapLayer,
                        QGis)
+from ..core.db_connector import DBConnector
 
 class ShowSettingsDialog(QDialog):
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable):
         QDialog.__init__(self)
         self.__iface = iface
         self.__memoryPointsLayer = memoryPointsLayer
         self.__memoryLinesLayer = memoryLinesLayer
+        self.__configTable = configTable
         self.setWindowTitle("Settings")
         self.__pointsLayers = []
         self.__linesLayers = []
+        self.__tables = []
+
+        conn = DBConnector.getConnections()
+        db = DBConnector.setConnection(conn[0])
+        query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'
+            AND table_type = 'BASE TABLE' AND table_name NOT IN (SELECT f_table_name FROM geometry_columns)""")
+        while query.next():
+            self.__tables.append(query.value(0))
+        db.close()
 
         for layer in self.__iface.mapCanvas().layers():
             if layer is not None \
@@ -85,6 +96,23 @@ class ShowSettingsDialog(QDialog):
             if self.__memoryLinesLayer in self.__linesLayers:
                 self.__lineCombo.setCurrentIndex(self.__linesLayers.index(self.__memoryLinesLayer)+1)
 
+        tableLabel = QLabel("Config table : ")
+        tableLabel.setMinimumHeight(20)
+        tableLabel.setMinimumWidth(50)
+        self.__layout.addWidget(tableLabel, 2, 1)
+
+        self.__tableCombo = QComboBox()
+        self.__tableCombo.setMinimumHeight(20)
+        self.__tableCombo.setMinimumWidth(50)
+        self.__tableCombo.addItem("")
+        for table in self.__tables:
+            self.__tableCombo.addItem(table)
+        self.__layout.addWidget(self.__tableCombo, 2, 2)
+        self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
+        if self.__configTable is not None:
+            if self.__configTable in self.__tables:
+                self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
+
         self.__okButton = QPushButton("OK")
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
@@ -105,6 +133,10 @@ class ShowSettingsDialog(QDialog):
         if self.__pointCombo.itemText(0) == "":
             self.__pointCombo.removeItem(0)
 
+    def __tableComboChanged(self):
+        if self.__tableCombo.itemText(0) == "":
+            self.__tableCombo.removeItem(0)
+
     def okButton(self):
         return self.__okButton
 
@@ -124,3 +156,10 @@ class ShowSettingsDialog(QDialog):
             return None
         else:
             return self.__linesLayers[index]
+
+    def configTable(self):
+        index = self.__tableCombo.currentIndex()
+        if self.__tableCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__tables[index]

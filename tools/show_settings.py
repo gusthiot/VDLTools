@@ -28,11 +28,12 @@ class ShowSettings:
 
     def __init__(self, iface):
         self.__iface = iface
-        self.__icon_path = None
+        self.__icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
         self.__text = 'Settings'
         self.__showDlg = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
+        self.__configTable = None
 
     def icon_path(self):
         return self.__icon_path
@@ -41,7 +42,8 @@ class ShowSettings:
         return self.__text
 
     def start(self):
-        self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer)
+        self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
+                                            self.__configTable)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -52,6 +54,7 @@ class ShowSettings:
         self.__showDlg.cancelButton().clicked.disconnect(self.__onCancel)
         self.__memoryLinesLayer = self.__showDlg.linesLayer()
         self.__memoryPointsLayer = self.__showDlg.pointsLayer()
+        self.__configTable = self.__showDlg.configTable()
 
     def __onCancel(self):
         self.__showDlg.close()
@@ -64,8 +67,14 @@ class ShowSettings:
     def linesLayer(self):
         return self.__memoryLinesLayer
 
+    def configTable(self):
+        return self.__configTable
+
     def setPointsLayer(self, pointsLayer):
         self.__memoryPointsLayer = pointsLayer
 
     def setLinesLayer(self, linesLayer):
         self.__memoryLinesLayer = linesLayer
+
+    def setConfigTable(self, configTable):
+        self.__configTable = configTable

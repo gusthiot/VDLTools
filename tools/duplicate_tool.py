@@ -40,6 +40,7 @@ from ..ui.duplicate_attributes_dialog import DuplicateAttributesDialog
 from ..ui.duplicate_distance_dialog import DuplicateDistanceDialog
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
+from ..core.db_connector import DBConnector
 
 
 class DuplicateTool(QgsMapTool):
@@ -249,6 +250,13 @@ class DuplicateTool(QgsMapTool):
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
         # feature.setAttributes(self.__attDlg.getAttributes())
+        conn = DBConnector.getConnections()
+        db = DBConnector.setConnection(conn[0])
+        if db:
+            primary = DBConnector.getPrimaryField(self.__layer, db)
+            last = DBConnector.getLastPrimaryValue(primary, self.__layer)
+            feature.setAttribute(primary, last+1)
+            db.close()
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__isEditing = 0

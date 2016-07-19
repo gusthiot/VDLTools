@@ -235,10 +235,13 @@ class MoveTool(QgsMapTool):
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
-        primary = DBConnector.getPrimaryField(self.__layer)
-        if primary:
+        conn = DBConnector.getConnections()
+        db = DBConnector.setConnection(conn[0])
+        if db:
+            primary = DBConnector.getPrimaryField(self.__layer, db)
             last = DBConnector.getLastPrimaryValue(primary, self.__layer)
             feature.setAttribute(primary, last+1)
+            db.close()
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__onCloseConfirm()

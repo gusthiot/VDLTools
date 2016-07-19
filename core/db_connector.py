@@ -39,18 +39,9 @@ class DBConnector:
         return last
 
     @staticmethod
-    def getPrimaryField(layer):
-        conn = DBConnector.getConnections()
-        db = DBConnector.setConnection(conn[0])
-        if not db:
-            return None
+    def getPrimaryField(layer, db):
         primary = db.primaryIndex(layer.name())
         print("record", db.record(layer.name()).value(primary.fieldName(0)))
-        if primary.count() == 0:
-            print("no primary key ?!?")
-            return None
-        for i in xrange(primary.count()):
-            print("record " + str(i), primary.fieldName(i))
         return primary.fieldName(0)
 
     @staticmethod
