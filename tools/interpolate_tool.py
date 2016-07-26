@@ -252,7 +252,8 @@ class InterpolateTool(QgsMapTool):
         if withPoint:
             pt_feat = QgsFeature(self.__layer.pendingFields())
             pt_feat.setGeometry(QgsGeometry(vertex_v2))
-            self.__layer.addFeature(pt_feat)
+            self.__iface.openFeatureForm(self.__layer, pt_feat)
+            # self.__layer.addFeature(pt_feat)
 
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)

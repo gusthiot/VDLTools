@@ -247,7 +247,8 @@ class MoveTool(QgsMapTool):
                                                           "no primary key field found, you have to fix it manually",
                                                           level=QgsMessageBar.CRITICAL)
                 db.close()
-        self.__layer.addFeature(feature)
+        self.__iface.openFeatureForm(self.__layer, feature)
+        # self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__onCloseConfirm()
 

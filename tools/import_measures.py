@@ -84,6 +84,8 @@ class ImportMeasures:
         self.__jobsDlg.okButton().clicked.disconnect(self.__onOk)
         self.__jobsDlg.cancelButton().clicked.disconnect(self.__onCancel)
         query = self.__db.exec_("""SELECT 1,2,3 FROM """ + self.__sourceTable + """ WHERE job = '""" + job + """'""")
+        while query.next():
+            pass
 
 
 
