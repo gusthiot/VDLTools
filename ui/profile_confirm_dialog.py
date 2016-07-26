@@ -46,8 +46,8 @@ class ProfileConfirmDialog(QDialog):
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
-        self.__layout.addWidget(self.__okButton, 1, 1)
-        self.__layout.addWidget(self.__cancelButton, 1, 2)
+        self.__layout.addWidget(self.__okButton, 1, 0)
+        self.__layout.addWidget(self.__cancelButton, 1, 1)
 
         self.setLayout(self.__layout)
 
