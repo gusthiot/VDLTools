@@ -37,9 +37,18 @@ class DBConnector:
         return last
 
     @staticmethod
-    def getPrimaryField(layer, db):
+    def getPrimaryFieldOld(layer, db):
         primary = db.primaryIndex(layer.name())
         return primary.fieldName(0)
+
+    @staticmethod
+    def getPrimaryField(layer, db):
+        query = db.exec_("""SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i
+            JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+            WHERE  i.indrelid = '""" + layer.name() + """'::regclass AND i.indisprimary""")
+        while query.next():
+            return query.value(0)
+        return None
 
     @staticmethod
     def getConnections():
