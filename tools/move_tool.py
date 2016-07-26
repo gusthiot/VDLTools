@@ -237,10 +237,9 @@ class MoveTool(QgsMapTool):
             conn = DBConnector.getConnections()
             db = DBConnector.setConnection(conn[0], self.__iface)
             if db:
-                primary = DBConnector.getPrimaryField(self.__layer, db)
+                primary, next_val = DBConnector.getPrimary(self.__layer, db)
                 if primary:
-                    last = DBConnector.getLastPrimaryValue(primary, self.__layer)
-                    feature.setAttribute(primary, last+1)
+                    feature.setAttribute(primary, next_val)
                 else:
                     self.__iface.messageBar().pushMessage("Error",
                                                           "no primary key field found, you have to fix it manually",

@@ -28,27 +28,11 @@ from qgis.gui import QgsMessageBar
 class DBConnector:
 
     @staticmethod
-    def getLastPrimaryValue(primary, layer):
-        values = layer.getValues(primary)
-        last = 0
-        for val in values[0]:
-            if val > last:
-                last = val
-        return last
-
-    @staticmethod
-    def getPrimaryFieldOld(layer, db):
-        primary = db.primaryIndex(layer.name())
-        return primary.fieldName(0)
-
-    @staticmethod
-    def getPrimaryField(layer, db):
-        query = db.exec_("""SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type FROM pg_index i
-            JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
-            WHERE  i.indrelid = '""" + layer.name() + """'::regclass AND i.indisprimary""")
+    def getPrimary(layer, db):
+        query = db.exec_("""SELECT column_name, column_default FROM information_schema.columns WHERE
+            table_name='""" + layer.name() + """'""")
         while query.next():
-            return query.value(0)
-        return None
+            return query.value(0), query.value(1)
 
     @staticmethod
     def getConnections():
