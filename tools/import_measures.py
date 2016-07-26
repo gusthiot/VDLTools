@@ -59,7 +59,7 @@ class ImportMeasures:
         self.__configTable = self.__ownSettings.configTable()
 
         conn = DBConnector.getConnections()
-        self.__db = DBConnector.setConnection(conn[0])
+        self.__db = DBConnector.setConnection(conn[0], self.__iface)
         query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable + """ WHERE source NOT NULL""")
         while query.next():
             if self.__sourceTable == "":

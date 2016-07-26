@@ -26,6 +26,7 @@ from qgis.core import (QgsMapLayer,
                        QgsPoint,
                        QgsWKBTypes)
 from qgis.gui import (QgsMapTool,
+                      QgsMessageBar,
                       QgsRubberBand)
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import (QMessageBox,
@@ -294,7 +295,7 @@ class ProfileTool(QgsMapTool):
                     selected = f
                     break
             if selected is None:
-                print("error on selected")
+                self.__iface.messageBar().pushMessage("Error", "error on selected", level=QgsMessageBar.CRITICAL)
                 continue
             line_v2 = GeometryV2.asLineStringV2(selected.geometry())
             if direction:
@@ -465,7 +466,7 @@ class ProfileTool(QgsMapTool):
                 if pt['z'][i] is not None:
                     zz.append(i)
             if len(zz) == 0:
-                print("no line z ?!?")
+                self.__iface.messageBar().pushMessage("Warning", "no line z ?!?", level=QgsMessageBar.WARNING)
             elif len(zz) == 1:
                 z0 = pt['z'][zz[0]]
                 tol = 0.01 * z0
@@ -486,7 +487,7 @@ class ProfileTool(QgsMapTool):
                         if abs(pt['z'][i]-z0) > tol:
                             situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
-                print("more than 2 lines z ?!?")
+                self.__iface.messageBar().pushMessage("Warning", "more than 2 lines z ?!?", level=QgsMessageBar.WARNING)
 
         if (len(situations) > 0) or (len(differences) > 0):
             self.__setMessageDialog(situations, differences, names)

@@ -21,7 +21,8 @@
  ***************************************************************************/
 """
 from qgis.core import QgsPoint
-from qgis.gui import QgsVertexMarker
+from qgis.gui import (QgsVertexMarker,
+                      QgsMessageBar)
 from PyQt4.QtGui import (QDockWidget,
                          QVBoxLayout,
                          QFrame,
@@ -48,7 +49,6 @@ from PyQt4.Qwt5 import (QwtPlot,
                         QwtPlotItem,
                         Qwt,
                         QwtPlotMarker,
-                        QwtLegend,
                         QwtSymbol,
                         QwtPlotCurve)
 import itertools
@@ -305,6 +305,7 @@ class ProfileDockWidget(QDockWidget):
         try:
             self.__reScalePlot()
         except:
+            self.__iface.messageBar().pushMessage("Error", "rescale problem... (trace printed)", level=QgsMessageBar.CRITICAL)
             print("rescale problem : ", sys.exc_info()[0], traceback.format_exc())
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
@@ -393,7 +394,7 @@ class ProfileDockWidget(QDockWidget):
         elif idx == 3:
             self.__outPrint()
         else:
-            print('plottingtool: invalid index ' + str(idx))
+            self.__iface.messageBar().pushMessage("Error", 'plottingtool: invalid index ' + str(idx), level=QgsMessageBar.CRITICAL)
 
     def __outPrint(self): # Postscript file rendering doesn't work properly yet.
         fileName = QFileDialog.getSaveFileName(self.__iface.mainWindow(), "Save As","Profile of curve.ps","PostScript Format (*.ps)")
@@ -489,6 +490,7 @@ class ProfileDockWidget(QDockWidget):
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
             except Exception, e:
+                self.__iface.messageBar().pushMessage("Error", "Exception...", level=QgsMessageBar.CRITICAL)
                 print str(e)
 
     def __mouseevent_mpl(self, event):
@@ -497,6 +499,7 @@ class ProfileDockWidget(QDockWidget):
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
             except Exception, e:
+                self.__iface.messageBar().pushMessage("Error", "Exception...", level=QgsMessageBar.CRITICAL)
                 print str(e)
             xdata = float(event.xdata)
             self.__vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')

@@ -23,25 +23,22 @@
 
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
-
+from qgis.gui import QgsMessageBar
 
 class DBConnector:
 
     @staticmethod
     def getLastPrimaryValue(primary, layer):
         values = layer.getValues(primary)
-        print("values", values[0])
         last = 0
         for val in values[0]:
             if val > last:
                 last = val
-        print("last", last)
         return last
 
     @staticmethod
     def getPrimaryField(layer, db):
         primary = db.primaryIndex(layer.name())
-        print("record", db.record(layer.name()).value(primary.fieldName(0)))
         return primary.fieldName(0)
 
     @staticmethod
@@ -53,7 +50,7 @@ class DBConnector:
         return currentConnections
 
     @staticmethod
-    def setConnection(conn):
+    def setConnection(conn, iface):
         s = QSettings()
         s.beginGroup("PostgreSQL/connections/" + conn)
         db = QSqlDatabase.addDatabase('QPSQL')
@@ -64,6 +61,6 @@ class DBConnector:
         s.endGroup()
         ok = db.open()
         if not ok:
-            print("Database Error: %s" % db.lastError().text())
+            iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)
             return None
         return db

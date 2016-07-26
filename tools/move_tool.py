@@ -20,10 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import (Qt,
-                          QSettings)
+from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
-from PyQt4.QtSql import QSqlDatabase
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
                        QgsVertexId,
@@ -223,7 +221,7 @@ class MoveTool(QgsMapTool):
     def __onConfirmedMove(self):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            print "geometry problem"
+            self.__iface.messageBar().pushMessage("Error", "Geos geometry problem", level=QgsMessageBar.CRITICAL)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
         self.__layer.updateExtents()
         self.__onCloseConfirm()
@@ -231,17 +229,23 @@ class MoveTool(QgsMapTool):
     def __onConfirmedCopy(self):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            print "geometry problem"
+            self.__iface.messageBar().pushMessage("Error", "Geos geometry problem", level=QgsMessageBar.CRITICAL)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
-        conn = DBConnector.getConnections()
-        db = DBConnector.setConnection(conn[0])
-        if db:
-            primary = DBConnector.getPrimaryField(self.__layer, db)
-            last = DBConnector.getLastPrimaryValue(primary, self.__layer)
-            feature.setAttribute(primary, last+1)
-            db.close()
+        if self.__layer.providerType() == "postgres":
+            conn = DBConnector.getConnections()
+            db = DBConnector.setConnection(conn[0], self.__iface)
+            if db:
+                primary = DBConnector.getPrimaryField(self.__layer, db)
+                if primary:
+                    last = DBConnector.getLastPrimaryValue(primary, self.__layer)
+                    feature.setAttribute(primary, last+1)
+                else:
+                    self.__iface.messageBar().pushMessage("Error",
+                                                          "no primary key field found, you have to fix it manually",
+                                                          level=QgsMessageBar.CRITICAL)
+                db.close()
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__onCloseConfirm()

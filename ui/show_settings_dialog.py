@@ -31,6 +31,7 @@ from qgis.core import (QgsMapLayer,
                        QGis)
 from ..core.db_connector import DBConnector
 
+
 class ShowSettingsDialog(QDialog):
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable):
         QDialog.__init__(self)
@@ -44,7 +45,7 @@ class ShowSettingsDialog(QDialog):
         self.__tables = []
 
         conn = DBConnector.getConnections()
-        db = DBConnector.setConnection(conn[0])
+        db = DBConnector.setConnection(conn[0], self.__iface)
         query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN
             ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
             (SELECT f_table_name FROM geometry_columns)""")

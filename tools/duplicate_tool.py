@@ -244,25 +244,24 @@ class DuplicateTool(QgsMapTool):
         self.__canvas.scene().removeItem(self.__rubberBand)
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            print "geometry problem"
+            self.__iface.messageBar().pushMessage("Error", "Geos geometry problem", level=QgsMessageBar.CRITICAL)
         self.__rubberBand = None
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
-        # feature.setAttributes(self.__attDlg.getAttributes())if layer is not None \
-        self.__iface.messageBar().pushMessage("Error", "type : " + self.__layer.providerType(),
-                                              level=QgsMessageBar.INFO)
+        # feature.setAttributes(self.__attDlg.getAttributes())
         if self.__layer.providerType() == "postgres":
             conn = DBConnector.getConnections()
-            db = DBConnector.setConnection(conn[0])
+            db = DBConnector.setConnection(conn[0], self.__iface)
             if db:
                 primary = DBConnector.getPrimaryField(self.__layer, db)
-                self.__iface.messageBar().pushMessage("Error", "primary field : " + primary,
-                                                      level=QgsMessageBar.INFO)
-                last = DBConnector.getLastPrimaryValue(primary, self.__layer)
-                self.__iface.messageBar().pushMessage("Error", "last value : " + last,
-                                                      level=QgsMessageBar.INFO)
-                feature.setAttribute(primary, last+1)
+                if primary:
+                    last = DBConnector.getLastPrimaryValue(primary, self.__layer)
+                    feature.setAttribute(primary, last+1)
+                else:
+                    self.__iface.messageBar().pushMessage("Error",
+                                                          "no primary key field found, you have to fix it manually",
+                                                          level=QgsMessageBar.CRITICAL)
                 db.close()
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
