@@ -249,14 +249,21 @@ class DuplicateTool(QgsMapTool):
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
-        # feature.setAttributes(self.__attDlg.getAttributes())
-        conn = DBConnector.getConnections()
-        db = DBConnector.setConnection(conn[0])
-        if db:
-            primary = DBConnector.getPrimaryField(self.__layer, db)
-            last = DBConnector.getLastPrimaryValue(primary, self.__layer)
-            feature.setAttribute(primary, last+1)
-            db.close()
+        # feature.setAttributes(self.__attDlg.getAttributes())if layer is not None \
+        self.__iface.messageBar().pushMessage("Error", "type : " + self.__layer.providerType(),
+                                              level=QgsMessageBar.INFO)
+        if self.__layer.providerType() == "postgres":
+            conn = DBConnector.getConnections()
+            db = DBConnector.setConnection(conn[0])
+            if db:
+                primary = DBConnector.getPrimaryField(self.__layer, db)
+                self.__iface.messageBar().pushMessage("Error", "primary field : " + primary,
+                                                      level=QgsMessageBar.INFO)
+                last = DBConnector.getLastPrimaryValue(primary, self.__layer)
+                self.__iface.messageBar().pushMessage("Error", "last value : " + last,
+                                                      level=QgsMessageBar.INFO)
+                feature.setAttribute(primary, last+1)
+                db.close()
         self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__isEditing = 0

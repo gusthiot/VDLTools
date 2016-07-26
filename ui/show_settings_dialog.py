@@ -45,8 +45,9 @@ class ShowSettingsDialog(QDialog):
 
         conn = DBConnector.getConnections()
         db = DBConnector.setConnection(conn[0])
-        query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'
-            AND table_type = 'BASE TABLE' AND table_name NOT IN (SELECT f_table_name FROM geometry_columns)""")
+        query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN
+            ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
+            (SELECT f_table_name FROM geometry_columns)""")
         while query.next():
             self.__tables.append(query.value(0))
         db.close()

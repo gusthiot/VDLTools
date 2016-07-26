@@ -28,8 +28,8 @@ from PyQt4.QtGui import QColor
 from qgis.core import (QgsGeometry,
                        QgsPoint,
                        QgsFeature,
-                       QGis)
-from qgis.core import (QgsMapLayer,
+                       QGis,
+                       QgsMapLayer,
                        QgsSnapper,
                        QgsTolerance,
                        QgsMapLayerRegistry,
