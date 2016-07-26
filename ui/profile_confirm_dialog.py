@@ -51,7 +51,6 @@ class ProfileConfirmDialog(QDialog):
 
         self.setLayout(self.__layout)
 
-
     def setMessage(self, message):
         self.__confirmLabel.setText(message)
 

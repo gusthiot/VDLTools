@@ -190,17 +190,19 @@ class MoveTool(QgsMapTool):
     def __updateSnapperList(self):
         self.__snapperList = []
         self.__layerList = []
+        legend = self.__iface.legendInterface()
         scale = self.__iface.mapCanvas().mapRenderer().scale()
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    snapLayer = QgsSnapper.SnapLayer()
-                    snapLayer.mLayer = layer
-                    snapLayer.mSnapTo = QgsSnapper.SnapToVertex
-                    snapLayer.mTolerance = 7
-                    snapLayer.mUnitType = QgsTolerance.Pixels
-                    self.__snapperList.append(snapLayer)
-                    self.__layerList.append(layer)
+                    if legend.isLayerVisible(layer):
+                        snapLayer = QgsSnapper.SnapLayer()
+                        snapLayer.mLayer = layer
+                        snapLayer.mSnapTo = QgsSnapper.SnapToVertex
+                        snapLayer.mTolerance = 7
+                        snapLayer.mUnitType = QgsTolerance.Pixels
+                        self.__snapperList.append(snapLayer)
+                        self.__layerList.append(layer)
 
     def __onCloseConfirm(self):
         self.__confDlg.close()

@@ -40,19 +40,19 @@ class MoveConfirmDialog(QDialog):
 
         self.__moveButton = QPushButton("Move")
         self.__moveButton.setMinimumHeight(20)
-        self.__moveButton.setMinimumWidth(300)
+        self.__moveButton.setMinimumWidth(100)
 
         self.__copyButton = QPushButton("Copy")
         self.__copyButton.setMinimumHeight(20)
-        self.__copyButton.setMinimumWidth(200)
+        self.__copyButton.setMinimumWidth(100)
 
         self.__cancelButton = QPushButton("Cancel")
         self.__cancelButton.setMinimumHeight(20)
-        self.__cancelButton.setMinimumWidth(200)
+        self.__cancelButton.setMinimumWidth(100)
 
-        self.__layout.addWidget(self.__moveButton, 1, 1)
-        self.__layout.addWidget(self.__copyButton, 1, 2)
-        self.__layout.addWidget(self.__cancelButton, 1, 3)
+        self.__layout.addWidget(self.__moveButton, 1, 0)
+        self.__layout.addWidget(self.__copyButton, 1, 1)
+        self.__layout.addWidget(self.__cancelButton, 1, 2)
 
         self.setLayout(self.__layout)
 

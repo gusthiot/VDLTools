@@ -143,6 +143,7 @@ class ProfileTool(QgsMapTool):
             self.__confDlg.setMessage("Do you really want to edit the LineString layer ?")
             self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
             self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+            self.__confDlg.show()
         elif origin != 0:
             situations = self.__msgDlg.getSituations()
             case = True
@@ -155,6 +156,7 @@ class ProfileTool(QgsMapTool):
                 self.__confDlg.setMessage("Do you really want to edit the Point layer(s) ?")
                 self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
                 self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+                self.__confDlg.show()
             else:
                 self.__confirmPoints()
         else:
@@ -190,11 +192,9 @@ class ProfileTool(QgsMapTool):
 
     def __onLine(self):
         self.__setConfirmDialog(0)
-        self.__confDlg.show()
 
     def __onPoints(self):
         self.__setConfirmDialog(1)
-        self.__confDlg.show()
 
     def __onConfirmedLine(self):
         self.__closeConfirmDialog()
@@ -225,12 +225,13 @@ class ProfileTool(QgsMapTool):
                     if self.__selectedDirections[i] is False:
                         index = lines[i].numPoints()-1-index
                     lines[i].setZAt(index, z)
-        self.__lineLayer.startEditing()
+        if self.__lineLayer.isEditable():
+            self.__lineLayer.startEditing()
         for i in xrange(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
-        self.__lineLayer.updateExtents()
-        self.__lineLayer.commitChanges()
+            #  self.__lineLayer.updateExtents()
+            #  self.__lineLayer.commitChanges()
         self.__dockWdg.clearData()
         self.__lineLayer.removeSelection()
         self.__selectedIds = None
@@ -257,10 +258,11 @@ class ProfileTool(QgsMapTool):
                     newZ = self.__points[s['point']]['z'][i]
                     break
             point_v2.setZ(newZ)
-            layer.startEditing()
+            if layer.isEditable():
+                layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
-            layer.updateExtents()
-            layer.commitChanges()
+            #  layer.updateExtents()
+            #  layer.commitChanges()
         self.__dockWdg.clearData()
         self.__selectedIds = None
         self.__selectedDirections = None
