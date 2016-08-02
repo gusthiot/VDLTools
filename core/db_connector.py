@@ -24,21 +24,17 @@
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
 from qgis.gui import QgsMessageBar
-from qgis.core import QgsDataSourceURI
-import re
 
 
 class DBConnector:
 
     @staticmethod
-    def getPrimary(layer, db):
-        dataSource = QgsDataSourceURI(layer.source())
-        str = """SELECT column_default FROM information_schema.columns WHERE table_name='""" + \
-              dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'"""
-        print("query", str)
-        query = db.exec_(str)
+    def getDefault(dataSource, db):
+        query = db.exec_("""SELECT column_default FROM information_schema.columns WHERE table_name='""" +
+                         dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'""")
         while query.next():
-            return dataSource.keyColumn(), query.value(0)
+            print("query", query.value(0))
+            return query.value(0)
         return None
 
     @staticmethod
@@ -64,24 +60,3 @@ class DBConnector:
             iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)
             return None
         return db
-    #
-    # @staticmethod
-    # def getInfos(layerInfo):
-    #     if layerInfo[:6] == 'dbname':
-    #         infos = {}
-    #         layerInfo = layerInfo.replace('\'', '"')
-    #         vals = dict(re.findall('(\S+)="?(.*?)"? ', layerInfo))
-    #         infos["dbName"] = str(vals['dbname'])
-    #         infos["key"] = str(vals['key'])
-    #         infos["srid"] = int(vals['srid'])
-    #         infos["type"] = str(vals['type'])
-    #         infos["host"] = str(vals['host'])
-    #         infos["port"] = int(vals['port'])
-    #
-    #         # need some extra processing to get table name and schema
-    #         table = vals['table'].split('.')
-    #         infos["schemaName"] = table[0].strip('"')
-    #         infos["tableName"] = table[1].strip('"')
-    #         return infos
-    #     else:
-    #         return None

@@ -24,6 +24,7 @@ from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
+                       QgsDataSourceURI,
                        QgsVertexId,
                        QgsSnapper,
                        QgsTolerance,
@@ -239,12 +240,17 @@ class MoveTool(QgsMapTool):
             conn = DBConnector.getConnections()
             db = DBConnector.setConnection(conn[0], self.__iface)
             if db:
-                primary, next_val = DBConnector.getPrimary(self.__layer, db)
-                if primary:
-                    feature.setAttribute(primary, next_val)
+                dataSource = QgsDataSourceURI(self.__layer.source())
+                print("source", self.__layer.source())
+                print("db", dataSource.database())
+                print("key", dataSource.keyColumn())
+                next_val = DBConnector.getDefault(dataSource, db)
+                print("next", next_val)
+                if next_val:
+                    feature.setAttribute(dataSource.keyColumn(), next_val)
                 else:
                     self.__iface.messageBar().pushMessage("Error",
-                                                          "no primary key field found, you have to fix it manually",
+                                                          "no primary key default value, you have to fix it manually",
                                                           level=QgsMessageBar.CRITICAL)
                 db.close()
         self.__iface.openFeatureForm(self.__layer, feature)
