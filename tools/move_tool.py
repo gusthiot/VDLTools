@@ -237,8 +237,8 @@ class MoveTool(QgsMapTool):
         feature.setGeometry(geometry)
         feature.setAttributes(self.__selectedFeature.attributes())
         if self.__layer.providerType() == "postgres":
-            conn = DBConnector.getConnections()
-            db = DBConnector.setConnection(conn[0], self.__iface)
+            dataSource = QgsDataSourceURI(self.__layer.source())
+            db = DBConnector.setConnection(dataSource.database(), self.__iface)
             if db:
                 dataSource = QgsDataSourceURI(self.__layer.source())
                 print("source", self.__layer.source())

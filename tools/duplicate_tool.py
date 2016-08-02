@@ -252,10 +252,9 @@ class DuplicateTool(QgsMapTool):
         feature.setAttributes(self.__selectedFeature.attributes())
         # feature.setAttributes(self.__attDlg.getAttributes())
         if self.__layer.providerType() == "postgres":
-            conn = DBConnector.getConnections()
-            db = DBConnector.setConnection(conn[0], self.__iface)
+            dataSource = QgsDataSourceURI(self.__layer.source())
+            db = DBConnector.setConnection(dataSource.database(), self.__iface)
             if db:
-                dataSource = QgsDataSourceURI(self.__layer.source())
                 next_val = DBConnector.getDefault(dataSource, db)
                 if next_val:
                     feature.setAttribute(dataSource.keyColumn(), next_val)

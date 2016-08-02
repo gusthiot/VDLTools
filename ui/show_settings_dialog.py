@@ -28,6 +28,7 @@ from PyQt4.QtGui import (QDialog,
                          QLabel,
                          QComboBox)
 from qgis.core import (QgsMapLayer,
+                       QgsDataSourceURI,
                        QGis)
 from ..core.db_connector import DBConnector
 
@@ -44,14 +45,15 @@ class ShowSettingsDialog(QDialog):
         self.__linesLayers = []
         self.__tables = []
 
-        conn = DBConnector.getConnections()
-        db = DBConnector.setConnection(conn[0], self.__iface)
-        query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN
-            ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
-            (SELECT f_table_name FROM geometry_columns)""")
-        while query.next():
-            self.__tables.append(query.value(0))
-        db.close()
+        dataSource = QgsDataSourceURI(self.__layer.source())
+        db = DBConnector.setConnection(dataSource.database(), self.__iface)
+        if db:
+            query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN
+                ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
+                (SELECT f_table_name FROM geometry_columns)""")
+            while query.next():
+                self.__tables.append(query.value(0))
+            db.close()
 
         for layer in self.__iface.mapCanvas().layers():
             if layer is not None \

@@ -22,6 +22,7 @@
 """
 
 from qgis.gui import QgsMessageBar
+from qgis.core import QgsDataSourceURI
 from ..core.db_connector import DBConnector
 from ..ui.import_jobs_dialog import ImportJobsDialog
 
@@ -49,34 +50,35 @@ class ImportMeasures:
 
     def start(self):
         if self.__ownSettings is None:
-            self.__iface.messageBar().pushMessage("Error", "No settings are given !!",
-                                                  level=QgsMessageBar.CRITICAL, duration=5)
+            self.__iface.messageBar().pushMessage("Error", "No settings given !!",
+                                                  level=QgsMessageBar.CRITICAL, )
             return
         if self.__ownSettings.configTable() is None:
-            self.__iface.messageBar().pushMessage("Error", "No config table is given !!",
-                                                  level=QgsMessageBar.CRITICAL, duration=5)
+            self.__iface.messageBar().pushMessage("Error", "No config table given !!",
+                                                  level=QgsMessageBar.CRITICAL)
             return
         self.__configTable = self.__ownSettings.configTable()
 
-        conn = DBConnector.getConnections()
-        self.__db = DBConnector.setConnection(conn[0], self.__iface)
-        query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable + """ WHERE source NOT NULL""")
-        while query.next():
-            if self.__sourceTable == "":
-                self.__sourceTable = query.value(0)
-            elif self.__sourceTable != query.value(0):
-                self.__iface.messageBar().pushMessage("Error", "different sources in config table ?!?",
-                                                      level=QgsMessageBar.WARNING, duration=5)
-        query = self.__db.exec_("""SELECT DISTINCT job FROM """ + self.__sourceTable + """ WHERE
-            traitement = 'non-traité'""")
-        jobs = []
-        while query.next():
-            jobs.append(query.value(0))
+        dataSource = QgsDataSourceURI(self.__layer.source())
+        self.__db = DBConnector.setConnection(dataSource.database(), self.__iface)
+        if self.__db:
+            query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable + """ WHERE source NOT NULL""")
+            while query.next():
+                if self.__sourceTable == "":
+                    self.__sourceTable = query.value(0)
+                elif self.__sourceTable != query.value(0):
+                    self.__iface.messageBar().pushMessage("Error", "different sources in config table ?!?",
+                                                          level=QgsMessageBar.WARNING)
+            query = self.__db.exec_("""SELECT DISTINCT job FROM """ + self.__sourceTable + """ WHERE
+                traitement = 'non-traité'""")
+            jobs = []
+            while query.next():
+                jobs.append(query.value(0))
 
-        self.__jobsDlg = ImportJobsDialog(jobs)
-        self.__jobsDlg.okButton().clicked.connect(self.__onOk)
-        self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
-        self.__jobsDlg.show()
+            self.__jobsDlg = ImportJobsDialog(jobs)
+            self.__jobsDlg.okButton().clicked.connect(self.__onOk)
+            self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
+            self.__jobsDlg.show()
 
     def __onOk(self):
         job = self.__jobsDlg.job()
@@ -85,7 +87,7 @@ class ImportMeasures:
         self.__jobsDlg.cancelButton().clicked.disconnect(self.__onCancel)
         query = self.__db.exec_("""SELECT 1,2,3 FROM """ + self.__sourceTable + """ WHERE job = '""" + job + """'""")
         while query.next():
-            pass
+            pass # then traiter les records du job...
 
 
 
