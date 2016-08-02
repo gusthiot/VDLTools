@@ -38,7 +38,7 @@ class DBConnector:
         print("query", str)
         query = db.exec_(str)
         while query.next():
-            return query.value(0)
+            return dataSource.keyColumn(), query.value(0)
         return None
 
     @staticmethod
