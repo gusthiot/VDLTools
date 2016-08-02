@@ -24,15 +24,27 @@
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
 from qgis.gui import QgsMessageBar
+import re
+
 
 class DBConnector:
 
     @staticmethod
     def getPrimary(layer, db):
+        infos = DBConnector.getInfos(layer.source())
+        print("infos", infos)
         query = db.exec_("""SELECT column_name, column_default FROM information_schema.columns WHERE
-            table_name='""" + layer.name() + """'""")
+            table_name='""" + infos["tableName"] + """'""")
+        i = 0
+        name = ""
+        default = ""
         while query.next():
-            return query.value(0), query.value(1)
+            if i == 0:
+                name = query.value(0)
+                default = query.value(1)
+            i += 1
+            print query.value(0), query.value(1)
+        return name, default
 
     @staticmethod
     def getConnections():
@@ -57,3 +69,26 @@ class DBConnector:
             iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)
             return None
         return db
+
+    @staticmethod
+    def getInfos(layerInfo):
+        if layerInfo[:6] == 'dbname':
+            infos = {}
+            layerInfo = layerInfo.replace('\'', '"')
+            vals = dict(re.findall('(\S+)="?(.*?)"? ', layerInfo))
+            infos["dbName"] = str(vals['dbname'])
+            infos["key"] = str(vals['key'])
+            infos["user"] = str(vals['user'])
+            infos["password"] = str(vals['password'])
+            infos["srid"] = int(vals['srid'])
+            infos["type"] = str(vals['type'])
+            infos["host"] = str(vals['host'])
+            infos["port"] = int(vals['port'])
+
+            # need some extra processing to get table name and schema
+            table = vals['table'].split('.')
+            infos["schemaName"] = table[0].strip('"')
+            infos["tableName"] = table[1].strip('"')
+            return infos
+        else:
+            return None
