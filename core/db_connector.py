@@ -24,6 +24,7 @@
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
 from qgis.gui import QgsMessageBar
+from qgis.core import QgsDataSourceURI
 import re
 
 
@@ -31,10 +32,11 @@ class DBConnector:
 
     @staticmethod
     def getPrimary(layer, db):
-        infos = DBConnector.getInfos(layer.source())
-        print("infos", infos)
-        query = db.exec_("""SELECT column_name, column_default FROM information_schema.columns WHERE
-            table_name='""" + infos["tableName"] + """'""")
+        dataSource = QgsDataSourceURI(layer.source())
+        str = """SELECT column_default FROM information_schema.columns WHERE table_name='""" + \
+              dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'"""
+        print("query", str)
+        query = db.exec_(str)
         i = 0
         name = ""
         default = ""
@@ -69,26 +71,24 @@ class DBConnector:
             iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)
             return None
         return db
-
-    @staticmethod
-    def getInfos(layerInfo):
-        if layerInfo[:6] == 'dbname':
-            infos = {}
-            layerInfo = layerInfo.replace('\'', '"')
-            vals = dict(re.findall('(\S+)="?(.*?)"? ', layerInfo))
-            infos["dbName"] = str(vals['dbname'])
-            infos["key"] = str(vals['key'])
-            infos["user"] = str(vals['user'])
-            infos["password"] = str(vals['password'])
-            infos["srid"] = int(vals['srid'])
-            infos["type"] = str(vals['type'])
-            infos["host"] = str(vals['host'])
-            infos["port"] = int(vals['port'])
-
-            # need some extra processing to get table name and schema
-            table = vals['table'].split('.')
-            infos["schemaName"] = table[0].strip('"')
-            infos["tableName"] = table[1].strip('"')
-            return infos
-        else:
-            return None
+    #
+    # @staticmethod
+    # def getInfos(layerInfo):
+    #     if layerInfo[:6] == 'dbname':
+    #         infos = {}
+    #         layerInfo = layerInfo.replace('\'', '"')
+    #         vals = dict(re.findall('(\S+)="?(.*?)"? ', layerInfo))
+    #         infos["dbName"] = str(vals['dbname'])
+    #         infos["key"] = str(vals['key'])
+    #         infos["srid"] = int(vals['srid'])
+    #         infos["type"] = str(vals['type'])
+    #         infos["host"] = str(vals['host'])
+    #         infos["port"] = int(vals['port'])
+    #
+    #         # need some extra processing to get table name and schema
+    #         table = vals['table'].split('.')
+    #         infos["schemaName"] = table[0].strip('"')
+    #         infos["tableName"] = table[1].strip('"')
+    #         return infos
+    #     else:
+    #         return None
