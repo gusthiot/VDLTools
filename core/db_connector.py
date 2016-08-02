@@ -50,6 +50,7 @@ class DBConnector:
         s.beginGroup("PostgreSQL/connections")
         currentConnections = s.childGroups()
         s.endGroup()
+        print("connections", currentConnections)
         return currentConnections
 
     @staticmethod
