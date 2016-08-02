@@ -37,16 +37,9 @@ class DBConnector:
               dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'"""
         print("query", str)
         query = db.exec_(str)
-        i = 0
-        name = ""
-        default = ""
         while query.next():
-            if i == 0:
-                name = query.value(0)
-                default = query.value(1)
-            i += 1
-            print query.value(0), query.value(1)
-        return name, default
+            return query.value(0)
+        return None
 
     @staticmethod
     def getConnections():
