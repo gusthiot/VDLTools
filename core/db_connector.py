@@ -30,8 +30,11 @@ class DBConnector:
 
     @staticmethod
     def getDefault(dataSource, db):
-        query = db.exec_("""SELECT column_default FROM information_schema.columns WHERE table_name='""" +
-                         dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'""")
+        query_string = """SELECT column_default FROM information_schema.columns WHERE table_name='""" + \
+                       dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'"""
+        print(query_string)
+        query = db.exec_(query_string)
+        print("num", query.size())
         while query.next():
             print("query", query.value(0))
             return query.value(0)
