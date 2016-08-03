@@ -235,26 +235,12 @@ class MoveTool(QgsMapTool):
             self.__iface.messageBar().pushMessage("Error", "Geos geometry problem", level=QgsMessageBar.CRITICAL)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
-        feature.setAttributes(self.__selectedFeature.attributes())
-        if self.__layer.providerType() == "postgres":
-            dataSource = QgsDataSourceURI(self.__layer.source())
-            db = DBConnector.setConnection(dataSource.database(), self.__iface)
-            if db:
-                dataSource = QgsDataSourceURI(self.__layer.source())
-                print("source", self.__layer.source())
-                print("db", dataSource.database())
-                print("key", dataSource.keyColumn())
-                next_val = DBConnector.getDefault(dataSource, db)
-                print("next", next_val)
-                if next_val:
-                    feature.setAttribute(dataSource.keyColumn(), next_val)
-                else:
-                    self.__iface.messageBar().pushMessage("Error",
-                                                          "no primary key default value, you have to fix it manually",
-                                                          level=QgsMessageBar.CRITICAL)
-                db.close()
+        primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
+        for field in self.__selectedFeature.fields():
+            print(field.name(), self.__selectedFeature.attribute(field.name()))
+            if field.name() != primaryKey:
+                feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
         self.__iface.openFeatureForm(self.__layer, feature)
-        # self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__onCloseConfirm()
 

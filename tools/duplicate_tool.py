@@ -249,22 +249,12 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand = None
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
-        feature.setAttributes(self.__selectedFeature.attributes())
-        # feature.setAttributes(self.__attDlg.getAttributes())
-        if self.__layer.providerType() == "postgres":
-            dataSource = QgsDataSourceURI(self.__layer.source())
-            db = DBConnector.setConnection(dataSource.database(), self.__iface)
-            if db:
-                next_val = DBConnector.getDefault(dataSource, db)
-                if next_val:
-                    feature.setAttribute(dataSource.keyColumn(), next_val)
-                else:
-                    self.__iface.messageBar().pushMessage("Error",
-                                                          "no primary key default value, you have to fix it manually",
-                                                          level=QgsMessageBar.CRITICAL)
-                db.close()
+        primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
+        for field in self.__selectedFeature.fields():
+            print(field.name(), self.__selectedFeature.attribute(field.name()))
+            if field.name() != primaryKey:
+                feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
         self.__iface.openFeatureForm(self.__layer, feature)
-        # self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__isEditing = 0
         self.__layer.removeSelection()

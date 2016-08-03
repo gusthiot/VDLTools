@@ -29,47 +29,6 @@ from qgis.gui import QgsMessageBar
 class DBConnector:
 
     @staticmethod
-    def getDefault(dataSource, db):
-        query_string = """SELECT column_default FROM information_schema.columns WHERE table_name='""" + \
-                       dataSource.table() + """' AND column_name='""" + dataSource.keyColumn() + """'"""
-        print(query_string)
-        query = db.exec_(query_string)
-        print("num", query.size())
-        while query.next():
-            print("query", query.value(0))
-            return query.value(0)
-        return None
-    #
-    # @staticmethod
-    # def getConnections():
-    #     s = QSettings()
-    #     s.beginGroup("PostgreSQL/connections")
-    #     currentConnections = s.childGroups()
-    #     s.endGroup()
-    #     print("connections", currentConnections)
-    #     return currentConnections
-    #
-    # @staticmethod
-    # def setConnection(conn, iface):
-    #     s = QSettings()
-    #     s.beginGroup("PostgreSQL/connections/" + conn)
-    #     db = QSqlDatabase.addDatabase('QPSQL')
-    #     db.setHostName(s.value("host", ""))
-    #     print("host", s.value("host", ""))
-    #     db.setDatabaseName(s.value("database", ""))
-    #     print("database", s.value("database", ""))
-    #     db.setUserName(s.value("username", ""))
-    #     print("username", s.value("username", ""))
-    #     db.setPassword(s.value("password", ""))
-    #     print("password", s.value("password", ""))
-    #     s.endGroup()
-    #     ok = db.open()
-    #     if not ok:
-    #         iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)
-    #         return None
-    #     return db
-
-    @staticmethod
     def setConnection(dbName, iface):
         s = QSettings()
         s.beginGroup("PostgreSQL/connections")
