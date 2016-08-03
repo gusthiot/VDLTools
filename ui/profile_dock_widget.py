@@ -68,7 +68,7 @@ class ProfileDockWidget(QDockWidget):
         self.__iface = iface
         self.__canvas = self.__iface.mapCanvas()
         self.__types = ['PDF', 'PNG', 'SVG', 'PS']
-        self.__libs = ['Qwt5', 'Matplotlib']
+        self.__libs = ['Matplotlib', 'Qwt5']
         self.__lib = self.__libs[0]
         self.__doTracking = False
         self.__vline = None

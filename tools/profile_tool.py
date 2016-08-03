@@ -225,7 +225,7 @@ class ProfileTool(QgsMapTool):
                     if self.__selectedDirections[i] is False:
                         index = lines[i].numPoints()-1-index
                     lines[i].setZAt(index, z)
-        if self.__lineLayer.isEditable():
+        if not self.__lineLayer.isEditable():
             self.__lineLayer.startEditing()
         for i in xrange(len(lines)):
             geom = QgsGeometry(lines[i].clone())
@@ -258,7 +258,7 @@ class ProfileTool(QgsMapTool):
                     newZ = self.__points[s['point']]['z'][i]
                     break
             point_v2.setZ(newZ)
-            if layer.isEditable():
+            if not layer.isEditable():
                 layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
             #  layer.updateExtents()
