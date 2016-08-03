@@ -37,11 +37,9 @@ from qgis.core import (QgsPointV2,
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
                       QgsMessageBar)
-from ..ui.duplicate_attributes_dialog import DuplicateAttributesDialog
 from ..ui.duplicate_distance_dialog import DuplicateDistanceDialog
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
-from ..core.db_connector import DBConnector
 
 
 class DuplicateTool(QgsMapTool):
@@ -133,20 +131,8 @@ class DuplicateTool(QgsMapTool):
         self.__dstDlg.okButton().clicked.connect(self.__dstOk)
         self.__dstDlg.cancelButton().clicked.connect(self.__dstCancel)
 
-    def __setAttributesDialog(self, fields, attributes):
-        self.__attDlg = DuplicateAttributesDialog(fields, attributes)
-        self.__attDlg.okButton().clicked.connect(self.__attOk)
-        self.__attDlg.cancelButton().clicked.connect(self.__attCancel)
-
     def __dstCancel(self):
         self.__dstDlg.close()
-        self.__isEditing = 0
-        self.__canvas.scene().removeItem(self.__rubberBand)
-        self.__rubberBand = None
-        self.__layer.removeSelection()
-
-    def __attCancel(self):
-        self.__attDlg.close()
         self.__isEditing = 0
         self.__canvas.scene().removeItem(self.__rubberBand)
         self.__rubberBand = None
@@ -237,11 +223,6 @@ class DuplicateTool(QgsMapTool):
     def __dstOk(self):
         self.__dstPreview()
         self.__dstDlg.close()
-    #     self.__setAttributesDialog(self.__layer.pendingFields(), self.__selectedFeature.attributes())
-    #     self.__attDlg.show()
-    #
-    # def __attOk(self):
-    #     self.__attDlg.close()
         self.__canvas.scene().removeItem(self.__rubberBand)
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
@@ -251,7 +232,6 @@ class DuplicateTool(QgsMapTool):
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
         for field in self.__selectedFeature.fields():
-            print(field.name(), self.__selectedFeature.attribute(field.name()))
             if field.name() != primaryKey:
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
         self.__iface.openFeatureForm(self.__layer, feature)

@@ -39,14 +39,15 @@ class DBConnector:
             if s.value("database", "") == dbName:
                 db = QSqlDatabase.addDatabase('QPSQL')
                 db.setHostName(s.value("host", ""))
-                print("host", s.value("host", ""))
                 db.setDatabaseName(s.value("database", ""))
-                print("database", s.value("database", ""))
-                db.setUserName(s.value("username", ""))
-                print("username", s.value("username", ""))
-                db.setPassword(s.value("password", ""))
-                print("password", s.value("password", ""))
+                username = s.value("username", "")
+                db.setUserName(username)
+                password = s.value("password", "")
+                db.setPassword(password)
                 s.endGroup()
+                if username == "" or password == "":
+                    iface.messageBar().pushMessage("Need user and password for db", level=QgsMessageBar.CRITICAL)
+                    return None
                 ok = db.open()
                 if not ok:
                     iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)

@@ -38,7 +38,6 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar)
 from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
-from ..core.db_connector import DBConnector
 from ..core.geometry_v2 import GeometryV2
 
 
@@ -237,7 +236,6 @@ class MoveTool(QgsMapTool):
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
         for field in self.__selectedFeature.fields():
-            print(field.name(), self.__selectedFeature.attribute(field.name()))
             if field.name() != primaryKey:
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
         self.__iface.openFeatureForm(self.__layer, feature)
