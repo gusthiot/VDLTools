@@ -26,7 +26,8 @@ from math import (cos,
 from PyQt4.QtCore import Qt
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsGeometry,
-                       QgsPoint,
+                       QgsPointV2,
+                       QgsCircularStringV2,
                        QgsFeature,
                        QGis,
                        QgsMapLayer,
@@ -71,19 +72,21 @@ class IntersectTool(QgsMapTool):
         self.__dstDlg = IntersectDistanceDialog(mapPoint)
         self.__dstDlg.okButton().clicked.connect(self.__dstOk)
         self.__dstDlg.cancelButton().clicked.connect(self.__dstCancel)
-        self.__dstDlg.observation().setValue(5.0)
+        self.__dstDlg.observation().setValue(6.0)
+        self.__dstDlg.observation().selectAll()
         self.__dstDlg.show()
 
     def __dstOk(self):
         self.__rubber.reset()
         observation = float(self.__dstDlg.observation().text())
-        geometry = QgsGeometry().fromPolyline([QgsPoint(self.__dstDlg.mapPoint().x() + observation * cos(pi / 180 * a),
+        circle = QgsCircularStringV2()
+        circle.setPoints([QgsPointV2(self.__dstDlg.mapPoint().x() + observation * cos(pi / 180 * a),
                                                         self.__dstDlg.mapPoint().y() + observation * sin(pi / 180 * a))
-                                               for a in range(0, 361, 3)])
+                                               for a in range(0, 361, 90)])
         lineLayer = self.__lineLayer()
         lineLayer.startEditing()
         feature = QgsFeature()
-        feature.setGeometry(geometry)
+        feature.setGeometry(QgsGeometry(circle))
         lineLayer.addFeature(feature)
         lineLayer.updateExtents()
         lineLayer.commitChanges()
