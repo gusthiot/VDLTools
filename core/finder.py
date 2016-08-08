@@ -34,18 +34,18 @@ from qgis.core import (QgsPoint,
 class Finder:
 
     @staticmethod
-    def findClosestFeatureAt(pos, layer, mapTool):
-        features = Finder.findFeaturesAt(pos, layer, mapTool)
+    def findClosestFeatureAt(pos, layer, mapTool, tolerance=10):
+        features = Finder.findFeaturesAt(pos, layer, mapTool, tolerance)
         if features is not None and len(features) > 0:
             return features[0]
         else:
             return None
 
     @staticmethod
-    def findClosestFeatureLayersAt(pos, layers, mapTool):
+    def findClosestFeatureLayersAt(pos, layers, mapTool, tolerance=10):
         features = []
         for layer in layers:
-            feats = Finder.findFeaturesAt(pos, layer, mapTool)
+            feats = Finder.findFeaturesAt(pos, layer, mapTool, tolerance)
             if feats is not None:
                 for f in feats:
                     features.append([f, layer])
@@ -63,18 +63,18 @@ class Finder:
             return None
 
     @staticmethod
-    def findFeaturesLayersAt(pos, layers, mapTool):
+    def findFeaturesLayersAt(pos, layers, mapTool, tolerance=10):
         features = []
         for layer in layers:
-            features += Finder.findFeaturesAt(pos, layer, mapTool)
+            features += Finder.findFeaturesAt(pos, layer, mapTool, tolerance)
         return features
 
     @staticmethod
-    def findFeaturesAt(pos, layer, mapTool):
+    def findFeaturesAt(pos, layer, mapTool, tolerance):
         if layer is None:
             return None
-        mapPt, layerPt = Finder.transformCoordinates(pos, layer, mapTool)
-        tolerance = Finder.calcTolerance(pos, layer, mapTool)
+        layerPt = mapTool.toLayerCoordinates(layer, pos)
+        tolerance = Finder.calcTolerance(pos, layer, mapTool, tolerance)
         searchRect = QgsRectangle(layerPt.x() - tolerance, layerPt.y() - tolerance,
                                   layerPt.x() + tolerance, layerPt.y() + tolerance)
         request = QgsFeatureRequest()
@@ -86,15 +86,11 @@ class Finder:
         return features
 
     @staticmethod
-    def transformCoordinates(screenPt, layer, mapTool):
-        return mapTool.toMapCoordinates(screenPt), mapTool.toLayerCoordinates(layer, screenPt)
-
-    @staticmethod
-    def calcTolerance(pos, layer, mapTool):
+    def calcTolerance(pos, layer, mapTool, distance):
         pt1 = QPoint(pos.x(), pos.y())
-        pt2 = QPoint(pos.x() + 10, pos.y())
-        mapPt1, layerPt1 = Finder.transformCoordinates(pt1, layer, mapTool)
-        mapPt2, layerPt2 = Finder.transformCoordinates(pt2, layer, mapTool)
+        pt2 = QPoint(pos.x() + distance, pos.y())
+        layerPt1 = mapTool.toLayerCoordinates(layer, pt1)
+        layerPt2 = mapTool.toLayerCoordinates(layer, pt2)
         tolerance = layerPt2.x() - layerPt1.x()
         return tolerance
 

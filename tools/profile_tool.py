@@ -324,7 +324,7 @@ class ProfileTool(QgsMapTool):
                     feat = []
                     for layer in self.__layers:
                         vertex = self.toCanvasCoordinates(QgsPoint(x, y))
-                        point = Finder.findClosestFeatureAt(vertex, layer, self)
+                        point = Finder.findClosestFeatureAt(vertex, layer, self, 3)
                         feat.append(point)
                         if point is None:
                             z.append(None)
