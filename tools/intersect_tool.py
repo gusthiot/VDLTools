@@ -116,6 +116,7 @@ class IntersectTool(QgsMapTool):
         self.__rubber.setColor(color)
         self.__rubber.setIcon(4)
         self.__rubber.setIconSize(20)
+        self.__rubber.setWidth(2)
         self.__updateSnapperList()
         self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)

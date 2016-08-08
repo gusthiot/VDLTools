@@ -272,8 +272,8 @@ class MoveTool(QgsMapTool):
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
+            self.__rubberBand.setWidth(2)
             if self.__layer.geometryType() != QGis.Point:
-                self.__rubberBand.setWidth(2)
                 self.__rubberBand.setLineStyle(Qt.DotLine)
             else:
                 self.__rubberBand.setIcon(4)
@@ -284,6 +284,7 @@ class MoveTool(QgsMapTool):
                 else:
                     self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
                 self.__rubberSnap.setColor(color)
+                self.__rubberSnap.setWidth(2)
                 self.__rubberSnap.setIconSize(20)
                 snappedIntersection = Finder.snapToIntersection(event.pos(), self, self.__layerList)
                 if snappedIntersection is None:
