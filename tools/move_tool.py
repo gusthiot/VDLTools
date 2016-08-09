@@ -20,7 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (Qt,
+                          QCoreApplication)
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
@@ -48,7 +49,7 @@ class MoveTool(QgsMapTool):
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/move_icon.png'
-        self.__text = 'Move/Copy a feature'
+        self.__text = QCoreApplication.translate("VDLTools","Move/Copy a feature")
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = 0
         self.__findVertex = 0
@@ -71,7 +72,7 @@ class MoveTool(QgsMapTool):
         return self.__text
 
     def toolName(self):
-        return "Move/Copy"
+        return QCoreApplication.translate("VDLTools","Move/Copy")
 
     def activate(self):
         QgsMapTool.activate(self)
@@ -223,7 +224,9 @@ class MoveTool(QgsMapTool):
     def __onConfirmedMove(self):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            self.__iface.messageBar().pushMessage("Error", "Geos geometry problem", level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools","Error"),
+                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
         self.__layer.updateExtents()
         self.__onCloseConfirm()
@@ -231,7 +234,9 @@ class MoveTool(QgsMapTool):
     def __onConfirmedCopy(self):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            self.__iface.messageBar().pushMessage("Error", "Geos geometry problem", level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools","Error"),
+                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
@@ -304,7 +309,8 @@ class MoveTool(QgsMapTool):
             found_features = self.__layer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) < 1:
-                    self.__iface.messageBar().pushMessage(u"Une seule feature à la fois", level=QgsMessageBar.INFO)
+                    self.__iface.messageBar().pushMessage(
+                        QCoreApplication.translate("VDLTools","One feature at a time"), level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
                 if self.__layer.geometryType() != QGis.Point:

@@ -22,14 +22,14 @@
 """
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
-
+from PyQt4.QtCore import QCoreApplication
 
 class ShowSettings:
 
     def __init__(self, iface):
         self.__iface = iface
         self.__icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
-        self.__text = 'Settings'
+        self.__text = QCoreApplication.translate("VDLTools","Settings")
         self.__showDlg = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None

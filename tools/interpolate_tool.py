@@ -31,7 +31,8 @@ from qgis.core import (QGis,
                        QgsPointV2,
                        QgsVertexId,
                        QgsWKBTypes)
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (Qt,
+                          QCoreApplication)
 from PyQt4.QtGui import QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
@@ -46,7 +47,8 @@ class InterpolateTool(QgsMapTool):
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/interpolate_icon.png'
-        self.__text = 'Interpolate the elevation of a vertex and a point in the middle of a line'
+        self.__text = QCoreApplication.translate(
+            "VDLTools","Interpolate the elevation of a vertex and a point in the middle of a line")
         self.__oldTool = None
         self.__layer = None
         self.setCursor(Qt.ArrowCursor)
@@ -182,7 +184,7 @@ class InterpolateTool(QgsMapTool):
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) < 1:
-                    self.__iface.messageBar().pushMessage(u"Une seule feature à la fois",
+                    self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","One feature at a time"),
                                                           level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
@@ -190,9 +192,9 @@ class InterpolateTool(QgsMapTool):
                 self.__mapPoint = event.mapPoint()
                 self.__confDlg = InterpolateConfirmDialog()
                 if self.__lastLayer.isEditable() is True:
-                    self.__confDlg.setMainLabel("What do you want to do ?")
-                    self.__confDlg.setAllLabel("Create point and new vertex")
-                    self.__confDlg.setVtLabel("Create only the vertex")
+                    self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
+                    self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
+                    self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
                 self.__confDlg.allButton().clicked.connect(self.__onConfirmedAll)
                 self.__confDlg.ptButton().clicked.connect(self.__onConfirmedPoint)
                 self.__confDlg.vtButton().clicked.connect(self.__onConfirmedVertex)

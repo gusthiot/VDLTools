@@ -25,6 +25,7 @@ from qgis.gui import QgsMessageBar
 from qgis.core import QgsDataSourceURI
 from ..core.db_connector import DBConnector
 from ..ui.import_jobs_dialog import ImportJobsDialog
+from PyQt4.QtCore import QCoreApplication
 
 
 class ImportMeasures:
@@ -32,7 +33,7 @@ class ImportMeasures:
     def __init__(self, iface):
         self.__iface = iface
         self.__icon_path = ':/plugins/VDLTools/icons/import_icon.png'
-        self.__text = 'Import Measures'
+        self.__text = QCoreApplication.translate("VDLTools","Import Measures")
         self.__ownSettings = None
         self.__configTable = None
         self.__db = None
@@ -50,11 +51,13 @@ class ImportMeasures:
 
     def start(self):
         if self.__ownSettings is None:
-            self.__iface.messageBar().pushMessage("Error", "No settings given !!",
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
+                                                  QCoreApplication.translate("VDLTools","No settings given !!"),
                                                   level=QgsMessageBar.CRITICAL, )
             return
         if self.__ownSettings.configTable() is None:
-            self.__iface.messageBar().pushMessage("Error", "No config table given !!",
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
+                                                  QCoreApplication.translate("VDLTools","No config table given !!"),
                                                   level=QgsMessageBar.CRITICAL)
             return
         self.__configTable = self.__ownSettings.configTable()
@@ -62,13 +65,16 @@ class ImportMeasures:
         dataSource = QgsDataSourceURI(self.__layer.source())
         self.__db = DBConnector.setConnection(dataSource.database(), self.__iface)
         if self.__db:
-            query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable + """ WHERE source NOT NULL""")
+            query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable +
+                                    """ WHERE source NOT NULL""")
             while query.next():
                 if self.__sourceTable == "":
                     self.__sourceTable = query.value(0)
                 elif self.__sourceTable != query.value(0):
-                    self.__iface.messageBar().pushMessage("Error", "different sources in config table ?!?",
-                                                          level=QgsMessageBar.WARNING)
+                    self.__iface.messageBar().pushMessage(
+                        QCoreApplication.translate("VDLTools","Error"),
+                        QCoreApplication.translate("VDLTools","different sources in config table ?!?"),
+                        level=QgsMessageBar.WARNING)
             query = self.__db.exec_("""SELECT DISTINCT job FROM """ + self.__sourceTable + """ WHERE
                 traitement = 'non-traité'""")
             jobs = []

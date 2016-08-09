@@ -26,27 +26,28 @@ from PyQt4.QtGui import (QDialog,
                          QPushButton,
                          QLabel,
                          QComboBox)
+from PyQt4.QtCore import QCoreApplication
 
 
 class ImportJobsDialog(QDialog):
     def __init__(self, jobs):
         QDialog.__init__(self)
         self.__jobs = jobs
-        self.setWindowTitle("Choose job")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Choose job"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
-        self.__okButton = QPushButton("OK")
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
         self.__layout.addWidget(self.__okButton, 100, 1)
         self.__layout.addWidget(self.__cancelButton, 100, 2)
 
-        label = QLabel("Job : ")
+        label = QLabel(QCoreApplication.translate("VDLTools","Job : "))
         label.setMinimumHeight(20)
         label.setMinimumWidth(50)
         self.__layout.addWidget(label, 0, 1)

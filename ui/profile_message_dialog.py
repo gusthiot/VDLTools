@@ -26,6 +26,7 @@ from PyQt4.QtGui import (QDialog,
                          QPushButton,
                          QLabel,
                          QCheckBox)
+from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileMessageDialog(QDialog):
@@ -36,7 +37,7 @@ class ProfileMessageDialog(QDialog):
         self.__names = names
         num_lines = len(points[0]['z']) - len(names) + 1
         self.__points = points
-        self.setWindowTitle("Elevations situations")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Elevations situations"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
@@ -47,8 +48,9 @@ class ProfileMessageDialog(QDialog):
         for i in xrange(len(self.__situations)):
             line = self.__situations[i]
             ptz = self.__points[line['point']]['z']
-            msg = "- point {} in layer '{}' (point: {}m | line vertex: {}m) \n"\
-                .format(line['point'], self.__names[line['layer']], ptz[line['layer']+num_lines-1], line['vertex'])
+            msg = "- point " + line['point'] + QCoreApplication.translate("VDLTools"," in layer '") + \
+                  self.__names[line['layer']] + "' (point: " + ptz[line['layer']+num_lines-1] + "m |" + \
+                  QCoreApplication.translate("VDLTools","line vertex: ") + line['vertex'] + "m) \n"
 
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
@@ -60,21 +62,22 @@ class ProfileMessageDialog(QDialog):
 
         for i in xrange(len(self.__differences)):
             line = self.__differences[i]
-            msg = "- point {} in line layer : different elevations on same position ({}m and {}m) \n" \
-                .format(line['point'], line['v1'], line['v2'])
+            msg = "- point " + line['point'] + \
+                  QCoreApplication.translate("VDLTools"," in layer : different elevations on same position ") + "(" +\
+                  line['v1'] + "m and" + line['v2'] + "m) \n"
             difLabel = QLabel(msg)
             self.__difLabels.append(difLabel)
             self.__layout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)
 
-        self.__passButton = QPushButton("Pass")
+        self.__passButton = QPushButton(QCoreApplication.translate("VDLTools","Pass"))
         self.__passButton.setMinimumHeight(20)
         self.__passButton.setMinimumWidth(100)
 
-        self.__onPointsButton = QPushButton("Apply line elevations to points")
+        self.__onPointsButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply line elevations to points"))
         self.__onPointsButton.setMinimumHeight(20)
         self.__onPointsButton.setMinimumWidth(200)
 
-        self.__onLineButton = QPushButton("Apply points elevations to line")
+        self.__onLineButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply points elevations to line"))
         self.__onLineButton.setMinimumHeight(20)
         self.__onLineButton.setMinimumWidth(200)
 

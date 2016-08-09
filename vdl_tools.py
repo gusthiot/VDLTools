@@ -80,24 +80,9 @@ class VDLTools:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&VDL Tools')
-        self.toolbar = self.iface.addToolBar(u'VDLTools')
-        self.toolbar.setObjectName(u'VDLTools')
-
-    # noinspection PyMethodMayBeStatic
-    def tr(self, message):
-        """Get the translation for a string using Qt translation API.
-
-        We implement this ourselves since we do not inherit QObject.
-
-        :param message: String for translation.
-        :type message: str, QString
-
-        :returns: Translated version of message.
-        :rtype: QString
-        """
-        # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('VDLTools', message)
+        self.menu = QCoreApplication.translate("VDLTools","&VDL Tools")
+        self.toolbar = self.iface.addToolBar("VDLTools")
+        self.toolbar.setObjectName("VDLTools")
 
     def add_action(self, tool, parent, enable=True, isMapTool=True, inToolBar=True):
 
@@ -153,7 +138,7 @@ class VDLTools:
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&VDL Tools'),
+                QCoreApplication.translate("VDLTools", "&VDL Tools"),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar

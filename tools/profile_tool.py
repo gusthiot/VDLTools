@@ -28,7 +28,8 @@ from qgis.core import (QgsMapLayer,
 from qgis.gui import (QgsMapTool,
                       QgsMessageBar,
                       QgsRubberBand)
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (Qt,
+                          QCoreApplication)
 from PyQt4.QtGui import (QMessageBox,
                          QColor)
 from ..core.finder import Finder
@@ -46,7 +47,7 @@ class ProfileTool(QgsMapTool):
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
-        self.__text = 'Profile of a line'
+        self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
         self.__oldTool = None
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
@@ -140,7 +141,8 @@ class ProfileTool(QgsMapTool):
     def __setConfirmDialog(self, origin):
         self.__confDlg = ProfileConfirmDialog()
         if origin == 0 and self.__lineLayer.isEditable() is False:
-            self.__confDlg.setMessage("Do you really want to edit the LineString layer ?")
+            self.__confDlg.setMessage(
+                QCoreApplication.translate("VDLTools","Do you really want to edit the LineString layer ?"))
             self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
             self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
             self.__confDlg.show()
@@ -153,7 +155,8 @@ class ProfileTool(QgsMapTool):
                     case = False
                     break
             if case is False:
-                self.__confDlg.setMessage("Do you really want to edit the Point layer(s) ?")
+                self.__confDlg.setMessage(
+                    QCoreApplication.translate("VDLTools","Do you really want to edit the Point layer(s) ?"))
                 self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
                 self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
                 self.__confDlg.show()
@@ -208,7 +211,9 @@ class ProfileTool(QgsMapTool):
             if s['point'] not in points:
                 points.append(s['point'])
             else:
-                QMessageBox("There is more than one elevation for the point " + str(s['point']))
+                QMessageBox(
+                    QCoreApplication.translate("VDLTools","There is more than one elevation for the point ") +
+                    str(s['point']))
                 return
         self.__closeMessageDialog()
         lines = []
@@ -297,7 +302,9 @@ class ProfileTool(QgsMapTool):
                     selected = f
                     break
             if selected is None:
-                self.__iface.messageBar().pushMessage("Error", "error on selected", level=QgsMessageBar.CRITICAL)
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools","Error"),
+                    QCoreApplication.translate("VDLTools","error on selected"), level=QgsMessageBar.CRITICAL)
                 continue
             line_v2 = GeometryV2.asLineStringV2(selected.geometry())
             if direction:
@@ -454,9 +461,9 @@ class ProfileTool(QgsMapTool):
         self.__dockWdg.clearData()
         if len(self.__points) == 0:
             return
-        self.__dockWdg.setProfiles(self.__points)
-        self.__dockWdg.drawVertLine(len(self.__selectedIds))
-        self.__dockWdg.attachCurves(names, len(self.__selectedIds))
+        self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
+        self.__dockWdg.drawVertLine()
+        self.__dockWdg.attachCurves(names)
 
         situations = []
         differences = []
@@ -468,7 +475,9 @@ class ProfileTool(QgsMapTool):
                 if pt['z'][i] is not None:
                     zz.append(i)
             if len(zz) == 0:
-                self.__iface.messageBar().pushMessage("Warning", "no line z ?!?", level=QgsMessageBar.WARNING)
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools","Warning"),
+                    QCoreApplication.translate("VDLTools","no line z ?!?"), level=QgsMessageBar.WARNING)
             elif len(zz) == 1:
                 z0 = pt['z'][zz[0]]
                 tol = 0.01 * z0
@@ -489,7 +498,9 @@ class ProfileTool(QgsMapTool):
                         if abs(pt['z'][i]-z0) > tol:
                             situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
-                self.__iface.messageBar().pushMessage("Warning", "more than 2 lines z ?!?", level=QgsMessageBar.WARNING)
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools","Warning"),
+                    QCoreApplication.translate("VDLTools","more than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
 
         if (len(situations) > 0) or (len(differences) > 0):
             self.__setMessageDialog(situations, differences, names)

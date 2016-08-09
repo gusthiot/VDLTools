@@ -46,13 +46,13 @@ class DBConnector:
                 db.setPassword(password)
                 s.endGroup()
                 if username == "" or password == "":
-                    iface.messageBar().pushMessage("Need user and password for db", level=QgsMessageBar.CRITICAL)
+                    iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Need user and password for db"), level=QgsMessageBar.CRITICAL)
                     return None
                 ok = db.open()
                 if not ok:
-                    iface.messageBar().pushMessage("Database Error: " + db.lastError().text(), level=QgsMessageBar.CRITICAL)
+                    iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Database Error: ") + db.lastError().text(), level=QgsMessageBar.CRITICAL)
                     return None
                 return db
             s.endGroup()
-        iface.messageBar().pushMessage("No connection for this db", level=QgsMessageBar.CRITICAL)
+        iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","No connection for this db"), level=QgsMessageBar.CRITICAL)
         return None

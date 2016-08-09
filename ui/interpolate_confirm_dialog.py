@@ -25,32 +25,35 @@ from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
                          QLabel)
+from PyQt4.QtCore import QCoreApplication
 
 
 class InterpolateConfirmDialog(QDialog):
     def __init__(self):
         QDialog.__init__(self)
-        self.setWindowTitle("Edition Confirmation")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Edition Confirmation"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
-        self.__confirmLabel = QLabel("This LineString layer is not editable, what do you want to do ?")
+        self.__confirmLabel = QLabel(
+            QCoreApplication.translate("VDLTools","This LineString layer is not editable, what do you want to do ?"))
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 3)
 
-        self.__allButton = QPushButton("Create point, and edit line with new vertex")
+        self.__allButton = QPushButton(
+            QCoreApplication.translate("VDLTools","Create point, and edit line with new vertex"))
         self.__allButton.setMinimumHeight(20)
         self.__allButton.setMinimumWidth(300)
 
-        self.__ptButton = QPushButton("Create only the point")
+        self.__ptButton = QPushButton(QCoreApplication.translate("VDLTools","Create only the point"))
         self.__ptButton.setMinimumHeight(20)
         self.__ptButton.setMinimumWidth(200)
 
-        self.__vtButton = QPushButton("Just edit line with new vertex")
+        self.__vtButton = QPushButton(QCoreApplication.translate("VDLTools","Just edit line with new vertex"))
         self.__vtButton.setMinimumHeight(20)
         self.__vtButton.setMinimumWidth(200)
 
-        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

@@ -23,7 +23,8 @@
 from math import (cos,
                   sin,
                   pi)
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (Qt,
+                          QCoreApplication)
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsGeometry,
                        QgsPointV2,
@@ -47,7 +48,7 @@ class IntersectTool(QgsMapTool):
         self.__iface = iface
         self.__mapCanvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
-        self.__text = 'From intersection'
+        self.__text = QCoreApplication.translate("VDLTools","From intersection")
         self.setCursor(Qt.ArrowCursor)
         self.__lineLayerID = None
         self.__pointLayerID = None

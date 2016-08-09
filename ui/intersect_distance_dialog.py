@@ -27,17 +27,18 @@ from PyQt4.QtGui import (QDialog,
                          QLabel,
                          QLineEdit,
                          QDoubleSpinBox)
+from PyQt4.QtCore import QCoreApplication
 
 
 class IntersectDistanceDialog(QDialog):
     def __init__(self, mapPoint):
         QDialog.__init__(self)
         self.__mapPoint = mapPoint
-        self.setWindowTitle("Place distance")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Place distance"))
         self.resize(275, 177)
         self.__gridLayout = QGridLayout()
 
-        self.__label = QLabel("Distance")
+        self.__label = QLabel(QCoreApplication.translate("VDLTools","Distance"))
         self.__gridLayout.addWidget(self.__label, 2, 1, 1, 1)
 
         self.__observation = QDoubleSpinBox()
@@ -49,11 +50,11 @@ class IntersectDistanceDialog(QDialog):
         self.__label_3 = QLabel("m")
         self.__gridLayout.addWidget(self.__label_3, 2, 3, 1, 1)
 
-        self.__okButton = QPushButton("OK")
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

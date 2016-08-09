@@ -28,7 +28,8 @@ from qgis.core import (QGis,
                        QgsMapLayer,
                        QgsGeometry,
                        QgsWKBTypes)
-from PyQt4.QtCore import Qt
+from PyQt4.QtCore import (Qt,
+                          QCoreApplication)
 from PyQt4.QtGui import QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
@@ -43,7 +44,9 @@ class ExtrapolateTool(QgsMapTool):
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/extrapolate_icon.png'
-        self.__text = 'Extrapolate the elevation of a vertex and a point at the extremity of a line'
+        self.__text = QCoreApplication.translate("VDLTools",
+                                                 "Extrapolate the elevation of a vertex and a "
+                                                 "point at the extremity of a line")
         self.__oldTool = None
         self.__layer = None
         self.setCursor(Qt.ArrowCursor)
@@ -169,8 +172,8 @@ class ExtrapolateTool(QgsMapTool):
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) < 1:
-                    self.__iface.messageBar().pushMessage(u"Une seule feature à la fois",
-                                                          level=QgsMessageBar.INFO)
+                    self.__iface.messageBar().pushMessage(
+                        QCoreApplication.translate("VDLTools", "One feature at a time"), level=QgsMessageBar.INFO)
                     return
                 geom = found_features[0].geometry()
                 self.__selectedVertex = geom.closestVertex(event.mapPoint())[1]
@@ -197,8 +200,8 @@ class ExtrapolateTool(QgsMapTool):
                             self.__confDlg.show()
                         self.__edit()
                     else:
-                        self.__iface.messageBar().pushMessage(u"Le segment est trop grand",
-                                          level=QgsMessageBar.INFO)
+                        self.__iface.messageBar().pushMessage(
+                            QCoreApplication.translate("VDLTools", "The segment is too big"), level=QgsMessageBar.INFO)
 
     def __okEdit(self):
         self.__confDlg.close()

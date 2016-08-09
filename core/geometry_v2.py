@@ -10,6 +10,7 @@
         author               : Christophe Gusthiot
         email                : christophe.gusthiot@lausanne.ch
  ***************************************************************************/
+
 /***************************************************************************
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *

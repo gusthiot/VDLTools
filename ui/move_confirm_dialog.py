@@ -25,28 +25,29 @@ from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
                          QLabel)
+from PyQt4.QtCore import QCoreApplication
 
 
 class MoveConfirmDialog(QDialog):
     def __init__(self):
         QDialog.__init__(self)
-        self.setWindowTitle("Move/Copy Confirmation")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Move/Copy Confirmation"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
-        self.__confirmLabel = QLabel("Would you like to move or to copy this feature ?")
+        self.__confirmLabel = QLabel(QCoreApplication.translate("VDLTools","Would you like to move or to copy this feature ?"))
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 3)
 
-        self.__moveButton = QPushButton("Move")
+        self.__moveButton = QPushButton(QCoreApplication.translate("VDLTools","Move"))
         self.__moveButton.setMinimumHeight(20)
         self.__moveButton.setMinimumWidth(100)
 
-        self.__copyButton = QPushButton("Copy")
+        self.__copyButton = QPushButton(QCoreApplication.translate("VDLTools","Copy"))
         self.__copyButton.setMinimumHeight(20)
         self.__copyButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

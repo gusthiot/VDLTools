@@ -30,6 +30,7 @@ from PyQt4.QtGui import (QDialog,
 from qgis.core import (QgsMapLayer,
                        QgsDataSourceURI,
                        QGis)
+from PyQt4.QtCore import QCoreApplication
 from ..core.db_connector import DBConnector
 
 
@@ -40,7 +41,7 @@ class ShowSettingsDialog(QDialog):
         self.__memoryPointsLayer = memoryPointsLayer
         self.__memoryLinesLayer = memoryLinesLayer
         self.__configTable = configTable
-        self.setWindowTitle("Settings")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Settings"))
         self.__pointsLayers = []
         self.__linesLayers = []
         self.__tables = []
@@ -66,7 +67,7 @@ class ShowSettingsDialog(QDialog):
         self.resize(400, 200)
         self.__layout = QGridLayout()
 
-        pointLabel = QLabel("Working points layer : ")
+        pointLabel = QLabel(QCoreApplication.translate("VDLTools","Working points layer : "))
         pointLabel.setMinimumHeight(20)
         pointLabel.setMinimumWidth(50)
         self.__layout.addWidget(pointLabel, 0, 1)
@@ -83,7 +84,7 @@ class ShowSettingsDialog(QDialog):
             if self.__memoryPointsLayer in self.__pointsLayers:
                 self.__pointCombo.setCurrentIndex(self.__pointsLayers.index(self.__memoryPointsLayer)+1)
 
-        lineLabel = QLabel("Working lines layer : ")
+        lineLabel = QLabel(QCoreApplication.translate("VDLTools","Working lines layer : "))
         lineLabel.setMinimumHeight(20)
         lineLabel.setMinimumWidth(50)
         self.__layout.addWidget(lineLabel, 1, 1)
@@ -100,7 +101,7 @@ class ShowSettingsDialog(QDialog):
             if self.__memoryLinesLayer in self.__linesLayers:
                 self.__lineCombo.setCurrentIndex(self.__linesLayers.index(self.__memoryLinesLayer)+1)
 
-        tableLabel = QLabel("Config table : ")
+        tableLabel = QLabel(QCoreApplication.translate("VDLTools","Config table : "))
         tableLabel.setMinimumHeight(20)
         tableLabel.setMinimumWidth(50)
         self.__layout.addWidget(tableLabel, 2, 1)
@@ -117,11 +118,11 @@ class ShowSettingsDialog(QDialog):
             if self.__configTable in self.__tables:
                 self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
 
-        self.__okButton = QPushButton("OK")
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

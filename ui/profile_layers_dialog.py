@@ -28,24 +28,25 @@ from PyQt4.QtGui import (QDialog,
                          QCheckBox
                          # , QComboBox
                          )
+from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileLayersDialog(QDialog):
     def __init__(self, pointLayers):
         QDialog.__init__(self)
         self.__pointLayers = pointLayers
-        self.setWindowTitle("Add Points Layers Profiles")
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Add Points Layers Profiles"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
-        self.__okButton = QPushButton("OK")
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton("Cancel")
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
-        self.__layersLabel = QLabel("Also points layers profile ? :")
+        self.__layersLabel = QLabel(QCoreApplication.translate("VDLTools","Also points layers profile ? :"))
         self.__layersLabel.setMinimumHeight(20)
         self.__layersLabel.setMinimumWidth(50)
 
