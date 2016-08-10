@@ -48,7 +48,7 @@ class ProfileTool(QgsMapTool):
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
-        self.__oldTool = None
+        # self.__oldTool = None
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isChoosed = False
@@ -77,7 +77,7 @@ class ProfileTool(QgsMapTool):
         return self.__text
 
     def setTool(self):
-        self.__oldTool = self.__canvas.mapTool()
+        # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def activate(self):
@@ -111,7 +111,8 @@ class ProfileTool(QgsMapTool):
             return
         self.action().setEnabled(False)
         if self.__canvas.mapTool == self:
-            self.__canvas.setMapTool(self.__oldTool)
+            self.__iface.actionPan().trigger()
+        #    self.__canvas.setMapTool(self.__oldTool)
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         self.__lineLayer = None
@@ -235,7 +236,7 @@ class ProfileTool(QgsMapTool):
         for i in xrange(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
-            #  self.__lineLayer.updateExtents()
+            self.__lineLayer.updateExtents()
             #  self.__lineLayer.commitChanges()
         self.__dockWdg.clearData()
         self.__lineLayer.removeSelection()
@@ -266,7 +267,7 @@ class ProfileTool(QgsMapTool):
             if not layer.isEditable():
                 layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
-            #  layer.updateExtents()
+            layer.updateExtents()
             #  layer.commitChanges()
         self.__dockWdg.clearData()
         self.__selectedIds = None

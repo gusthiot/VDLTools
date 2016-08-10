@@ -47,7 +47,7 @@ class ExtrapolateTool(QgsMapTool):
         self.__text = QCoreApplication.translate("VDLTools",
                                                  "Extrapolate the elevation of a vertex and a "
                                                  "point at the extremity of a line")
-        self.__oldTool = None
+        # self.__oldTool = None
         self.__layer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = False
@@ -67,7 +67,7 @@ class ExtrapolateTool(QgsMapTool):
         return self.__text
 
     def setTool(self):
-        self.__oldTool = self.__canvas.mapTool()
+        # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def activate(self):
@@ -94,8 +94,9 @@ class ExtrapolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
-            self.__canvas.setMapTool(self.__oldTool)
+        self.__iface.actionPan().trigger()
+        # if self.__canvas.mapTool == self:
+        #     self.__canvas.setMapTool(self.__oldTool)
 
     def removeLayer(self):
         if self.__layer is not None:
@@ -126,7 +127,8 @@ class ExtrapolateTool(QgsMapTool):
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool == self:
-                    self.__canvas.setMapTool(self.__oldTool)
+                    self.__iface.actionPan().trigger()
+                #    self.__canvas.setMapTool(self.__oldTool)
             return
         self.action().setEnabled(False)
         self.removeLayer()

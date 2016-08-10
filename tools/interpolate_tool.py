@@ -49,7 +49,7 @@ class InterpolateTool(QgsMapTool):
         self.__icon_path = ':/plugins/VDLTools/icons/interpolate_icon.png'
         self.__text = QCoreApplication.translate(
             "VDLTools","Interpolate the elevation of a vertex and a point in the middle of a line")
-        self.__oldTool = None
+        # self.__oldTool = None
         self.__layer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = False
@@ -70,7 +70,7 @@ class InterpolateTool(QgsMapTool):
         return self.__text
 
     def setTool(self):
-        self.__oldTool = self.__canvas.mapTool()
+        # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def setOwnSettings(self, settings):
@@ -101,8 +101,9 @@ class InterpolateTool(QgsMapTool):
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
-            self.__canvas.setMapTool(self.__oldTool)
+        self.__iface.actionPan().trigger()
+        # if self.__canvas.mapTool == self:
+        #     self.__canvas.setMapTool(self.__oldTool)
 
     def removeLayer(self):
         if self.__layer is not None:
@@ -115,7 +116,8 @@ class InterpolateTool(QgsMapTool):
     def setEnable(self, layer):
         if layer is not None \
                 and layer.type() == QgsMapLayer.VectorLayer \
-                and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+                and layer.geometryType() == QGis.Point:
+            #    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
 
             if layer == self.__layer:
                 return
@@ -134,7 +136,8 @@ class InterpolateTool(QgsMapTool):
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool == self:
-                    self.__canvas.setMapTool(self.__oldTool)
+                    self.__iface.actionPan().trigger()
+                #    self.__canvas.setMapTool(self.__oldTool)
             return
         self.action().setEnabled(False)
         self.removeLayer()
@@ -144,7 +147,8 @@ class InterpolateTool(QgsMapTool):
         for layer in self.__iface.mapCanvas().layers():
             if layer is not None \
                     and layer.type() == QgsMapLayer.VectorLayer \
-                    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+                    and layer.geometryType() == QGis.Line:
+                #    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
                 self.__layerList.append(layer)
 
     def canvasMoveEvent(self, event):

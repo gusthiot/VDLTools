@@ -58,7 +58,7 @@ class DuplicateTool(QgsMapTool):
         self.__selectedFeature = None
         self.__rubberBand = None
         self.__newFeature = None
-        self.__oldTool = None
+        # self.__oldTool = None
 
     def icon_path(self):
         return self.__icon_path
@@ -84,11 +84,12 @@ class DuplicateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
-            self.__canvas.setMapTool(self.__oldTool)
+        self.__iface.actionPan().trigger()
+        # if self.__canvas.mapTool == self:
+            # self.__canvas.setMapTool(self.__oldTool)
 
     def setTool(self):
-        self.__oldTool = self.__canvas.mapTool()
+        # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def removeLayer(self):
@@ -121,7 +122,8 @@ class DuplicateTool(QgsMapTool):
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool == self:
-                    self.__canvas.setMapTool(self.__oldTool)
+                    self.__iface.actionPan().trigger()
+                #    self.__canvas.setMapTool(self.__oldTool)
             return
         self.action().setEnabled(False)
         self.removeLayer()
@@ -237,7 +239,10 @@ class DuplicateTool(QgsMapTool):
         for field in self.__selectedFeature.fields():
             if field.name() != primaryKey:
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
-        self.__iface.openFeatureForm(self.__layer, feature)
+        if len(self.__selectedFeature.fields()) > 0:
+            self.__iface.openFeatureForm(self.__layer, feature)
+        else:
+            self.__layer.addFeature(feature)
         self.__layer.updateExtents()
         self.__isEditing = 0
         self.__layer.removeSelection()
