@@ -119,33 +119,22 @@ class ProfileTool(QgsMapTool):
 
     def __setLayerDialog(self, pointLayers):
         self.__layDlg = ProfileLayersDialog(pointLayers)
-        self.__layDlg.okButton().clicked.connect(self.__layOk)
-        self.__layDlg.cancelButton().clicked.connect(self.__layCancel)
-
-    def __closeLayerDialog(self):
-        self.__layDlg.close()
-        self.__layDlg.okButton().clicked.disconnect()
-        self.__layDlg.cancelButton().clicked.disconnect()
+        self.__layDlg.okButton().clicked.connect(self.__onLayOk)
+        self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
 
     def __setMessageDialog(self, situations, differences, names):
         self.__msgDlg = ProfileMessageDialog(situations, differences, names, self.__points)
-        self.__msgDlg.passButton().clicked.connect(self.__msgPass)
-        self.__msgDlg.onLineButton().clicked.connect(self.__onLine)
-        self.__msgDlg.onPointsButton().clicked.connect(self.__onPoints)
-
-    def __closeMessageDialog(self):
-        self.__msgDlg.close()
-        self.__msgDlg.passButton().clicked.disconnect()
-        self.__msgDlg.onLineButton().clicked.disconnect()
-        self.__msgDlg.onPointsButton().clicked.disconnect()
+        self.__msgDlg.passButton().clicked.connect(self.__onMsgPass)
+        self.__msgDlg.onLineButton().clicked.connect(self.__onMsgLine)
+        self.__msgDlg.onPointsButton().clicked.connect(self.__onMsgPoints)
 
     def __setConfirmDialog(self, origin):
         self.__confDlg = ProfileConfirmDialog()
         if origin == 0 and self.__lineLayer.isEditable() is False:
             self.__confDlg.setMessage(
                 QCoreApplication.translate("VDLTools","Do you really want to edit the LineString layer ?"))
-            self.__confDlg.okButton().clicked.connect(self.__onConfirmedLine)
-            self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+            self.__confDlg.okButton().clicked.connect(self.__onConfirmLine)
+            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmClose)
             self.__confDlg.show()
         elif origin != 0:
             situations = self.__msgDlg.getSituations()
@@ -158,18 +147,13 @@ class ProfileTool(QgsMapTool):
             if case is False:
                 self.__confDlg.setMessage(
                     QCoreApplication.translate("VDLTools","Do you really want to edit the Point layer(s) ?"))
-                self.__confDlg.okButton().clicked.connect(self.__onConfirmedPoints)
-                self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+                self.__confDlg.okButton().clicked.connect(self.__onConfirmPoints)
+                self.__confDlg.cancelButton().clicked.connect(self.__onConfirmClose)
                 self.__confDlg.show()
             else:
                 self.__confirmPoints()
         else:
             self.__confirmLine()
-
-    def __closeConfirmDialog(self):
-        self.__confDlg.close()
-        self.__confDlg.okButton().clicked.disconnect()
-        self.__confDlg.cancelButton().clicked.disconnect()
 
     def __getPointLayers(self):
         layerList = []
@@ -178,30 +162,30 @@ class ProfileTool(QgsMapTool):
                     layerList.append(layer)
         return layerList
 
-    def __msgPass(self):
-        self.__closeMessageDialog()
+    def __onMsgPass(self):
+        self.__msgDlg.close()
         self.__selectedIds = None
         self.__selectedDirections = None
         self.__startVertex = None
         self.__endVertex = None
         self.__inSelection = False
 
-    def __onCloseConfirm(self):
-        self.__closeConfirmDialog()
+    def __onConfirmClose(self):
+        self.__confDlg.close()
         self.__selectedIds = None
         self.__selectedDirections = None
         self.__startVertex = None
         self.__endVertex = None
         self.__inSelection = False
 
-    def __onLine(self):
+    def __onMsgLine(self):
         self.__setConfirmDialog(0)
 
-    def __onPoints(self):
+    def __onMsgPoints(self):
         self.__setConfirmDialog(1)
 
-    def __onConfirmedLine(self):
-        self.__closeConfirmDialog()
+    def __onConfirmLine(self):
+        self.__confDlg.close()
         self.__confirmLine()
 
     def __confirmLine(self):
@@ -216,12 +200,13 @@ class ProfileTool(QgsMapTool):
                     QCoreApplication.translate("VDLTools","There is more than one elevation for the point ") +
                     str(s['point']))
                 return
-        self.__closeMessageDialog()
+        self.__msgDlg.close()
         lines = []
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
                 if f.id() == iden:
-                    lines.append(GeometryV2.asLineStringV2(f.geometry()))
+                    line, curved = GeometryV2.asLineV2(f.geometry())
+                    lines.append(line)
                     break
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']+num_lines-1]
@@ -246,12 +231,12 @@ class ProfileTool(QgsMapTool):
         self.__endVertex = None
         self.__inSelection = False
 
-    def __onConfirmedPoints(self):
-        self.__closeConfirmDialog()
+    def __onConfirmPoints(self):
+        self.__confDlg.close()
         self.__confirmPoints()
 
     def __confirmPoints(self):
-        self.__closeMessageDialog()
+        self.__msgDlg.close()
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
         for s in situations:
@@ -276,8 +261,8 @@ class ProfileTool(QgsMapTool):
         self.__endVertex = None
         self.__inSelection = False
 
-    def __layCancel(self):
-        self.__closeLayerDialog()
+    def __onLayCancel(self):
+        self.__layDlg.close()
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
         self.__selectedIds = None
@@ -286,8 +271,8 @@ class ProfileTool(QgsMapTool):
         self.__endVertex = None
         self.__inSelection = False
 
-    def __layOk(self):
-        self.__closeLayerDialog()
+    def __onLayOk(self):
+        self.__layDlg.close()
         self.__layers = self.__layDlg.getLayers()
         self.__features = []
         self.__points = []
@@ -307,7 +292,7 @@ class ProfileTool(QgsMapTool):
                     QCoreApplication.translate("VDLTools","Error"),
                     QCoreApplication.translate("VDLTools","error on selected"), level=QgsMessageBar.CRITICAL)
                 continue
-            line_v2 = GeometryV2.asLineStringV2(selected.geometry())
+            line_v2, curved = GeometryV2.asLineV2(selected.geometry())
             if direction:
                 rg = xrange(line_v2.numPoints())
             else:
@@ -332,7 +317,7 @@ class ProfileTool(QgsMapTool):
                     feat = []
                     for layer in self.__layers:
                         vertex = self.toCanvasCoordinates(QgsPoint(x, y))
-                        point = Finder.findClosestFeatureAt(vertex, layer, self, 3)
+                        point = Finder.findClosestFeatureAt(vertex, layer, self, 3, True)
                         feat.append(point)
                         if point is None:
                             z.append(None)

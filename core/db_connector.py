@@ -24,12 +24,19 @@
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
 from qgis.gui import QgsMessageBar
+from PyQt4.QtCore import QCoreApplication
 
 
 class DBConnector:
 
     @staticmethod
     def setConnection(dbName, iface):
+        """
+        To set a connection to a PstgreSQL database
+        :param dbName: the name of the database
+        :param iface: the qgs interface
+        :return: a QsqlDatabase object, or none
+        """
         s = QSettings()
         s.beginGroup("PostgreSQL/connections")
         connections = s.childGroups()
@@ -46,13 +53,19 @@ class DBConnector:
                 db.setPassword(password)
                 s.endGroup()
                 if username == "" or password == "":
-                    iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Need user and password for db"), level=QgsMessageBar.CRITICAL)
+                    iface.messageBar().pushMessage(
+                        QCoreApplication.translate("VDLTools", "Need user and password for db"),
+                        level=QgsMessageBar.CRITICAL)
                     return None
                 ok = db.open()
                 if not ok:
-                    iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Database Error: ") + db.lastError().text(), level=QgsMessageBar.CRITICAL)
+                    iface.messageBar().pushMessage(
+                        QCoreApplication.translate("VDLTools", "Database Error: ") + db.lastError().text(),
+                        level=QgsMessageBar.CRITICAL)
                     return None
                 return db
             s.endGroup()
-        iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","No connection for this db"), level=QgsMessageBar.CRITICAL)
+        iface.messageBar().pushMessage(
+            QCoreApplication.translate("VDLTools", "No connection for this db"),
+            level=QgsMessageBar.CRITICAL)
         return None

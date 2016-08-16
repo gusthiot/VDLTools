@@ -46,6 +46,10 @@ from ..core.geometry_v2 import GeometryV2
 class DuplicateTool(QgsMapTool):
 
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
@@ -61,26 +65,38 @@ class DuplicateTool(QgsMapTool):
         # self.__oldTool = None
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def toolName(self):
+        """
+        To get the tool name
+        :return: tool name
+        """
         return QCoreApplication.translate("VDLTools","Duplicate")
 
-    def activate(self):
-        QgsMapTool.activate(self)
-
-    def deactivate(self):
-        QgsMapTool.deactivate(self)
-
     def startEditing(self):
+        """
+        To set the action as enable, as the layer is editable
+        """
         self.action().setEnabled(True)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
     def stopEditing(self):
+        """
+        To set the action as disable, as the layer is not editable
+        """
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
@@ -89,10 +105,16 @@ class DuplicateTool(QgsMapTool):
             # self.__canvas.setMapTool(self.__oldTool)
 
     def setTool(self):
+        """
+        To set the current tool as this one
+        """
         # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def removeLayer(self):
+        """
+        To remove the current working layer
+        """
         if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -101,6 +123,10 @@ class DuplicateTool(QgsMapTool):
             self.__layer = None
 
     def setEnable(self, layer):
+        """
+        To check if we can enable the action for the selected layer
+        :param layer: selected layer
+        """
         types = [QGis.Line, QGis.Polygon]
         if layer is not None\
                 and layer.type() == QgsMapLayer.VectorLayer\
@@ -129,12 +155,19 @@ class DuplicateTool(QgsMapTool):
         self.removeLayer()
 
     def __setDistanceDialog(self, isComplexPolygon):
+        """
+        To create a Duplicate Distance Dialog
+        :param isComplexPolygon: for a polygon, if it has interior ring(s)
+        """
         self.__dstDlg = DuplicateDistanceDialog(isComplexPolygon)
-        self.__dstDlg.previewButton().clicked.connect(self.__dstPreview)
-        self.__dstDlg.okButton().clicked.connect(self.__dstOk)
-        self.__dstDlg.cancelButton().clicked.connect(self.__dstCancel)
+        self.__dstDlg.previewButton().clicked.connect(self.__onDstPreview)
+        self.__dstDlg.okButton().clicked.connect(self.__onDstOk)
+        self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
 
-    def __dstCancel(self):
+    def __onDstCancel(self):
+        """
+        When the Cancel button in Duplicate Distance Dialog is pushed
+        """
         self.__dstDlg.close()
         self.__isEditing = 0
         self.__canvas.scene().removeItem(self.__rubberBand)
@@ -143,17 +176,33 @@ class DuplicateTool(QgsMapTool):
 
     @staticmethod
     def angle(point1, point2):
+        """
+        To calculate the angle of a line between 2 points
+        :param point1: first point
+        :param point2: second point
+        :return: the calculated angle
+        """
         return atan2(point2.y()-point1.y(), point2.x()-point1.x())
 
     @staticmethod
     def newPoint(angle, point, distance):
+        """
+        To create a new point at a certain distance and certain azimut from another point
+        :param angle: the azimut
+        :param point: the reference point
+        :param distance: the distance
+        :return: the new QgsPoint (with same elevation than parameter point)
+        """
         x = point.x() + cos(angle)*distance
         y = point.y() + sin(angle)*distance
         pt = QgsPointV2(x, y)
         pt.addZValue(point.z())
         return pt
 
-    def __dstPreview(self):
+    def __onDstPreview(self):
+        """
+        When the Preview button in Duplicate Distance Dialog is pushed
+        """
         if self.__rubberBand:
             self.__canvas.scene().removeItem(self.__rubberBand)
             self.__rubberBand = None
@@ -170,8 +219,13 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand.setLineStyle(Qt.DotLine)
             self.__rubberBand.show()
 
+# TODO : newfeature en fonction de curved, puis pareil pour polygon, et pareil pour move
     def __linePreview(self, distance):
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        """
+        To create the preview (rubberBand) of the duplicate line at a certain distance
+        :param distance: the given distance
+        """
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsLineStringV2()
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
         for pos in xrange(line_v2.numPoints()):
@@ -190,8 +244,12 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __polygonPreview(self, distance):
+        """
+        To create the preview (rubberBand) of the duplicate polygon at a certain distance
+        :param distance: the given distance
+        """
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Polygon)
-        polygon_v2 = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
+        polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsPolygonV2()
         line_v2 = self.__newLine(polygon_v2.exteriorRing(), distance)
         self.__newFeature.setExteriorRing(line_v2)
@@ -204,6 +262,12 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand.addGeometry(QgsGeometry(line_v2.clone()), None)
 
     def __newLine(self, curve_v2, distance):
+        """
+        To create a duplicate curve for a polygon curves
+        :param curve_v2: curve to duplicate
+        :param distance: distance where to duplicate
+        :return: new duplicate curve
+        """
         new_line_v2 = QgsLineStringV2()
         line_v2 = curve_v2.curveToLine()
         for pos in xrange(line_v2.numPoints()):
@@ -223,8 +287,11 @@ class DuplicateTool(QgsMapTool):
             new_line_v2.addVertex(self.newPoint(angle, line_v2.pointN(pos), dist))
         return new_line_v2
 
-    def __dstOk(self):
-        self.__dstPreview()
+    def __onDstOk(self):
+        """
+        When the Ok button in Duplicate Distance Dialog is pushed
+        """
+        self.__onDstPreview()
         self.__dstDlg.close()
         self.__canvas.scene().removeItem(self.__rubberBand)
         geometry = QgsGeometry(self.__newFeature)
@@ -248,6 +315,10 @@ class DuplicateTool(QgsMapTool):
         self.__layer.removeSelection()
 
     def canvasMoveEvent(self, event):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
         if not self.__isEditing:
             f = Finder.findClosestFeatureAt(event.pos(), self.__layer, self)
             if f is not None and self.__lastFeatureId != f.id():
@@ -258,6 +329,10 @@ class DuplicateTool(QgsMapTool):
                 self.__lastFeatureId = None
 
     def canvasReleaseEvent(self, event):
+        """
+        When the mouse is clicked
+        :param event: mouse event
+        """
         found_features = self.__layer.selectedFeatures()
         if len(found_features) > 0:
             if len(found_features) < 1:

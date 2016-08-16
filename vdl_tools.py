@@ -45,8 +45,7 @@ import os.path
 class VDLTools:
 
     def __init__(self, iface):
-        """Constructor.
-
+        """Constructor
         :param iface: An interface instance that will be passed to this class
             which provides the hook by which you can manipulate the QGIS
             application at run time.
@@ -80,11 +79,19 @@ class VDLTools:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = QCoreApplication.translate("VDLTools","&VDL Tools")
+        self.menu = QCoreApplication.translate("VDLTools", "&VDL Tools")
         self.toolbar = self.iface.addToolBar("VDLTools")
         self.toolbar.setObjectName("VDLTools")
 
     def add_action(self, tool, parent, enable=True, isMapTool=True, inToolBar=True):
+        """To add an available action.
+        :param tool: the tool linked to the action
+        :param parent: the interface main window
+        :param enable: if the action is enabled at the beginning
+        :param isMapTool: if the action is a map tool or not
+        :param inToolBar: if the action has to be in the menu with an icon
+        :return: the added action
+        """
 
         icon = QIcon(tool.icon_path())
         action = QAction(icon, tool.text(), parent)
@@ -105,7 +112,9 @@ class VDLTools:
         return action
 
     def initGui(self):
-        """Create the menu entries and toolbar icons inside the QGIS GUI."""
+        """
+        Create the menu entries and toolbar icons inside the QGIS GUI
+        """
 
         self.showSettings = ShowSettings(self.iface)
         self.add_action(self.showSettings, self.iface.mainWindow(), True, False, False)
@@ -135,7 +144,9 @@ class VDLTools:
         self.importMeasures.setOwnSettings(self.showSettings)
 
     def unload(self):
-        """Removes the plugin menu item and icon from QGIS GUI."""
+        """
+        Removes the plugin menu item and icon from QGIS GUI
+        """
         for action in self.actions:
             self.iface.removePluginMenu(
                 QCoreApplication.translate("VDLTools", "&VDL Tools"),

@@ -49,7 +49,7 @@
     <message>
         <location filename="../tools/extrapolate_tool.py" line="204"/>
         <source>The segment is too big</source>
-        <translation>Le segment est torp grand</translation>
+        <translation>Le segment est trop grand</translation>
     </message>
     <message>
         <location filename="../tools/interpolate_tool.py" line="50"/>

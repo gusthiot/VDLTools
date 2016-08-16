@@ -31,6 +31,10 @@ from PyQt4.QtCore import QCoreApplication
 class ImportMeasures:
 
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         self.__iface = iface
         self.__icon_path = ':/plugins/VDLTools/icons/import_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Import Measures")
@@ -41,15 +45,30 @@ class ImportMeasures:
         self.__sourceTable = ""
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def setOwnSettings(self, settings):
+        """
+        To set the settings
+        :param settings: income settings
+        """
         self.__ownSettings = settings
 
     def start(self):
+        """
+        To start the importation
+        """
         if self.__ownSettings is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No settings given !!"),
@@ -87,6 +106,9 @@ class ImportMeasures:
             self.__jobsDlg.show()
 
     def __onOk(self):
+        """
+        When the Ok button in Import Jobs Dialog is pushed
+        """
         job = self.__jobsDlg.job()
         self.__jobsDlg.close()
         self.__jobsDlg.okButton().clicked.disconnect(self.__onOk)
@@ -98,6 +120,9 @@ class ImportMeasures:
 
 
     def __onCancel(self):
+        """
+        When the Cancel button in Import Jobs Dialog is pushed
+        """
         self.__jobsDlg.close()
         self.__jobsDlg.okButton().clicked.disconnect(self.__onOk)
         self.__jobsDlg.cancelButton().clicked.disconnect(self.__onCancel)

@@ -29,20 +29,22 @@ from qgis.core import (QGis,
                        QgsFeature,
                        QgsGeometry,
                        QgsPointV2,
-                       QgsVertexId,
-                       QgsWKBTypes)
+                       QgsVertexId)
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
-from math import sqrt, pow
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
 
 class InterpolateTool(QgsMapTool):
 
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
@@ -64,19 +66,37 @@ class InterpolateTool(QgsMapTool):
         self.__selectedFeature = None
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def setTool(self):
+        """
+        To set the current tool as this one
+        """
         # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def setOwnSettings(self, settings):
+        """
+        To set the settings
+        :param settings: income settings
+        """
         self.__ownSettings = settings
 
     def activate(self):
+        """
+        When the action is selected
+        """
         QgsMapTool.activate(self)
         self.__updateList()
         self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
@@ -87,16 +107,25 @@ class InterpolateTool(QgsMapTool):
         self.__rubber.setIconSize(20)
 
     def deactivate(self):
+        """
+        When the action is deselected
+        """
         self.__rubber.reset()
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
+        """
+        To set the action as enable, as the layer is editable
+        """
         self.action().setEnabled(True)
         self.__canvas.layersChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
     def stopEditing(self):
+        """
+        To set the action as disable, as the layer is not editable
+        """
         self.action().setEnabled(False)
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -106,6 +135,9 @@ class InterpolateTool(QgsMapTool):
         #     self.__canvas.setMapTool(self.__oldTool)
 
     def removeLayer(self):
+        """
+        To remove the current working layer
+        """
         if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -114,10 +146,13 @@ class InterpolateTool(QgsMapTool):
             self.__layer = None
 
     def setEnable(self, layer):
+        """
+        To check if we can enable the action for the selected layer
+        :param layer: selected layer
+        """
         if layer is not None \
                 and layer.type() == QgsMapLayer.VectorLayer \
                 and layer.geometryType() == QGis.Point:
-            #    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
 
             if layer == self.__layer:
                 return
@@ -143,6 +178,9 @@ class InterpolateTool(QgsMapTool):
         self.removeLayer()
 
     def __updateList(self):
+        """
+        To update the line layers list that we can use for interpolation
+        """
         self.__layerList = []
         for layer in self.__iface.mapCanvas().layers():
             if layer is not None \
@@ -152,6 +190,10 @@ class InterpolateTool(QgsMapTool):
                 self.__layerList.append(layer)
 
     def canvasMoveEvent(self, event):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
         if not self.__isEditing and self.__layerList is not None:
             f_l = Finder.findClosestFeatureLayersAt(event.pos(), self.__layerList, self)
 
@@ -167,7 +209,7 @@ class InterpolateTool(QgsMapTool):
                     snappedIntersection = self.__snapToIntersection(event.mapPoint(), f_l[0])
                     if snappedIntersection is None:
                         self.__rubber.setIcon(4)
-                        line_v2 = GeometryV2.asLineStringV2(f_l[0].geometry())
+                        line_v2, curved = GeometryV2.asLineV2(f_l[0].geometry())
                         vertex_v2 = QgsPointV2()
                         vertex_id = QgsVertexId()
                         line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
@@ -184,6 +226,10 @@ class InterpolateTool(QgsMapTool):
                 self.__lastFeatureId = None
 
     def canvasReleaseEvent(self, event):
+        """
+        When the mouse is clicked
+        :param event: mouse event
+        """
         if self.__lastLayer is not None:
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
@@ -205,38 +251,48 @@ class InterpolateTool(QgsMapTool):
                 self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
                 self.__confDlg.show()
 
-    def __closeConfirmDialog(self):
-        self.__confDlg.close()
-        self.__confDlg.allButton().clicked.disconnect(self.__onConfirmedAll)
-        self.__confDlg.ptButton().clicked.disconnect(self.__onConfirmedPoint)
-        self.__confDlg.vtButton().clicked.disconnect(self.__onConfirmedVertex)
-        self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
-
     def __onCloseConfirm(self):
-        self.__closeConfirmDialog()
+        """
+        When the Close button in Interpolate Confirm Dialog is pushed
+        """
+        self.__confDlg.close()
         self.__lastLayer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None
         self.__isEditing = False
 
     def __onConfirmedPoint(self):
-        self.__closeConfirmDialog()
+        """
+        When the Point button in Interpolate Confirm Dialog is pushed
+        """
+        self.__confDlg.close()
         self.__createElements(True, False)
 
     def __onConfirmedAll(self):
-        self.__closeConfirmDialog()
+        """
+        When the Point And Vertex button in Interpolate Confirm Dialog is pushed
+        """
+        self.__confDlg.close()
         if self.__lastLayer.isEditable() is False:
             self.__lastLayer.startEditing()
         self.__createElements(True, True)
 
     def __onConfirmedVertex(self):
-        self.__closeConfirmDialog()
+        """
+        When the Vertex button in Interpolate Confirm Dialog is pushed
+        """
+        self.__confDlg.close()
         if self.__lastLayer.isEditable() is False:
             self.__lastLayer.startEditing()
         self.__createElements(False, True)
 
     def __createElements(self, withPoint, withVertex):
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        """
+        To create the asked elements (point, vertex)
+        :param withPoint: if point has to be created
+        :param withVertex: if vertex line has to be created
+        """
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
         line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertex_id, 0)
@@ -247,10 +303,10 @@ class InterpolateTool(QgsMapTool):
 
         x0 = line_v2.xAt(vertex_id.vertex-1)
         y0 = line_v2.yAt(vertex_id.vertex-1)
-        d0 = self.distance(x0, vertex_v2.x(), y0, vertex_v2.y())
+        d0 = Finder.sqrDistForCoords(x0, vertex_v2.x(), y0, vertex_v2.y())
         x1 = line_v2.xAt(vertex_id.vertex)
         y1 = line_v2.yAt(vertex_id.vertex)
-        d1 = self.distance(x1, vertex_v2.x(), y1, vertex_v2.y())
+        d1 = Finder.sqrDistForCoords(x1, vertex_v2.x(), y1, vertex_v2.y())
         z0 = line_v2.zAt(vertex_id.vertex-1)
         z1 = line_v2.zAt(vertex_id.vertex)
         vertex_v2.addZValue((d0*z1 + d1*z0)/(d0 + d1))
@@ -271,6 +327,12 @@ class InterpolateTool(QgsMapTool):
         self.__isEditing = False
 
     def __snapToIntersection(self, mapPoint, selectedFeature):
+        """
+        To check is we can snap a close intersection
+        :param mapPoint: the point to check
+        :param selectedFeature: the feature that can intersect another one
+        :return: an intersection QgsPointV2 or none
+        """
         if self.__ownSettings is None:
             return None
         if self.__ownSettings.linesLayer() is None:
@@ -280,6 +342,3 @@ class InterpolateTool(QgsMapTool):
             return None
         return QgsPointV2(Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint))
 
-    @staticmethod
-    def distance(x1, x2, y1, y2):
-        return sqrt(pow(x1-x2, 2) + pow(y1-y2, 2))

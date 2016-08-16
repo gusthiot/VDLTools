@@ -138,7 +138,7 @@ class MoveTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __linePreview(self, point):
-        line_v2 = GeometryV2.asLineStringV2(self.__selectedFeature.geometry())
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         vertex = line_v2.pointN(self.__selectedVertex)
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
@@ -153,7 +153,7 @@ class MoveTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __polygonPreview(self, point):
-        polygon_v2 = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
+        polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
         vertex = polygon_v2.vertexAt(self.__polygonVertexId(polygon_v2))
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
@@ -207,11 +207,8 @@ class MoveTool(QgsMapTool):
                         self.__snapperList.append(snapLayer)
                         self.__layerList.append(layer)
 
-    def __onCloseConfirm(self):
+    def __onConfirmClose(self):
         self.__confDlg.close()
-        self.__confDlg.moveButton().clicked.disconnect(self.__onConfirmedMove)
-        self.__confDlg.copyButton().clicked.disconnect(self.__onConfirmedCopy)
-        self.__confDlg.cancelButton().clicked.disconnect(self.__onCloseConfirm)
         self.__rubberBand.reset()
         self.__rubberSnap.reset()
         self.__isEditing = 0
@@ -223,7 +220,7 @@ class MoveTool(QgsMapTool):
         self.__selectedVertex = None
         self.__layer.removeSelection()
 
-    def __onConfirmedMove(self):
+    def __onConfirmMove(self):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
@@ -233,7 +230,7 @@ class MoveTool(QgsMapTool):
         self.__layer.updateExtents()
         self.__onCloseConfirm()
 
-    def __onConfirmedCopy(self):
+    def __onConfirmCopy(self):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
@@ -359,7 +356,7 @@ class MoveTool(QgsMapTool):
                 self.__rubberBand.setIcon(4)
                 self.__rubberBand.setIconSize(20)
             self.__confDlg = MoveConfirmDialog()
-            self.__confDlg.moveButton().clicked.connect(self.__onConfirmedMove)
-            self.__confDlg.copyButton().clicked.connect(self.__onConfirmedCopy)
-            self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+            self.__confDlg.moveButton().clicked.connect(self.__onConfirmMove)
+            self.__confDlg.copyButton().clicked.connect(self.__onConfirmCopy)
+            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmClose)
             self.__confDlg.show()

@@ -43,7 +43,12 @@ from ..core.finder import Finder
 
 
 class IntersectTool(QgsMapTool):
+
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.__mapCanvas = iface.mapCanvas()
@@ -58,26 +63,48 @@ class IntersectTool(QgsMapTool):
         self.__isEditing = 0
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def setTool(self):
+        """
+        To set the current tool as this one
+        """
         self.__mapCanvas.setMapTool(self)
 
     def setOwnSettings(self, settings):
+        """
+        To set the settings
+        :param settings: income settings
+        """
         self.__ownSettings = settings
 
     def __setDistanceDialog(self, mapPoint):
+        """
+        To create an Intersect Distance Dialog
+        :param mapPoint: radius of the circle
+        """
         self.__dstDlg = IntersectDistanceDialog(mapPoint)
-        self.__dstDlg.okButton().clicked.connect(self.__dstOk)
-        self.__dstDlg.cancelButton().clicked.connect(self.__dstCancel)
+        self.__dstDlg.okButton().clicked.connect(self.__onDstOk)
+        self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
         self.__dstDlg.observation().setValue(6.0)
         self.__dstDlg.observation().selectAll()
         self.__dstDlg.show()
 
-    def __dstOk(self):
+    def __onDstOk(self):
+        """
+        When the Ok button in Intersect Distance Dialog is pushed
+        """
         self.__rubber.reset()
         observation = float(self.__dstDlg.observation().text())
         circle = QgsCircularStringV2()
@@ -104,12 +131,18 @@ class IntersectTool(QgsMapTool):
         self.__isEditing = False
         self.__dstDlg.close()
 
-    def __dstCancel(self):
+    def __onDstCancel(self):
+        """
+        When the Cancel button in Intersect Distance Dialog is pushed
+        """
         self.__dstDlg.close()
         self.__rubber.reset()
         self.__isEditing = False
 
     def activate(self):
+        """
+        When the action is selected
+        """
         QgsMapTool.activate(self)
         self.__rubber = QgsRubberBand(self.__mapCanvas, QGis.Point)
         color = QColor("red")
@@ -123,6 +156,9 @@ class IntersectTool(QgsMapTool):
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
 
     def __updateSnapperList(self):
+        """
+        To update the list of layers that can be snapped
+        """
         self.__snapperList = []
         self.__layerList = []
         legend = self.__iface.legendInterface()
@@ -140,12 +176,19 @@ class IntersectTool(QgsMapTool):
                         self.__layerList.append(layer)
 
     def deactivate(self):
+        """
+        When the action is deselected
+        """
         self.__rubber.reset()
         self.__mapCanvas.layersChanged.disconnect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
         QgsMapTool.deactivate(self)
 
     def canvasMoveEvent(self, mouseEvent):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
         if not self.__isEditing:
             if self.__counter > 2:
                 self.__rubber.reset()
@@ -163,6 +206,10 @@ class IntersectTool(QgsMapTool):
                 self.__counter += 1
 
     def canvasReleaseEvent(self, mouseEvent):
+        """
+        When the mouse is clicked
+        :param event: mouse event
+        """
         if mouseEvent.button() != Qt.LeftButton:
             return
         # snap to layers
@@ -177,6 +224,10 @@ class IntersectTool(QgsMapTool):
             self.__setDistanceDialog(snappedIntersection)
 
     def __lineLayer(self):
+        """
+        To get the line layer to create the circle
+        :return: a line layer
+        """
         if self.__ownSettings is not None:
             if self.__ownSettings.linesLayer() is not None:
                 layer = self.__ownSettings.linesLayer()
