@@ -45,6 +45,10 @@ from ..core.geometry_v2 import GeometryV2
 class MoveTool(QgsMapTool):
 
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
@@ -66,26 +70,38 @@ class MoveTool(QgsMapTool):
         self.__selectedVertex = None
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def toolName(self):
+        """
+        To get the tool name
+        :return: tool name
+        """
         return QCoreApplication.translate("VDLTools","Move/Copy")
 
-    def activate(self):
-        QgsMapTool.activate(self)
-
-    def deactivate(self):
-        QgsMapTool.deactivate(self)
-
     def startEditing(self):
+        """
+        To set the action as enable, as the layer is editable
+        """
         self.action().setEnabled(True)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
     def stopEditing(self):
+        """
+        To set the action as disable, as the layer is not editable
+        """
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
@@ -94,10 +110,16 @@ class MoveTool(QgsMapTool):
         #     self.__canvas.setMapTool(self.__oldTool)
 
     def setTool(self):
+        """
+        To set the current tool as this one
+        """
         # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def removeLayer(self):
+        """
+        To remove the current working layer
+        """
         if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -106,6 +128,10 @@ class MoveTool(QgsMapTool):
             self.__layer = None
 
     def setEnable(self, layer):
+        """
+        To check if we can enable the action for the selected layer
+        :param layer: selected layer
+        """
         if layer is not None\
                 and layer.type() == QgsMapLayer.VectorLayer:
             if layer == self.__layer:
@@ -131,6 +157,10 @@ class MoveTool(QgsMapTool):
         self.removeLayer()
 
     def __pointPreview(self, point):
+        """
+        To create a point geometry preview (rubberBand)
+        :param point: new position as mapPoint
+        """
         point_v2 = GeometryV2.asPointV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsPointV2(point.x(), point.y())
         self.__newFeature.addZValue(point_v2.z())
@@ -138,6 +168,10 @@ class MoveTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __linePreview(self, point):
+        """
+        To create a line geometry preview (rubberBand)
+        :param point: new position as mapPoint
+        """
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         vertex = line_v2.pointN(self.__selectedVertex)
         dx = vertex.x() - point.x()
@@ -153,6 +187,10 @@ class MoveTool(QgsMapTool):
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __polygonPreview(self, point):
+        """
+        To create a polygon geometry preview (rubberBand)
+        :param point: new position as mapPoint
+        """
         polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
         vertex = polygon_v2.vertexAt(self.__polygonVertexId(polygon_v2))
         dx = vertex.x() - point.x()
@@ -168,6 +206,11 @@ class MoveTool(QgsMapTool):
             self.__rubberBand.addGeometry(QgsGeometry(line_v2.clone()), None)
 
     def __polygonVertexId(self, polygon_v2):
+        """
+        To get the id of the selected vertex from a polygon
+        :param polygon_v2: the polygon as polygonV2
+        :return: id as QgsVertexId
+        """
         eR = polygon_v2.exteriorRing()
         if self.__selectedVertex < eR.numPoints():
             return QgsVertexId(0, 0, self.__selectedVertex, 1)
@@ -180,6 +223,13 @@ class MoveTool(QgsMapTool):
                 sel -= iR.numPoints()
 
     def __newLine(self, curve_v2, dx, dy):
+        """
+        To create a new moved line for a part of a polygon
+        :param curve_v2: the original line
+        :param dx: x translation
+        :param dy: y translation
+        :return: the line as lineV2
+        """
         new_line_v2 = QgsLineStringV2()
         line_v2 = curve_v2.curveToLine()
         for pos in xrange(line_v2.numPoints()):
@@ -191,6 +241,9 @@ class MoveTool(QgsMapTool):
         return new_line_v2
 
     def __updateSnapperList(self):
+        """
+        To update the list of layers that can be snapped
+        """
         self.__snapperList = []
         self.__layerList = []
         legend = self.__iface.legendInterface()
@@ -208,6 +261,9 @@ class MoveTool(QgsMapTool):
                         self.__layerList.append(layer)
 
     def __onConfirmClose(self):
+        """
+        When the Cancel button in Move Confirm Dialog is pushed
+        """
         self.__confDlg.close()
         self.__rubberBand.reset()
         self.__rubberSnap.reset()
@@ -221,6 +277,9 @@ class MoveTool(QgsMapTool):
         self.__layer.removeSelection()
 
     def __onConfirmMove(self):
+        """
+        When the Move button in Move Confirm Dialog is pushed
+        """
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
@@ -231,6 +290,9 @@ class MoveTool(QgsMapTool):
         self.__onCloseConfirm()
 
     def __onConfirmCopy(self):
+        """
+        When the Copy button in Move Confirm Dialog is pushed
+        """
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
@@ -250,6 +312,10 @@ class MoveTool(QgsMapTool):
         self.__onCloseConfirm()
 
     def canvasMoveEvent(self, event):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
             f = Finder.findClosestFeatureAt(event.pos(), self.__layer, self)
             if f is not None and self.__lastFeatureId != f.id():
@@ -307,6 +373,10 @@ class MoveTool(QgsMapTool):
                 self.__counter += 1
 
     def canvasReleaseEvent(self, event):
+        """
+        When the mouse is clicked
+        :param event: mouse event
+        """
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
             found_features = self.__layer.selectedFeatures()
             if len(found_features) > 0:

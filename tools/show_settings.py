@@ -53,13 +53,21 @@ class ShowSettings:
         self.__showDlg.okButton().clicked.disconnect(self.__onOk)
         self.__showDlg.cancelButton().clicked.disconnect(self.__onCancel)
         self.__memoryLinesLayer = self.__showDlg.linesLayer()
+        self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
         self.__memoryPointsLayer = self.__showDlg.pointsLayer()
+        self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
         self.__configTable = self.__showDlg.configTable()
 
     def __onCancel(self):
         self.__showDlg.close()
         self.__showDlg.okButton().clicked.disconnect(self.__onOk)
         self.__showDlg.cancelButton().clicked.disconnect(self.__onCancel)
+
+    def __memoryLinesLayerDeleted(self):
+        self.__memoryLinesLayer = None
+
+    def __memoryPointsLayerDeleted(self):
+        self.__memoryPointsLayer = None
 
     def pointsLayer(self):
         return self.__memoryPointsLayer
@@ -72,9 +80,11 @@ class ShowSettings:
 
     def setPointsLayer(self, pointsLayer):
         self.__memoryPointsLayer = pointsLayer
+        self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
 
     def setLinesLayer(self, linesLayer):
         self.__memoryLinesLayer = linesLayer
+        self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
 
     def setConfigTable(self, configTable):
         self.__configTable = configTable

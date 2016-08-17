@@ -43,6 +43,10 @@ from ..ui.profile_confirm_dialog import ProfileConfirmDialog
 class ProfileTool(QgsMapTool):
 
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
@@ -71,16 +75,30 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif = None
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def setTool(self):
+        """
+        To set the current tool as this one
+        """
         # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def activate(self):
+        """
+        When the action is selected
+        """
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
@@ -96,6 +114,9 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.setIconSize(20)
 
     def deactivate(self):
+        """
+        When the action is deselected
+        """
         self.__rubberSit.reset()
         self.__rubberDif.reset()
         if self.__dockWdg is not None:
@@ -104,6 +125,10 @@ class ProfileTool(QgsMapTool):
             QgsMapTool.deactivate(self)
 
     def setEnable(self, layer):
+        """
+        To check if we can enable the action for the selected layer
+        :param layer: selected layer
+        """
         if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
                         QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             self.__lineLayer = layer
@@ -118,11 +143,22 @@ class ProfileTool(QgsMapTool):
         self.__lineLayer = None
 
     def __setLayerDialog(self, pointLayers):
+        """
+        To create a Profile Layers Dialog
+        :param pointLayers: points layers available
+        """
         self.__layDlg = ProfileLayersDialog(pointLayers)
         self.__layDlg.okButton().clicked.connect(self.__onLayOk)
         self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
 
     def __setMessageDialog(self, situations, differences, names):
+        """
+        To create a Profile Message Dialog
+        :param situations: elevation differ
+        :param differences:
+        :param names:
+        :return:
+        """
         self.__msgDlg = ProfileMessageDialog(situations, differences, names, self.__points)
         self.__msgDlg.passButton().clicked.connect(self.__onMsgPass)
         self.__msgDlg.onLineButton().clicked.connect(self.__onMsgLine)
@@ -163,6 +199,9 @@ class ProfileTool(QgsMapTool):
         return layerList
 
     def __onMsgPass(self):
+        """
+        When the Pass button in Profile Message Dialog is pushed
+        """
         self.__msgDlg.close()
         self.__selectedIds = None
         self.__selectedDirections = None
@@ -171,6 +210,9 @@ class ProfileTool(QgsMapTool):
         self.__inSelection = False
 
     def __onConfirmClose(self):
+        """
+        When the Cancel button in Profile Confirm Dialog is pushed
+        """
         self.__confDlg.close()
         self.__selectedIds = None
         self.__selectedDirections = None
@@ -179,12 +221,21 @@ class ProfileTool(QgsMapTool):
         self.__inSelection = False
 
     def __onMsgLine(self):
+        """
+        When the Line button in Profile Message Dialog is pushed
+        """
         self.__setConfirmDialog(0)
 
     def __onMsgPoints(self):
+        """
+        When the Points button in Profile Message Dialog is pushed
+        """
         self.__setConfirmDialog(1)
 
     def __onConfirmLine(self):
+        """
+        When the Line button in Profile Confirm Dialog is pushed
+        """
         self.__confDlg.close()
         self.__confirmLine()
 
@@ -232,6 +283,9 @@ class ProfileTool(QgsMapTool):
         self.__inSelection = False
 
     def __onConfirmPoints(self):
+        """
+        When the Points button in Profile Confirm Dialog is pushed
+        """
         self.__confDlg.close()
         self.__confirmPoints()
 
@@ -262,6 +316,9 @@ class ProfileTool(QgsMapTool):
         self.__inSelection = False
 
     def __onLayCancel(self):
+        """
+        When the Cancel button in Profile Layers Dialog is pushed
+        """
         self.__layDlg.close()
         self.__isChoosed = 0
         self.__lineLayer.removeSelection()
@@ -272,6 +329,9 @@ class ProfileTool(QgsMapTool):
         self.__inSelection = False
 
     def __onLayOk(self):
+        """
+        When the Ok button in Profile Layers Dialog is pushed
+        """
         self.__layDlg.close()
         self.__layers = self.__layDlg.getLayers()
         self.__features = []
@@ -360,6 +420,10 @@ class ProfileTool(QgsMapTool):
         return -1
 
     def canvasMoveEvent(self, event):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
         if not self.__isChoosed:
             if self.__lineLayer is not None:
                 f = Finder.findClosestFeatureAt(event.pos(), self.__lineLayer, self)
@@ -401,6 +465,10 @@ class ProfileTool(QgsMapTool):
                         self.__lastFeature = None
 
     def canvasReleaseEvent(self, event):
+        """
+        When the mouse is clicked
+        :param event: mouse event
+        """
         if event.button() == Qt.RightButton:
             if self.__lineLayer.selectedFeatures() and self.__selectedIds:
                 self.__isChoosed = 1

@@ -48,9 +48,9 @@ class ProfileMessageDialog(QDialog):
         for i in xrange(len(self.__situations)):
             line = self.__situations[i]
             ptz = self.__points[line['point']]['z']
-            msg = "- point " + line['point'] + QCoreApplication.translate("VDLTools"," in layer '") + \
-                  self.__names[line['layer']] + "' (point: " + ptz[line['layer']+num_lines-1] + "m |" + \
-                  QCoreApplication.translate("VDLTools","line vertex: ") + line['vertex'] + "m) \n"
+            msg = "- point " + str(line['point']) + QCoreApplication.translate("VDLTools"," in layer '") + \
+                  self.__names[line['layer']] + "' (point: " + str(ptz[line['layer']+num_lines-1]) + "m |" + \
+                  QCoreApplication.translate("VDLTools","line vertex: ") + str(line['vertex']) + "m) \n"
 
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
@@ -62,9 +62,9 @@ class ProfileMessageDialog(QDialog):
 
         for i in xrange(len(self.__differences)):
             line = self.__differences[i]
-            msg = "- point " + line['point'] + \
+            msg = "- point " + str(line['point']) + \
                   QCoreApplication.translate("VDLTools"," in layer : different elevations on same position ") + "(" +\
-                  line['v1'] + "m and" + line['v2'] + "m) \n"
+                  str(line['v1']) + "m and" + str(line['v2']) + "m) \n"
             difLabel = QLabel(msg)
             self.__difLabels.append(difLabel)
             self.__layout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)

@@ -247,9 +247,16 @@ class IntersectTool(QgsMapTool):
         return layer
 
     def __lineLayerDeleted(self):
+        """
+        To deselect the line layer when it is deleted
+        """
         self.lineLayerID = None
 
     def __pointLayer(self):
+        """
+        To get the point layer to create the center
+        :return: a point layer
+        """
         if self.__ownSettings is not None:
             if self.__ownSettings.pointsLayer() is not None:
                 layer = self.__ownSettings.pointsLayer()
@@ -269,4 +276,8 @@ class IntersectTool(QgsMapTool):
         return layer
 
     def __pointLayerDeleted(self):
+        """
+        To deselect the point layer when it is deleted
+        :return:
+        """
         self.__pointLayerID = None
