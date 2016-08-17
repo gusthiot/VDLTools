@@ -287,7 +287,7 @@ class MoveTool(QgsMapTool):
                 QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
         self.__layer.updateExtents()
-        self.__onCloseConfirm()
+        self.__onConfirmClose()
 
     def __onConfirmCopy(self):
         """
@@ -309,7 +309,7 @@ class MoveTool(QgsMapTool):
         else:
             self.__layer.addFeature(feature)
         self.__layer.updateExtents()
-        self.__onCloseConfirm()
+        self.__onConfirmClose()
 
     def canvasMoveEvent(self, event):
         """
