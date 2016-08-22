@@ -90,7 +90,7 @@ class ProfileDockWidget(QDockWidget):
         self.__profiles = None
         self.__numLines = None
 
-        self.__rubberband = None
+        self.__marker = None
         self.__tabmouseevent = None
 
         self.__contentWidget = QWidget()
@@ -344,7 +344,7 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
             self.__plotWdg.draw()
             self.__activateMouseTracking(True)
-            self.__rubberband.show()
+            self.__marker.show()
 
     def __reScalePlot(self):
         """
@@ -594,9 +594,8 @@ class ProfileDockWidget(QDockWidget):
         elif self.__doTracking:
             self.__doTracking = False
             self.__plotWdg.mpl_disconnect(self.cid)
-            if self.__rubberband:
-                self.__rubberband.reset()
-                self.__canvas.scene().removeItem(self.__rubberband)
+            if self.__marker:
+                self.__canvas.scene().removeItem(self.__marker)
             try:
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
@@ -627,20 +626,17 @@ class ProfileDockWidget(QDockWidget):
             self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
             y = self.__tabmouseevent[i][2] + (self.__tabmouseevent[i + 1][2] - self.__tabmouseevent[i][2]) / (
             self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
-            self.__rubberband.reset()
-            # self.__rubberband.show()
-            point = QgsPoint(x, y)
-            self.__rubberband.setToGeometry(QgsGeometry().fromPoint(point), None)
-            # self.__rubberband.setCenter(point)
+            self.__marker.show()
+            self.__marker.setCenter(QgsPoint(x, y))
 
     def __loadRubber(self):
         """
         To load te rubber band for mouse tracking on map
         """
-        self.__rubberband = QgsVertexMarker(self.__canvas)
-        self.__rubberband.setIconSize(5)
-        self.__rubberband.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
-        self.__rubberband.setPenWidth(3)
+        self.__marker = QgsVertexMarker(self.__canvas)
+        self.__marker.setIconSize(5)
+        self.__marker.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
+        self.__marker.setPenWidth(3)
 
     def __prepare_points(self):
         """
@@ -673,6 +669,9 @@ class ProfileDockWidget(QDockWidget):
         if self.__libCombo is not None:
             self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
             self.__libCombo = None
+        print "closed"
         self.closeSignal.emit()
+        self.__marker.hide()
+        self.__iface.actionPan().trigger()
         if QDockWidget is not None:
             QDockWidget.closeEvent(self, event)

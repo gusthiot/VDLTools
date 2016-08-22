@@ -36,44 +36,48 @@ from math import (sqrt,
 class Finder:
 
     @staticmethod
-    def findClosestFeatureAt(pixPoint, layer, mapTool, tolerance=15, isLayerCoordinates=False):
+    def findClosestFeatureAt(point, layer, mapTool, tolerance=15):
         """
         To find the closest feature from a given position in a given layer
-        :param pixPoint: the screen position
+        :param point: the position
         :param layer: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param tolerance: the tolerance for finding, in map coordinates
-        :param isLayerCoordinates: if the tolerance is in layer coordinates
+        :param tolerance: the tolerance for finding in point coordinates
         :return: closest feature found or none
         """
-        features = Finder.findFeaturesAt(pixPoint, layer, mapTool, tolerance, isLayerCoordinates)
+        features = Finder.findFeaturesAt(point, layer, mapTool, tolerance)
         if features is not None and len(features) > 0:
             return features[0]
         else:
             return None
 
     @staticmethod
-    def findClosestFeatureLayersAt(pixPoint, layers, mapTool, tolerance=15, isLayerCoordinates=False):
+    def findClosestFeatureLayersAt(point, layers, mapTool, tolerance=15):
         """
         To find the closest feature from a given position in given layers
-        :param pixPoint: the screen position
+        :param point: the position
         :param layers: the layers in which we are looking for features
         :param mapTool: a QsMapTool instance
-        :param tolerance: the tolerance for finding, in map coordinates
-        :param isLayerCoordinates: if the tolerance is in layer coordinates
+        :param tolerance: the tolerance for finding in point coordinates
         :return: closest feature found or none
         """
         features = []
         for layer in layers:
-            feats = Finder.findFeaturesAt(pixPoint, layer, mapTool, tolerance, isLayerCoordinates)
+            feats = Finder.findFeaturesAt(point, layer, mapTool, tolerance)
             if feats is not None:
                 for f in feats:
                     features.append([f, layer])
         if len(features) > 0:
-            dst = Finder.sqrDistForPoints(pixPoint, mapTool.toCanvasCoordinates(features[0][0].geometry().asPoint()))
+            if isinstance(point, QPoint):
+                dst = Finder.sqrDistForPoints(point, mapTool.toCanvasCoordinates(features[0][0].geometry().asPoint()))
+            else:
+                dst = Finder.sqrDistForPoints(point, features[0][0].geometry().asPoint())
             f = 0
             for i in xrange(1,len(features)):
-                d = Finder.sqrDistForPoints(pixPoint, mapTool.toCanvasCoordinates(features[i][0].geometry().asPoint()))
+                if isinstance(point, QPoint):
+                    d = Finder.sqrDistForPoints(point, mapTool.toCanvasCoordinates(features[i][0].geometry().asPoint()))
+                else:
+                    dst = Finder.sqrDistForPoints(point, features[i][0].geometry().asPoint())
                 if d < dst:
                     dst = d
                     f = i
@@ -104,43 +108,40 @@ class Finder:
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     @staticmethod
-    def findFeaturesLayersAt(pixPoint, layers, mapTool, tolerance=10, isLayerCoordinates=False):
+    def findFeaturesLayersAt(point, layers, mapTool, tolerance=10):
         """
         To find features from a given position in given layers
-        :param pixPoint: the screen position
+        :param point: the position
         :param layers: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param tolerance: the tolerance for finding, in map coordinates
-        :param isLayerCoordinates: if the tolerance is in layer coordinates
+        :param tolerance: the tolerance for finding in point coordinates
         :return: features found in layers
         """
         features = []
         for layer in layers:
-            features += Finder.findFeaturesAt(pixPoint, layer, mapTool, tolerance, isLayerCoordinates)
+            features += Finder.findFeaturesAt(point, layer, mapTool, tolerance)
         return features
 
     @staticmethod
-    def findFeaturesAt(pixPoint, layer, mapTool, tolerance, isLayerCoordinates):
+    def findFeaturesAt(point, layer, mapTool, tolerance):
         """
         To find features from a given position in a given layer
-        :param pixPoint: the screen position
+        :param point: the  position
         :param layer: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param tolerance: the tolerance for finding, in map coordinates
-        :param isLayerCoordinates: if the tolerance is in layer coordinates
+        :param tolerance: the tolerance for finding in point coordinates
         :return: features found in layer
         """
         if layer is None:
             return None
-        layerPt = mapTool.toLayerCoordinates(layer, pixPoint)
-        if isLayerCoordinates:
-            layerTolerance = tolerance
-            print(layerPt.x() - layerTolerance, layerPt.y() - layerTolerance,
-                                  layerPt.x() + layerTolerance, layerPt.y() + layerTolerance)
+        if isinstance(point, QPoint):
+            layPoint = mapTool.toLayerCoordinates(layer, point)
+            layTolerance = Finder.calcTolerance(point, layer, mapTool, tolerance)
         else:
-            layerTolerance = Finder.calcTolerance(pixPoint, layer, mapTool, tolerance)
-        searchRect = QgsRectangle(layerPt.x() - layerTolerance, layerPt.y() - layerTolerance,
-                                  layerPt.x() + layerTolerance, layerPt.y() + layerTolerance)
+            layPoint = point
+            layTolerance = tolerance
+        searchRect = QgsRectangle(layPoint.x() - layTolerance, layPoint.y() - layTolerance,
+                                  layPoint.x() + layTolerance, layPoint.y() + layTolerance)
         request = QgsFeatureRequest()
         request.setFilterRect(searchRect)
         request.setFlags(QgsFeatureRequest.ExactIntersect)

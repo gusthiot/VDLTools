@@ -399,8 +399,10 @@ class ProfileTool(QgsMapTool):
                             z.append(None)
                     feat = []
                     for layer in self.__layers:
-                        vertex = self.toCanvasCoordinates(QgsPoint(x, y))
-                        point = Finder.findClosestFeatureAt(vertex, layer, self, 0.03, True)
+                        print("layer", x, y)
+                        pixVertex = self.toCanvasCoordinates(self.toMapCoordinates(layer, QgsPoint(x, y)))
+                        print("canvas", pixVertex.x(), pixVertex.y())
+                        point = Finder.findClosestFeatureAt(QgsPoint(x, y), layer, self, 0.03)
                         feat.append(point)
                         if point is None:
                             z.append(None)
@@ -442,6 +444,8 @@ class ProfileTool(QgsMapTool):
         :return: the vertex id in the line, or -1
         """
         pos = 0
+        if point is None:
+            return -1
         for pt in line:
             if pt.x() == point.x() and pt.y() == point.y():
                 return pos
