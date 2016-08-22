@@ -29,7 +29,11 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileConfirmDialog(QDialog):
+
     def __init__(self):
+        """
+        Constructor
+        """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Edition Confirmation"))
         self.resize(300, 100)
@@ -53,10 +57,22 @@ class ProfileConfirmDialog(QDialog):
         self.setLayout(self.__layout)
 
     def setMessage(self, message):
+        """
+        To set the main message
+        :param message: main message
+        """
         self.__confirmLabel.setText(message)
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton

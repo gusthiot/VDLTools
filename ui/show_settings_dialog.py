@@ -35,7 +35,15 @@ from ..core.db_connector import DBConnector
 
 
 class ShowSettingsDialog(QDialog):
+
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable):
+        """
+        Constructor
+        :param iface: interface
+        :param memoryPointsLayer: working memory points layer
+        :param memoryLinesLayer: working memory lines layer
+        :param configTable: config table selected for import
+        """
         QDialog.__init__(self)
         self.__iface = iface
         self.__memoryPointsLayer = memoryPointsLayer
@@ -131,24 +139,45 @@ class ShowSettingsDialog(QDialog):
         self.setLayout(self.__layout)
 
     def __lineComboChanged(self):
+        """
+        To remove blank item when another one is selected
+        """
         if self.__lineCombo.itemText(0) == "":
             self.__lineCombo.removeItem(0)
 
     def __pointComboChanged(self):
+        """
+        To remove blank item when another one is selected
+        """
         if self.__pointCombo.itemText(0) == "":
             self.__pointCombo.removeItem(0)
 
     def __tableComboChanged(self):
+        """
+        To remove blank item when another one is selected
+        """
         if self.__tableCombo.itemText(0) == "":
             self.__tableCombo.removeItem(0)
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton
 
     def pointsLayer(self):
+        """
+        To get the selected memory points layer
+        :return: selected memeory points layer, or none
+        """
         index = self.__pointCombo.currentIndex()
         if self.__pointCombo.itemText(index) == "":
             return None
@@ -156,6 +185,10 @@ class ShowSettingsDialog(QDialog):
             return self.__pointsLayers[index]
 
     def linesLayer(self):
+        """
+        To get the selected memory lines layer
+        :return: selected memory lines layer, or none
+        """
         index = self.__lineCombo.currentIndex()
         if self.__lineCombo.itemText(index) == "":
             return None
@@ -163,6 +196,10 @@ class ShowSettingsDialog(QDialog):
             return self.__linesLayers[index]
 
     def configTable(self):
+        """
+        To get the selected config table
+        :return: selected config table, or none
+        """
         index = self.__tableCombo.currentIndex()
         if self.__tableCombo.itemText(index) == "":
             return None

@@ -30,7 +30,15 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileMessageDialog(QDialog):
+
     def __init__(self, situations, differences, names, points):
+        """
+        Constructor
+        :param situations: situations, when point and vertex elevations are different
+        :param differences: when lines vertex elevations are different on position connection
+        :param names: layers names
+        :param points: vertices positions
+        """
         QDialog.__init__(self)
         self.__situations = situations
         self.__differences = differences
@@ -89,6 +97,10 @@ class ProfileMessageDialog(QDialog):
         self.setLayout(self.__layout)
 
     def getSituations(self):
+        """
+        To get the checked situations
+        :return: checked situations
+        """
         situations = []
         for i in xrange(len(self.__situations)):
             if self.__msgChecks[i].isChecked():
@@ -96,10 +108,22 @@ class ProfileMessageDialog(QDialog):
         return situations
 
     def passButton(self):
+        """
+        To get the pass button instance
+        :return: pass button instance
+        """
         return self.__passButton
 
     def onPointsButton(self):
+        """
+        To get the on points button instance
+        :return: on points button instance
+        """
         return self.__onPointsButton
 
     def onLineButton(self):
+        """
+        To get the on line button instance
+        :return: on line button instance
+        """
         return self.__onLineButton

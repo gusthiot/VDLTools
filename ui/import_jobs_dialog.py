@@ -30,7 +30,12 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ImportJobsDialog(QDialog):
+
     def __init__(self, jobs):
+        """
+        Constructor
+        :param jobs: all the jobs available for import
+        """
         QDialog.__init__(self)
         self.__jobs = jobs
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Choose job"))
@@ -64,16 +69,31 @@ class ImportJobsDialog(QDialog):
         self.setLayout(self.__layout)
 
     def __jobComboChanged(self):
+        """
+        When the selected job has changed
+        """
         if self.__pointCombo.itemText(0) == "":
             self.__pointCombo.removeItem(0)
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton
 
     def job(self):
+        """
+        To get the selected job
+        :return: selected job
+        """
         index = self.__jobCombo.currentIndex()
         if self.__jobCombo.itemText(index) == "":
             return None

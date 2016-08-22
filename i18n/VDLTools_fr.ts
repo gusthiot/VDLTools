@@ -353,7 +353,7 @@
     <message>
         <location filename="../ui/profile_message_dialog.py" line="51"/>
         <source> in layer &apos;</source>
-        <translation>dans la couche &apos;</translation>
+        <translation> dans la couche &apos;</translation>
     </message>
     <message>
         <location filename="../ui/profile_message_dialog.py" line="53"/>
@@ -363,7 +363,7 @@
     <message>
         <location filename="../ui/profile_message_dialog.py" line="66"/>
         <source> in layer : different elevations on same position </source>
-        <translation>dans la couche : différentes altitudes pour la même position </translation>
+        <translation> dans la couche : différentes altitudes pour la même position </translation>
     </message>
     <message>
         <location filename="../ui/profile_message_dialog.py" line="72"/>

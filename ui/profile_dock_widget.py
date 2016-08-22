@@ -20,7 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import QgsPoint
+from qgis.core import (QgsPoint,
+                       QgsGeometry)
 from qgis.gui import (QgsVertexMarker,
                       QgsMessageBar)
 from PyQt4.QtGui import (QDockWidget,
@@ -64,7 +65,12 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # , Navigation
 
 
 class ProfileDockWidget(QDockWidget):
+
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         QDockWidget.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Profile Tool"))
         self.resize(1024, 400)
@@ -145,6 +151,9 @@ class ProfileDockWidget(QDockWidget):
         self.__minSpin.setEnabled(False)
 
     def __changePlotWidget(self):
+        """
+        When plot widget is change (qwt <-> matplotlib)
+        """
         self.__activateMouseTracking(False)
         while self.__frameLayout.count():
             child = self.__frameLayout.takeAt(0)
@@ -208,12 +217,20 @@ class ProfileDockWidget(QDockWidget):
             # mpltoolbar.removeAction(lstActions[8])
 
     def setProfiles(self, profiles, numLines):
+        """
+        To set the profiles
+        :param profiles: profiles : positions with elevations (for line and points)
+        :param numLines: number of selected connected lines
+        """
         self.__numLines = numLines
         self.__profiles = profiles
         if self.__lib == 'Matplotlib':
             self.__prepare_points()
 
     def drawVertLine(self):
+        """
+        To draw vertical lines at positions on the profile
+        """
         if (self.__profiles is None) or (len(self.__profiles) == 0):
             return
         profileLen = 0
@@ -238,6 +255,10 @@ class ProfileDockWidget(QDockWidget):
             # self.label(i+1,width, profileLen)
 
     def attachCurves(self, names):
+        """
+        To attach the curves for the layers to the profile
+        :param names: layers names
+        """
         if (self.__profiles is None) or (self.__profiles == 0):
             return
         colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
@@ -320,7 +341,10 @@ class ProfileDockWidget(QDockWidget):
             self.__activateMouseTracking(True)
             self.__rubberband.show()
 
-    def __reScalePlot(self):  # called when spinbox value changed
+    def __reScalePlot(self):
+        """
+        To rescale the profile plot depending to the bounds
+        """
         if (self.__profiles is None) or (self.__profiles == 0):
             self.__plotWdg.replot()
             return
@@ -394,6 +418,11 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.draw()
 
     def __minTab(self, tab):
+        """
+        To get the minimum value in a table
+        :param tab: table to scan
+        :return: minimum value
+        """
         mini = 1000000000
         for t in tab:
             if t is None:
@@ -403,6 +432,11 @@ class ProfileDockWidget(QDockWidget):
         return mini
 
     def __maxTab(self, tab):
+        """
+        To get the maximum value in a table
+        :param tab: table to scan
+        :return: maximum value
+        """
         maxi = -1000000000
         for t in tab:
             if t is None:
@@ -412,10 +446,16 @@ class ProfileDockWidget(QDockWidget):
         return maxi
 
     def __setLib(self):
+        """
+        To set the new widget library (qwt <-> matplotlib)
+        """
         self.__lib = self.__libs[self.__libCombo.currentIndex()]
         self.__changePlotWidget()
 
     def __save(self):
+        """
+        To save the profile in a file, on selected format
+        """
         idx = self.__typeCombo.currentIndex()
         if idx == 0:
             self.__outPDF()
@@ -432,6 +472,9 @@ class ProfileDockWidget(QDockWidget):
                 level=QgsMessageBar.CRITICAL)
 
     def __outPrint(self): # Postscript file rendering doesn't work properly yet.
+        """
+        To save the profile as ps file
+        """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools", "Profile of curve.ps"),"PostScript Format (*.ps)")
@@ -450,6 +493,9 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.figure.savefig(str(fileName))
 
     def __outPDF(self):
+        """
+        To save the profile as pdf file
+        """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile of curve.pdf"),"Portable Document Format (*.pdf)")
@@ -465,6 +511,9 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.figure.savefig(str(fileName))
 
     def __outSVG(self):
+        """
+        To save the profile as svg file
+        """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile of curve.svg"), "Scalable Vector Graphics (*.svg)")
@@ -478,6 +527,9 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.figure.savefig(str(fileName))
 
     def __outPNG(self):
+        """
+        To save the profile as png file
+        """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile of curve.png"),"Portable Network Graphics (*.png)")
@@ -487,7 +539,10 @@ class ProfileDockWidget(QDockWidget):
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.savefig(str(fileName))
 
-    def clearData(self):  # erase one of profiles
+    def clearData(self):
+        """
+        To clear the displayed data
+        """
         if self.__profiles is None:
             return
         if self.__lib == 'Qwt5':
@@ -511,6 +566,10 @@ class ProfileDockWidget(QDockWidget):
             child.widget().deleteLater()
 
     def __manageMatplotlibAxe(self, axe):
+        """
+        To manage the axes for matplotlib library
+        :param axe: the axes element
+        """
         axe.grid()
         axe.tick_params(axis="both", which="major", direction="out", length=10, width=1, bottom=True, top=False,
                          left=True, right=False)
@@ -519,6 +578,10 @@ class ProfileDockWidget(QDockWidget):
                          left=True, right=False)
 
     def __activateMouseTracking(self, activate):
+        """
+        To (de)activate the mouse tracking on the profile for matplotlib library
+        :param activate: true to activate, false to deactivate
+        """
         if activate:
             self.__doTracking = True
             self.__loadRubber()
@@ -527,27 +590,26 @@ class ProfileDockWidget(QDockWidget):
             self.__doTracking = False
             self.__plotWdg.mpl_disconnect(self.cid)
             if self.__rubberband:
+                self.__rubberband.reset()
                 self.__canvas.scene().removeItem(self.__rubberband)
             try:
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
             except Exception, e:
-                self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","Error"),
-                    QCoreApplication.translate("VDLTools","Tracking exception..."), level=QgsMessageBar.CRITICAL)
-                print str(e)
+                print("Tracking exception : " + str(e))
 
     def __mouseevent_mpl(self, event):
+        """
+        To manage matplotlib mouse tracking event
+        :param event: mouse tracking event
+        """
         if event.xdata:
             try:
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
             except Exception, e:
-                self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","Error"),
-                    QCoreApplication.translate("VDLTools","Mouse event exception..."), level=QgsMessageBar.CRITICAL)
-                print str(e)
+                print("Mouse event exception : " +str(e))
             xdata = float(event.xdata)
             self.__vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')
             self.__plotWdg.draw()
@@ -560,17 +622,25 @@ class ProfileDockWidget(QDockWidget):
             self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
             y = self.__tabmouseevent[i][2] + (self.__tabmouseevent[i + 1][2] - self.__tabmouseevent[i][2]) / (
             self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
-            self.__rubberband.show()
+            self.__rubberband.reset()
+            # self.__rubberband.show()
             point = QgsPoint(x, y)
-            self.__rubberband.setCenter(point)
+            self.__rubberband.setToGeometry(QgsGeometry().fromPoint(point), None)
+            # self.__rubberband.setCenter(point)
 
     def __loadRubber(self):
+        """
+        To load te rubber band for mouse tracking on map
+        """
         self.__rubberband = QgsVertexMarker(self.__canvas)
         self.__rubberband.setIconSize(5)
         self.__rubberband.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
         self.__rubberband.setPenWidth(3)
 
     def __prepare_points(self):
+        """
+        To prepare the points on map for mouse tracking on profile
+        """
         self.__tabmouseevent = []
         length = 0
         for i, point in enumerate(self.__profiles):
@@ -582,6 +652,10 @@ class ProfileDockWidget(QDockWidget):
                 self.__tabmouseevent.append([float(length), float(point['x']), float(point['y'])])
 
     def closeEvent(self, event):
+        """
+        When the dock widget is closed
+        :param event: close event
+        """
         if self.__maxSpin is not None:
             self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__maxSpin = None

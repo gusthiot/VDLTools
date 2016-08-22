@@ -29,7 +29,13 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ExtrapolateConfirmDialog(QDialog):
+
     def __init__(self, oldElevation, newElevation):
+        """
+        Constructor
+        :param oldElevation: the actual position elevation
+        :param newElevation: the proposed new elevation
+        """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Edition Confirmation"))
         self.resize(300, 100)
@@ -56,7 +62,15 @@ class ExtrapolateConfirmDialog(QDialog):
         self.setLayout(self.__layout)
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton

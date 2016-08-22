@@ -32,7 +32,12 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileLayersDialog(QDialog):
+
     def __init__(self, pointLayers):
+        """
+        Constructor
+        :param pointLayers: available points layers
+        """
         QDialog.__init__(self)
         self.__pointLayers = pointLayers
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Add Points Layers Profiles"))
@@ -104,6 +109,10 @@ class ProfileLayersDialog(QDialog):
     #     return layers, attributes
 
     def getLayers(self):
+        """
+        To get the selected points layers
+        :return: selected points layers
+        """
         layers = []
         for i in xrange(len(self.__pointLayers)):
             if self.__layChecks[i].isChecked():
@@ -111,9 +120,17 @@ class ProfileLayersDialog(QDialog):
         return layers
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton
 
     # def close(self):

@@ -29,7 +29,11 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class MoveConfirmDialog(QDialog):
+
     def __init__(self):
+        """
+        Constructor
+        """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Move/Copy Confirmation"))
         self.resize(300, 100)
@@ -58,10 +62,22 @@ class MoveConfirmDialog(QDialog):
         self.setLayout(self.__layout)
 
     def moveButton(self):
+        """
+        To get the move button instance
+        :return: move button instance
+        """
         return self.__moveButton
 
     def copyButton(self):
+        """
+        To get the cpoy button instance
+        :return: cpoy button instance
+        """
         return self.__copyButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton

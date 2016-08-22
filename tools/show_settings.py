@@ -27,6 +27,10 @@ from PyQt4.QtCore import QCoreApplication
 class ShowSettings:
 
     def __init__(self, iface):
+        """
+        Constructor
+        :param iface: interface
+        """
         self.__iface = iface
         self.__icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Settings")
@@ -36,12 +40,23 @@ class ShowSettings:
         self.__configTable = None
 
     def icon_path(self):
+        """
+        To get the icon path
+        :return: icon path
+        """
         return self.__icon_path
 
     def text(self):
+        """
+        To get the menu text
+        :return: menu text
+        """
         return self.__text
 
     def start(self):
+        """
+        To start the show settings, meaning display a Show Settings Dialog
+        """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
                                             self.__configTable)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
@@ -49,9 +64,10 @@ class ShowSettings:
         self.__showDlg.show()
 
     def __onOk(self):
+        """
+        When the Ok button in Show Settings Dialog is pushed
+        """
         self.__showDlg.close()
-        self.__showDlg.okButton().clicked.disconnect(self.__onOk)
-        self.__showDlg.cancelButton().clicked.disconnect(self.__onCancel)
         self.__memoryLinesLayer = self.__showDlg.linesLayer()
         self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
         self.__memoryPointsLayer = self.__showDlg.pointsLayer()
@@ -59,32 +75,63 @@ class ShowSettings:
         self.__configTable = self.__showDlg.configTable()
 
     def __onCancel(self):
+        """
+        When the Cancel button in Show Settings Dialog is pushed
+        """
         self.__showDlg.close()
-        self.__showDlg.okButton().clicked.disconnect(self.__onOk)
-        self.__showDlg.cancelButton().clicked.disconnect(self.__onCancel)
 
     def __memoryLinesLayerDeleted(self):
+        """
+        To delete the saved memory lines layer
+        """
         self.__memoryLinesLayer = None
 
     def __memoryPointsLayerDeleted(self):
+        """
+        To delete the saved memory points layer
+        """
         self.__memoryPointsLayer = None
 
     def pointsLayer(self):
+        """
+        To get the saved memory points layer
+        :return: saved memory points layer
+        """
         return self.__memoryPointsLayer
 
     def linesLayer(self):
+        """
+        To get the saved memory lines layer
+        :return: saved memory lines layer
+        """
         return self.__memoryLinesLayer
 
     def configTable(self):
+        """
+        To get the saved config table (for import tool)
+        :return: saved config table
+        """
         return self.__configTable
 
     def setPointsLayer(self, pointsLayer):
+        """
+        To set the saved memory points layer
+        :param pointsLayer: memory points layer to save
+        """
         self.__memoryPointsLayer = pointsLayer
         self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
 
     def setLinesLayer(self, linesLayer):
+        """
+        To set the saved memory lines layer
+        :param linesLayer: memory lines layer to save
+        """
         self.__memoryLinesLayer = linesLayer
         self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
 
     def setConfigTable(self, configTable):
+        """
+        To set the saved config table
+        :param configTable: config table to save
+        """
         self.__configTable = configTable

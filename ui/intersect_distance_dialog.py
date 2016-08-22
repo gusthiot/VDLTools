@@ -31,7 +31,12 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class IntersectDistanceDialog(QDialog):
+
     def __init__(self, mapPoint):
+        """
+        Constructor
+        :param mapPoint: map point intersection
+        """
         QDialog.__init__(self)
         self.__mapPoint = mapPoint
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Place distance"))
@@ -80,14 +85,30 @@ class IntersectDistanceDialog(QDialog):
         self.setLayout(self.__gridLayout)
 
     def observation(self):
+        """
+        To get the circle radius
+        :return: circle radius
+        """
         return self.__observation
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton
 
     def mapPoint(self):
+        """
+        To get the map point intersection
+        :return: map point intersection
+        """
         return self.__mapPoint
 

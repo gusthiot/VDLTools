@@ -102,6 +102,7 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+        self.__dockWdg.destroyed.connect(self.deativate)
         self.__rubberSit = QgsRubberBand(self.__canvas, QGis.Point)
         self.__rubberDif = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
@@ -154,10 +155,9 @@ class ProfileTool(QgsMapTool):
     def __setMessageDialog(self, situations, differences, names):
         """
         To create a Profile Message Dialog
-        :param situations: elevation differ
-        :param differences:
-        :param names:
-        :return:
+        :param situations: elevation differences between line and points
+        :param differences: elevation differences between lines
+        :param names: layers names
         """
         self.__msgDlg = ProfileMessageDialog(situations, differences, names, self.__points)
         self.__msgDlg.passButton().clicked.connect(self.__onMsgPass)
@@ -165,6 +165,10 @@ class ProfileTool(QgsMapTool):
         self.__msgDlg.onPointsButton().clicked.connect(self.__onMsgPoints)
 
     def __setConfirmDialog(self, origin):
+        """
+        To create a Profile Confirm Dialog
+        :param origin: '0' if we copy points elevations to line, '1' if we copy line elevation to points
+        """
         self.__confDlg = ProfileConfirmDialog()
         if origin == 0 and self.__lineLayer.isEditable() is False:
             self.__confDlg.setMessage(
@@ -192,6 +196,10 @@ class ProfileTool(QgsMapTool):
             self.__confirmLine()
 
     def __getPointLayers(self):
+        """
+        To get all points layers that can be used
+        :return: layers list
+        """
         layerList = []
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
@@ -240,6 +248,9 @@ class ProfileTool(QgsMapTool):
         self.__confirmLine()
 
     def __confirmLine(self):
+        """
+        To change the elevations of certains vertices of the line
+        """
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
         points = []
@@ -290,6 +301,9 @@ class ProfileTool(QgsMapTool):
         self.__confirmPoints()
 
     def __confirmPoints(self):
+        """
+        To change the elevations of certain points
+        """
         self.__msgDlg.close()
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
@@ -377,7 +391,7 @@ class ProfileTool(QgsMapTool):
                     feat = []
                     for layer in self.__layers:
                         vertex = self.toCanvasCoordinates(QgsPoint(x, y))
-                        point = Finder.findClosestFeatureAt(vertex, layer, self, 3, True)
+                        point = Finder.findClosestFeatureAt(vertex, layer, self, 0.03, True)
                         feat.append(point)
                         if point is None:
                             z.append(None)
@@ -412,6 +426,12 @@ class ProfileTool(QgsMapTool):
 
     @staticmethod
     def contains(line, point):
+        """
+        To check if a position is a line vertex
+        :param line: the line
+        :param point: the position
+        :return: the vertex id in the line, or -1
+        """
         pos = 0
         for pt in line:
             if pt.x() == point.x() and pt.y() == point.y():
@@ -510,6 +530,10 @@ class ProfileTool(QgsMapTool):
                 self.__lineLayer.setSelectedFeatures(self.__selectedIds)
 
     def __calculateProfile(self, names):
+        """
+        To calculate the profile and display it
+        :param names: the names of the displayed layers
+        """
         if self.__points is None:
             return
         self.__dockWdg.clearData()
@@ -582,4 +606,3 @@ class ProfileTool(QgsMapTool):
             self.__startVertex = None
             self.__endVertex = None
             self.__inSelection = False
-

@@ -33,7 +33,12 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class DuplicateDistanceDialog(QDialog):
+
     def __init__(self, isComplexPolygon):
+        """
+        Constructor
+        :param isComplexPolygon: for a polygon, if it has interior ring(s)
+        """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Duplicate"))
         self.resize(300, 100)
@@ -83,19 +88,42 @@ class DuplicateDistanceDialog(QDialog):
         self.setLayout(self.__layout)
 
     def previewButton(self):
+        """
+        To get the preview button instance
+        :return: preview button instance
+        """
         return self.__previewButton
 
     def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
         return self.__okButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton
 
     def distanceEditText(self):
+        """
+        To get the text putted into the distance edit field
+        :return: text from ditance edit field
+        """
         return self.__distanceEdit.text()
 
     def setDistanceEditText(self, text):
+        """
+        To set the distance displayed in the distance edit field
+        """
         self.__distanceEdit.setText(text)
 
     def isInverted(self):
+        """
+        To get if the user want a complex polygon duplication inverted or not
+        :return: true if inverted, false otherwise
+        """
         return self.__direction_button_group.checkedId() == 1

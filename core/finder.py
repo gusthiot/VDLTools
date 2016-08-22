@@ -135,6 +135,8 @@ class Finder:
         layerPt = mapTool.toLayerCoordinates(layer, pixPoint)
         if isLayerCoordinates:
             layerTolerance = tolerance
+            print(layerPt.x() - layerTolerance, layerPt.y() - layerTolerance,
+                                  layerPt.x() + layerTolerance, layerPt.y() + layerTolerance)
         else:
             layerTolerance = Finder.calcTolerance(pixPoint, layer, mapTool, tolerance)
         searchRect = QgsRectangle(layerPt.x() - layerTolerance, layerPt.y() - layerTolerance,

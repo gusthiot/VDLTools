@@ -29,7 +29,11 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class InterpolateConfirmDialog(QDialog):
+
     def __init__(self):
+        """
+        Constructor
+        """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Edition Confirmation"))
         self.resize(300, 100)
@@ -65,22 +69,50 @@ class InterpolateConfirmDialog(QDialog):
         self.setLayout(self.__layout)
 
     def setMainLabel(self, label):
+        """
+        To set the title
+        :param label: title
+        """
         self.__confirmLabel.setText(label)
 
     def setAllLabel(self, label):
+        """
+        To set the all button title
+        :param label: title
+        """
         self.__allButton.setText(label)
 
     def setVtLabel(self, label):
+        """
+        To set the vertex button title
+        :param label: title
+        """
         self.__vtButton.setText(label)
 
     def allButton(self):
+        """
+        To get the all button instance
+        :return: all button instance
+        """
         return self.__allButton
 
     def ptButton(self):
+        """
+        To get the point button instance
+        :return: point button instance
+        """
         return self.__ptButton
 
     def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
         return self.__cancelButton
 
     def vtButton(self):
+        """
+        To get the vertex button instance
+        :return: vertex button instance
+        """
         return self.__vtButton
