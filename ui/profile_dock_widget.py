@@ -44,14 +44,15 @@ from PyQt4.QtGui import (QDockWidget,
 from PyQt4.QtCore import (QSize,
                           QRectF,
                           QCoreApplication,
-                          Qt)
+                          Qt,
+                          pyqtSignal)
 from PyQt4.QtSvg import QSvgGenerator
-from PyQt4.Qwt5 import (QwtPlot,
+from PyQt4.Qwt5.Qwt import (QwtPlot,
                         QwtText,
                         QwtPlotZoomer,
                         QwtPicker,
                         QwtPlotItem,
-                        Qwt,
+                        QwtPlotGrid,
                         QwtPlotMarker,
                         QwtSymbol,
                         QwtPlotCurve)
@@ -66,6 +67,8 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # , Navigation
 
 class ProfileDockWidget(QDockWidget):
 
+    closeSignal = pyqtSignal()
+
     def __init__(self, iface):
         """
         Constructor
@@ -79,6 +82,8 @@ class ProfileDockWidget(QDockWidget):
         self.__types = ['PDF', 'PNG', 'SVG', 'PS']
         self.__libs = ['Matplotlib', 'Qwt5']
         self.__lib = self.__libs[0]
+
+
         self.__doTracking = False
         self.__vline = None
 
@@ -183,7 +188,7 @@ class ProfileDockWidget(QDockWidget):
                                    self.__plotWdg.canvas())
             self.__zoomer.setRubberBandPen(QPen(Qt.blue))
             # self.__plotWdg.insertLegend(QwtLegend())
-            grid = Qwt.QwtPlotGrid()
+            grid = QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
             self.__frameLayout.addWidget(self.__plotWdg)
@@ -668,5 +673,6 @@ class ProfileDockWidget(QDockWidget):
         if self.__libCombo is not None:
             self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
             self.__libCombo = None
+        self.closeSignal.emit()
         if QDockWidget is not None:
             QDockWidget.closeEvent(self, event)

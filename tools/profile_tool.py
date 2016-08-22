@@ -102,7 +102,7 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
-        self.__dockWdg.destroyed.connect(self.deativate)
+        self.__dockWdg.closeSignal.connect(self.closed)
         self.__rubberSit = QgsRubberBand(self.__canvas, QGis.Point)
         self.__rubberDif = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
@@ -113,6 +113,15 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.setColor(color)
         self.__rubberDif.setIcon(2)
         self.__rubberDif.setIconSize(20)
+
+    def closed(self):
+        self.__lineLayer.removeSelection()
+        self.__lastFeatureId = None
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__iface.actionPan().trigger()
 
     def deactivate(self):
         """
