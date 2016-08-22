@@ -245,15 +245,13 @@ class InterpolateTool(QgsMapTool):
                     self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
                     self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
                     self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
-                self.__confDlg.allButton().clicked.connect(self.__onConfirmedAll)
-                self.__confDlg.ptButton().clicked.connect(self.__onConfirmedPoint)
-                self.__confDlg.vtButton().clicked.connect(self.__onConfirmedVertex)
-                self.__confDlg.cancelButton().clicked.connect(self.__onCloseConfirm)
+                self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
+                self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
                 self.__confDlg.show()
 
-    def __onCloseConfirm(self):
+    def __onConfirmCancel(self):
         """
-        When the Close button in Interpolate Confirm Dialog is pushed
+        When the Cancel button in Interpolate Confirm Dialog is pushed
         """
         self.__confDlg.close()
         self.__lastLayer.removeSelection()
@@ -261,37 +259,21 @@ class InterpolateTool(QgsMapTool):
         self.__lastFeatureId = None
         self.__isEditing = False
 
-    def __onConfirmedPoint(self):
-        """
-        When the Point button in Interpolate Confirm Dialog is pushed
-        """
-        self.__confDlg.close()
-        self.__createElements(True, False)
+    def __onConfirmOk(self):
 
-    def __onConfirmedAll(self):
-        """
-        When the Point And Vertex button in Interpolate Confirm Dialog is pushed
-        """
+        id = self.__confDlg.getCheckedId()
         self.__confDlg.close()
-        if self.__lastLayer.isEditable() is False:
-            self.__lastLayer.startEditing()
-        self.__createElements(True, True)
 
-    def __onConfirmedVertex(self):
-        """
-        When the Vertex button in Interpolate Confirm Dialog is pushed
-        """
-        self.__confDlg.close()
-        if self.__lastLayer.isEditable() is False:
-            self.__lastLayer.startEditing()
-        self.__createElements(False, True)
+        withVertex = True
+        withPoint = True
+        if id == 1:
+            withVertex = False
+        else:
+            if self.__lastLayer.isEditable() is False:
+                self.__lastLayer.startEditing()
+        if id == 2:
+            withPoint = False
 
-    def __createElements(self, withPoint, withVertex):
-        """
-        To create the asked elements (point, vertex)
-        :param withPoint: if point has to be created
-        :param withVertex: if vertex line has to be created
-        """
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
