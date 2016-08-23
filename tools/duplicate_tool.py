@@ -206,8 +206,8 @@ class DuplicateTool(QgsMapTool):
         if self.__rubberBand:
             self.__canvas.scene().removeItem(self.__rubberBand)
             self.__rubberBand = None
-        if self.__dstDlg.distanceEditText():
-            distance = float(self.__dstDlg.distanceEditText())
+        if self.__dstDlg.distanceEdit().text():
+            distance = float(self.__dstDlg.distanceEdit().text())
             if self.__layer.geometryType() == QGis.Polygon:
                 self.__polygonPreview(distance)
             else:
@@ -346,5 +346,6 @@ class DuplicateTool(QgsMapTool):
                 self.__setDistanceDialog(True)
             else:
                 self.__setDistanceDialog(False)
-            self.__dstDlg.setDistanceEditText("5.0")
+            self.__dstDlg.distanceEdit().setText("5.0")
+            self.__dstDlg.distanceEdit().selectAll()
             self.__dstDlg.show()

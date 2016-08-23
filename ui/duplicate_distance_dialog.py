@@ -108,6 +108,13 @@ class DuplicateDistanceDialog(QDialog):
         """
         return self.__cancelButton
 
+    def distanceEdit(self):
+        """
+        To get the distance edit widget
+        :return: distance edit widget
+        """
+        return self.__distanceEdit
+
     def distanceEditText(self):
         """
         To get the text putted into the distance edit field

@@ -86,8 +86,8 @@ class IntersectDistanceDialog(QDialog):
 
     def observation(self):
         """
-        To get the circle radius
-        :return: circle radius
+        To get the circle radius edit widget
+        :return: circle radius edit widget
         """
         return self.__observation
 
