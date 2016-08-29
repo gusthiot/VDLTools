@@ -165,6 +165,8 @@ class IntersectTool(QgsMapTool):
         scale = self.__iface.mapCanvas().mapRenderer().scale()
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                print("is visible", layer.hasScaleBasedVisibility())
+                print("scale : min-scale-max", layer.minimumScale(), scale, layer.maximumScale())
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
                     if legend.isLayerVisible(layer):
                         snapLayer = QgsSnapper.SnapLayer()
