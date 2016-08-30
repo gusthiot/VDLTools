@@ -150,15 +150,22 @@ class IntersectTool(QgsMapTool):
         self.__rubber.setIconSize(20)
         self.__rubber.setWidth(2)
         self.__updateSnapperList()
+        print "init"
         self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
+        print "connect 1"
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
+        print " connect 2"
         QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
+        print "connect 3"
 
     def __updateSnapperList(self):
         """
         To update the list of layers that can be snapped
         """
+        print "update"
         self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
+        print self.__snapperList
+        print self.__layerList
 
     def deactivate(self):
         """
@@ -177,14 +184,17 @@ class IntersectTool(QgsMapTool):
         """
         if not self.__isEditing:
             if self.__counter > 2:
+                print "look"
                 self.__rubber.reset()
                 snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
                 if snappedIntersection is None:
                     snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
                     if snappedPoint is not None:
+                        print "snap"
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
                 else:
+                    print "intersect"
                     self.__rubber.setIcon(1)
                     self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
                 self.__counter = 0
