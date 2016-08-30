@@ -40,7 +40,7 @@ from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 
-
+# TODO : ajouter les curved
 class MoveTool(QgsMapTool):
 
     def __init__(self, iface):
@@ -67,6 +67,7 @@ class MoveTool(QgsMapTool):
         self.__rubberSnap = None
         self.__newFeature = None
         self.__selectedVertex = None
+        self.__laySettings = None
 
     def icon_path(self):
         """
@@ -94,6 +95,7 @@ class MoveTool(QgsMapTool):
         To set the action as enable, as the layer is editable
         """
         self.action().setEnabled(True)
+        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
@@ -102,6 +104,7 @@ class MoveTool(QgsMapTool):
         To set the action as disable, as the layer is not editable
         """
         self.action().setEnabled(False)
+        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
         if self.__canvas.mapTool == self:
@@ -290,16 +293,26 @@ class MoveTool(QgsMapTool):
         self.__layer.updateExtents()
         self.__onConfirmClose()
 
+    def __updateList(self):
+        """
+        To update the snapping options of the layer
+        """
+        noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+            QgsProject.instance().snapSettingsForLayer(self.__layer.id())
+        self.__laySettings = {'layer': self.__layer, 'tolerance': tolerance, 'unitType': unitType}
+        if not enabled or tolerance == 0:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "Error"),
+                QCoreApplication.translate("VDLTools", "This layer has no snapping options"),
+                level=QgsMessageBar.CRITICAL)
+
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                QgsProject.instance().snapSettingsForLayer(self.__layer.id())
-            laySettings = {'layer': self.__layer, 'tolerance': tolerance, 'unitType': unitType}
-            f = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
+            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__laySettings, self)
             if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()
                 self.__layer.setSelectedFeatures([f.id()])

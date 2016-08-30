@@ -38,7 +38,7 @@ from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
-
+# TODO : selection ligne, puis selection segment/point/intersection
 class InterpolateTool(QgsMapTool):
 
     def __init__(self, iface):
@@ -65,6 +65,7 @@ class InterpolateTool(QgsMapTool):
         self.__counter = 0
         self.__ownSettings = None
         self.__selectedFeature = None
+        self.__linesSets = None
 
     def icon_path(self):
         """
@@ -120,6 +121,8 @@ class InterpolateTool(QgsMapTool):
         """
         self.action().setEnabled(True)
         self.__canvas.layersChanged.connect(self.__updateList)
+        self.__canvas.scaleChanged.connect(self.__updateList)
+        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
@@ -129,6 +132,8 @@ class InterpolateTool(QgsMapTool):
         """
         self.action().setEnabled(False)
         self.__canvas.layersChanged.disconnect(self.__updateList)
+        self.__canvas.scaleChanged.disconnect(self.__updateList)
+        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
         if self.__canvas.mapTool == self:
@@ -197,8 +202,13 @@ class InterpolateTool(QgsMapTool):
                     and layer.geometryType() == QGis.Line:
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
                     if legend.isLayerVisible(layer) and enabled:
-                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
-                        self.__layerList.append(laySettings)
+                        layerSettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
+                        self.__layerList.append(layerSettings)
+
+        if self.__ownSettings and self.__ownSettings.linesLayer():
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(self.__ownSettings.linesLayer().id())
+            self.__linesSets = {'layer': self.__ownSettings.linesLayer(), 'tolerance': tolerance, 'unitType': unitType}
 
     def canvasMoveEvent(self, event):
         """
@@ -210,14 +220,14 @@ class InterpolateTool(QgsMapTool):
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
-                l = f_l[1]
                 self.__lastFeatureId = f.id()
-                self.__lastLayer = l
+                self.__lastLayer = f_l[1]
                 self.__lastLayer.setSelectedFeatures([f.id()])
             if f_l is not None:
                 if self.__counter > 2:
                     self.__rubber.reset()
                     snappedIntersection = self.__snapToIntersection(event.mapPoint(), f_l[0])
+                    print f_l[1].name()
                     if snappedIntersection is None:
                         self.__rubber.setIcon(4)
                         line_v2, curved = GeometryV2.asLineV2(f_l[0].geometry())
@@ -326,15 +336,12 @@ class InterpolateTool(QgsMapTool):
         :param selectedFeature: the feature that can intersect another one
         :return: an intersection QgsPointV2 or none
         """
-        if self.__ownSettings is None:
-            return None
-        if self.__ownSettings.linesLayer() is None:
-            return None
-        noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-            QgsProject.instance().snapSettingsForLayer(self.__ownSettings.linesLayer().id())
-        laySettings = {'layer': self.__ownSettings.linesLayer(), 'tolerance': tolerance, 'unitType': unitType}
-        f = Finder.findClosestFeatureAt(mapPoint, laySettings, self)
+        f = Finder.findClosestFeatureAt(mapPoint, self.__linesSets, self)
         if f is None:
             return None
-        return QgsPointV2(Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint))
+        intersect = Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint)
+        if intersect is not None:
+            return QgsPointV2(intersect)
+        else:
+            return None
 

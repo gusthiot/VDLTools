@@ -72,7 +72,7 @@ class ImportMeasures:
         if self.__ownSettings is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No settings given !!"),
-                                                  level=QgsMessageBar.CRITICAL, )
+                                                  level=QgsMessageBar.CRITICAL)
             return
         if self.__ownSettings.configTable() is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
