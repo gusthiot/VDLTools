@@ -332,8 +332,8 @@ class InterpolateTool(QgsMapTool):
             return None
         noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
             QgsProject.instance().snapSettingsForLayer(self.__ownSettings.linesLayer().id())
-        laySettings = [{'layer': self.__ownSettings.linesLayer(), 'tolerance': tolerance, 'unitType': unitType}]
-        f = Finder.findClosestFeatureAt(mapPoint, laySettings,self)
+        laySettings = {'layer': self.__ownSettings.linesLayer(), 'tolerance': tolerance, 'unitType': unitType}
+        f = Finder.findClosestFeatureAt(mapPoint, laySettings, self)
         if f is None:
             return None
         return QgsPointV2(Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint))
