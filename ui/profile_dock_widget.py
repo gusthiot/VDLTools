@@ -669,8 +669,7 @@ class ProfileDockWidget(QDockWidget):
         if self.__libCombo is not None:
             self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
             self.__libCombo = None
-        print "closed"
         self.closeSignal.emit()
-        self.__marker.hide()
-        # self.__iface.actionPan().trigger()
+        if self.__marker is not None:
+            self.__marker.hide()
         QDockWidget.closeEvent(self, event)
