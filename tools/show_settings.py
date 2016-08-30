@@ -38,6 +38,7 @@ class ShowSettings:
         self.__icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Settings")
         self.__showDlg = None
+        self.__configTable = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
         QgsProject.instance().readProject.connect(self.__project_loaded)

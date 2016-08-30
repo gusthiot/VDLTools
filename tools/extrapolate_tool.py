@@ -56,13 +56,12 @@ class ExtrapolateTool(QgsMapTool):
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = False
         self.__lastFeatureId = None
-        self.__layerList = None
-        self.__lastLayer = None
         self.__rubber = None
         self.__counter = 0
         self.__confDlg = None
         self.__selectedVertex = None
         self.__elevation = None
+        self.__selectedFeature = None
 
     def icon_path(self):
         """
@@ -90,7 +89,6 @@ class ExtrapolateTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__updateList()
         self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
         color.setAlphaF(0.78)
@@ -110,7 +108,6 @@ class ExtrapolateTool(QgsMapTool):
         To set the action as enable, as the layer is editable
         """
         self.action().setEnabled(True)
-        self.__canvas.layersChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
@@ -167,41 +164,23 @@ class ExtrapolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.removeLayer()
 
-    def __updateList(self):
-        """
-        To update the line layers list that we can use for extrapolation
-        """
-        self.__layerList = []
-        legend = self.__iface.legendInterface()
-        scale = self.__iface.mapCanvas().mapRenderer().scale()
-        for layer in self.__iface.mapCanvas().layers():
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                QgsProject.instance().snapSettingsForLayer(layer.id())
-            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType() \
-                    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
-                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    if legend.isLayerVisible(layer) and enabled:
-                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
-                        self.__layerList.append(laySettings)
-
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
-        if not self.__isEditing and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureLayersAt(event.mapPoint(), self.__layerList, self)
+        if not self.__isEditing:
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(self.__layer.id())
+            laySettings = {'layer': self.__layer, 'tolerance': tolerance, 'unitType': unitType}
+            f = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
 
-            if f_l is not None and self.__lastFeatureId != f_l[0].id():
-                f = f_l[0]
-                l = f_l[1]
+            if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()
-                self.__lastLayer = l
-                self.__lastLayer.setSelectedFeatures([f.id()])
-            if f_l is not None:
+                self.__layer.setSelectedFeatures([f.id()])
                 if self.__counter > 2:
                     self.__rubber.reset()
-                    geom = f_l[0].geometry()
+                    geom = f.geometry()
                     index = geom.closestVertex(event.mapPoint())[1]
                     line_v2, curved = GeometryV2.asLineV2(geom)
                     num_p = line_v2.numPoints()
@@ -211,8 +190,8 @@ class ExtrapolateTool(QgsMapTool):
                         self.__counter = 0
                 else:
                     self.__counter += 1
-            if f_l is None and self.__lastLayer is not None:
-                self.__lastLayer.removeSelection()
+            if f is None:
+                self.__layer.removeSelection()
                 self.__rubber.reset()
                 self.__lastFeatureId = None
 
@@ -221,40 +200,40 @@ class ExtrapolateTool(QgsMapTool):
         When the mouse is clicked
         :param event: mouse event
         """
-        if self.__lastLayer is not None:
-            found_features = self.__lastLayer.selectedFeatures()
-            if len(found_features) > 0:
-                if len(found_features) < 1:
-                    self.__iface.messageBar().pushMessage(
-                        QCoreApplication.translate("VDLTools", "One feature at a time"), level=QgsMessageBar.INFO)
-                    return
-                geom = found_features[0].geometry()
-                self.__selectedVertex = geom.closestVertex(event.mapPoint())[1]
-                line_v2, curved = GeometryV2.asLineV2(geom)
-                num_p = line_v2.numPoints()
-                if num_p > 2 and (self.__selectedVertex == 0 or self.__selectedVertex == (num_p-1)):
-                    pt = line_v2.pointN(self.__selectedVertex)
-                    if self.__selectedVertex == 0:
-                        pt0 = line_v2.pointN(2)
-                        pt1 = line_v2.pointN(1)
+        found_features = self.__layer.selectedFeatures()
+        if len(found_features) > 0:
+            if len(found_features) < 1:
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "One feature at a time"), level=QgsMessageBar.INFO)
+                return
+            geom = found_features[0].geometry()
+            self.__selectedVertex = geom.closestVertex(event.mapPoint())[1]
+            line_v2, curved = GeometryV2.asLineV2(geom)
+            num_p = line_v2.numPoints()
+            if num_p > 2 and (self.__selectedVertex == 0 or self.__selectedVertex == (num_p-1)):
+                pt = line_v2.pointN(self.__selectedVertex)
+                if self.__selectedVertex == 0:
+                    pt0 = line_v2.pointN(2)
+                    pt1 = line_v2.pointN(1)
+                else:
+                    pt0 = line_v2.pointN(num_p-3)
+                    pt1 = line_v2.pointN(num_p-2)
+                big_d = Finder.sqrDistForPoints(pt0, pt1)
+                small_d = Finder.sqrDistForPoints(pt1, pt)
+                if small_d < (big_d/4):
+                    self.__isEditing = True
+                    self.__selectedFeature = found_features[0]
+                    self.__elevation = pt0.z() + (1 + small_d/big_d) * (pt1.z() - pt0.z())
+                    if pt.z() is not None and pt.z() != 0:
+                        self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
+                        self.__confDlg.okButton().clicked.connect(self.__onEditOk)
+                        self.__confDlg.cancelButton().clicked.connect(self.__onEditCancel)
+                        self.__confDlg.show()
                     else:
-                        pt0 = line_v2.pointN(num_p-3)
-                        pt1 = line_v2.pointN(num_p-2)
-                    big_d = Finder.sqrDistForPoints(pt0, pt1)
-                    small_d = Finder.sqrDistForPoints(pt1, pt)
-                    if small_d < (big_d/4):
-                        self.__isEditing = True
-                        self.__selectedFeature = found_features[0]
-                        self.__elevation = pt0.z() + (1 + small_d/big_d) * (pt1.z() - pt0.z())
-                        if pt.z() is not None and pt.z() != 0:
-                            self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
-                            self.__confDlg.okButton().clicked.connect(self.__onEditOk)
-                            self.__confDlg.cancelButton().clicked.connect(self.__onEditCancel)
-                            self.__confDlg.show()
                         self.__edit()
-                    else:
-                        self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools", "The segment is too big"), level=QgsMessageBar.INFO)
+                else:
+                    self.__iface.messageBar().pushMessage(
+                        QCoreApplication.translate("VDLTools", "The segment is too big"), level=QgsMessageBar.INFO)
 
     def __onEditOk(self):
         """
@@ -269,7 +248,11 @@ class ExtrapolateTool(QgsMapTool):
         """
         self.__confDlg.close()
         self.__rubber.reset()
+        self.__lastFeatureId = None
+        self.__selectedFeature = None
+        self.__selectedVertex = None
         self.__isEditing = False
+
 
     def __edit(self):
         """
@@ -277,8 +260,8 @@ class ExtrapolateTool(QgsMapTool):
         """
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         line_v2.setZAt(self.__selectedVertex, self.__elevation)
-        self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-        self.__lastLayer.removeSelection()
+        self.__layer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+        self.__layer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None
         self.__selectedFeature = None

@@ -29,9 +29,12 @@ from PyQt4.QtGui import QColor
 from qgis.core import (QgsGeometry,
                        QgsPointV2,
                        QgsCircularStringV2,
+                       QgsProject,
                        QgsFeature,
                        QGis,
-                       QgsProject,
+                       QgsMapLayer,
+                       QgsSnapper,
+                       QgsTolerance,
                        QgsMapLayerRegistry,
                        QgsVectorLayer)
 from qgis.gui import (QgsMapTool,
@@ -152,13 +155,29 @@ class IntersectTool(QgsMapTool):
         self.__updateSnapperList()
         self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
 
     def __updateSnapperList(self):
         """
         To update the list of layers that can be snapped
         """
-        self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
+        self.__snapperList = []
+        self.__layerList = []
+        legend = self.__iface.legendInterface()
+        scale = self.__iface.mapCanvas().scale()
+        for layer in self.__iface.mapCanvas().layers():
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(layer.id())
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    if legend.isLayerVisible(layer):
+                        snapLayer = QgsSnapper.SnapLayer()
+                        snapLayer.mLayer = layer
+                        snapLayer.mSnapTo = QgsSnapper.SnapToVertex
+                        snapLayer.mTolerance = 7
+                        snapLayer.mUnitType = QgsTolerance.Pixels
+                        self.__snapperList.append(snapLayer)
+                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
+                        self.__layerList.append(laySettings)
 
     def deactivate(self):
         """
@@ -167,7 +186,6 @@ class IntersectTool(QgsMapTool):
         self.__rubber.reset()
         self.__mapCanvas.layersChanged.disconnect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateSnapperList)
         QgsMapTool.deactivate(self)
 
     def canvasMoveEvent(self, mouseEvent):
@@ -177,17 +195,14 @@ class IntersectTool(QgsMapTool):
         """
         if not self.__isEditing:
             if self.__counter > 2:
-                print "look"
                 self.__rubber.reset()
                 snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
                 if snappedIntersection is None:
                     snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
                     if snappedPoint is not None:
-                        print "snap"
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
                 else:
-                    print "intersect"
                     self.__rubber.setIcon(1)
                     self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
                 self.__counter = 0
