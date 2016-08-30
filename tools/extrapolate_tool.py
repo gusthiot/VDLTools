@@ -121,8 +121,8 @@ class ExtrapolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        self.__iface.actionPan().trigger()
-        # if self.__canvas.mapTool == self:
+        if self.__canvas.mapTool == self:
+            self.__iface.actionPan().trigger()
         #     self.__canvas.setMapTool(self.__oldTool)
 
     def removeLayer(self):

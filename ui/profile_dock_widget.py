@@ -672,6 +672,5 @@ class ProfileDockWidget(QDockWidget):
         print "closed"
         self.closeSignal.emit()
         self.__marker.hide()
-        self.__iface.actionPan().trigger()
-        if QDockWidget is not None:
-            QDockWidget.closeEvent(self, event)
+        # self.__iface.actionPan().trigger()
+        QDockWidget.closeEvent(self, event)
