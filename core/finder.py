@@ -219,6 +219,7 @@ class Finder:
         if features is None:
             return None
         nFeat = len(features)
+        print("features", nFeat)
         intersections = []
         for i in range(nFeat - 1):
             for j in range(i + 1, nFeat):
