@@ -27,8 +27,7 @@ from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
                        QgsDataSourceURI,
                        QgsVertexId,
-                       QgsSnapper,
-                       QgsTolerance,
+                       QgsProject,
                        QgsFeature,
                        QgsPolygonV2,
                        QGis,
@@ -240,26 +239,6 @@ class MoveTool(QgsMapTool):
             new_line_v2.addVertex(pt)
         return new_line_v2
 
-    def __updateSnapperList(self):
-        """
-        To update the list of layers that can be snapped
-        """
-        self.__snapperList = []
-        self.__layerList = []
-        legend = self.__iface.legendInterface()
-        scale = self.__iface.mapCanvas().mapRenderer().scale()
-        for layer in self.__iface.mapCanvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
-                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    if legend.isLayerVisible(layer):
-                        snapLayer = QgsSnapper.SnapLayer()
-                        snapLayer.mLayer = layer
-                        snapLayer.mSnapTo = QgsSnapper.SnapToVertex
-                        snapLayer.mTolerance = 7
-                        snapLayer.mUnitType = QgsTolerance.Pixels
-                        self.__snapperList.append(snapLayer)
-                        self.__layerList.append(layer)
-
     def __onConfirmClose(self):
         """
         When the Cancel button in Move Confirm Dialog is pushed
@@ -317,7 +296,10 @@ class MoveTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
-            f = Finder.findClosestFeatureAt(event.pos(), self.__layer, self)
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(self.__layer.id())
+            laySettings = {'layer': self.__layer, 'tolerance': tolerance, 'unitType': unitType}
+            f = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
             if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()
                 self.__layer.setSelectedFeatures([f.id()])
@@ -359,9 +341,9 @@ class MoveTool(QgsMapTool):
                 self.__rubberSnap.setColor(color)
                 self.__rubberSnap.setWidth(2)
                 self.__rubberSnap.setIconSize(20)
-                snappedIntersection = Finder.snapToIntersection(event.pos(), self, self.__layerList)
+                snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
                 if snappedIntersection is None:
-                    snappedPoint = Finder.snapToLayers(event.pos(), self.__snapperList, self.__canvas)
+                    snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
                     if snappedPoint is not None:
                         self.__rubberSnap.setIcon(4)
                         self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
@@ -390,19 +372,19 @@ class MoveTool(QgsMapTool):
                     self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
                 else:
                     self.__onMove = 1
-                    self.__updateSnapperList()
+                    self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
         elif self.__findVertex:
             self.__findVertex = 0
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             self.__selectedVertex = closest[1]
             self.__onMove = 1
-            self.__updateSnapperList()
+            self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
         elif self.__onMove:
             self.__onMove = 0
             mapPoint = event.mapPoint()
-            snappedIntersection = Finder.snapToIntersection(event.pos(), self, self.__layerList)
+            snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
             if snappedIntersection is None:
-                snappedPoint = Finder.snapToLayers(event.pos(), self.__snapperList, self.__canvas)
+                snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
                 if snappedPoint is not None:
                     mapPoint = snappedPoint
             else:

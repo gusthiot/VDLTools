@@ -22,6 +22,7 @@
 """
 
 from qgis.core import (QgsPointV2,
+                       QgsCompoundCurveV2,
                        QgsLineStringV2,
                        QgsCurvePolygonV2,
                        QgsCircularStringV2)
@@ -38,16 +39,14 @@ class GeometryV2:
         :return: the polygon as QgsCurvePolygonV2 , and true if it has curves or false if it hasn't, or none
         """
         wktPolygon = geometry.exportToWkt()
-        curved = False
-        if 'PolygonZ' in wktPolygon:
+        curved = []
+        if  wktPolygon.startswith('PolygonZ'):
             polygon = wktPolygon.replace('PolygonZ', '')
-        elif 'Polygon' in wktPolygon:
+        elif wktPolygon.startswith('Polygon'):
             polygon = wktPolygon.replace('Polygon', '')
-        elif 'CurvePolygon Z' in wktPolygon:
-            curved = True
-            polygon = wktPolygon.replace('CurvePolygon Z', '')
-        elif 'CurvePolygon ' in wktPolygon:
-            curved = True
+        elif wktPolygon.startswith('CurvePolygonZ'):
+            polygon = wktPolygon.replace('CurvePolygonZ', '')
+        elif wktPolygon.startswith('CurvePolygon'):
             polygon = wktPolygon.replace('CurvePolygon', '')
         else:
             print "This geometry is not yet implemented"
@@ -57,18 +56,20 @@ class GeometryV2:
         polygonV2 = QgsCurvePolygonV2()
         for i in xrange(0, len(lines)):
             line = lines[i]
-            if 'CircularString Z' in line:
-                curved = True
-                line = line.replace('CircularString Z', '')
-            elif 'CircularString ' in line:
-                curved = True
+            if line.startswith('CircularStringZ'):
+                curved.append(True)
+                line = line.replace('CircularStringZ', '')
+            elif line.startswith('CircularString'):
+                curved.append(True)
                 line = line.replace('CircularString', '')
-            line = line.replace('(', "")
+            else:
+                curved.append(False)
+            line = line.strip()[1:-1]
 
             if i == 0:
-                polygonV2.setExteriorRing(GeometryV2.__createLine(line.split(','), curved))
+                polygonV2.setExteriorRing(GeometryV2.__createLine(line.split(','), curved[i]))
             else:
-                polygonV2.addInteriorRing(GeometryV2.__createLine(line.split(','), curved))
+                polygonV2.addInteriorRing(GeometryV2.__createLine(line.split(','), curved[i]))
         return polygonV2, curved
 
     @staticmethod
@@ -82,19 +83,43 @@ class GeometryV2:
         """
         wktLine = geometry.exportToWkt()
         curved = False
-        if 'LineStringZ' in wktLine:
+        if wktLine.startswith('LineStringZ'):
             line = wktLine.replace('LineStringZ', '')
-        elif 'LineString' in wktLine:
+        elif wktLine.startswith('LineString'):
             line = wktLine.replace('LineString', '')
-        elif 'CircularString Z' in wktLine:
+        elif wktLine.startswith('CircularStringZ'):
             curved = True
-            line = wktLine.replace('CircularString Z', '')
-        elif 'CircularString ' in wktLine:
+            line = wktLine.replace('CircularStringZ', '')
+        elif wktLine.startswith('CircularString'):
             curved = True
             line = wktLine.replace('CircularString', '')
         else:
-            print "This geometry is not yet implemented"
-            return None
+            if wktLine.startswith('CompoundCurveZ'):
+                compound = wktLine.replace('CompoundCurveZ', '')
+            elif wktLine.startswith('CompoundCurve'):
+                compound = wktLine.replace('CompoundCurve', '')
+            else:
+                print "This geometry is not yet implemented"
+                return None
+            compound = compound.strip()[1:-1]
+            lines = compound.split('),')
+            compoundV2 = QgsCompoundCurveV2()
+            curved = []
+            for i in xrange(0, len(lines)):
+                line = lines[i]
+                if line.startswith('CircularStringZ'):
+                    curved.append(True)
+                    line = line.replace('CircularStringZ', '')
+                elif line.startswith('CircularString'):
+                    curved.append(True)
+                    line = line.replace('CircularString', '')
+                else:
+                    curved.append(False)
+                line = line.strip()[1:-1]
+
+                compoundV2.addCurve(GeometryV2.__createLine(line.split(','), curved[i]))
+            return compoundV2, curved
+
         line = line.strip()[1:-1]
         points = line.split(',')
         return GeometryV2.__createLine(points, curved), curved
@@ -129,11 +154,12 @@ class GeometryV2:
         :return: the point as QgsPointV2, or none
         """
         wktPoint = geometry.exportToWkt()
-        if 'PointZ' in wktPoint:
+        if wktPoint.startswith('PointZ'):
             point = wktPoint.replace('PointZ', '')
-        elif 'Point' in wktPoint:
+        elif wktPoint.startswith('Point'):
             point = wktPoint.replace('Point', '')
         else:
+            print "This geometry is not yet implemented"
             return None
         point = point.strip()[1:-1]
         pt_tab = point.strip().split()

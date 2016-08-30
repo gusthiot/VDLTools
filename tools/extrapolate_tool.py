@@ -25,6 +25,7 @@ from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
                       QgsMessageBar)
 from qgis.core import (QGis,
+                       QgsProject,
                        QgsMapLayer,
                        QgsGeometry,
                        QgsWKBTypes)
@@ -171,11 +172,17 @@ class ExtrapolateTool(QgsMapTool):
         To update the line layers list that we can use for extrapolation
         """
         self.__layerList = []
+        legend = self.__iface.legendInterface()
+        scale = self.__iface.mapCanvas().mapRenderer().scale()
         for layer in self.__iface.mapCanvas().layers():
-            if layer is not None \
-                    and layer.type() == QgsMapLayer.VectorLayer \
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(layer.id())
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType() \
                     and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
-                self.__layerList.append(layer)
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    if legend.isLayerVisible(layer) and enabled:
+                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
+                        self.__layerList.append(laySettings)
 
     def canvasMoveEvent(self, event):
         """
@@ -183,7 +190,7 @@ class ExtrapolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureLayersAt(event.pos(), self.__layerList, self)
+            f_l = Finder.findClosestFeatureLayersAt(event.mapPoint(), self.__layerList, self)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]

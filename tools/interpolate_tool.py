@@ -25,6 +25,7 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar,
                       QgsRubberBand)
 from qgis.core import (QGis,
+                       QgsProject,
                        QgsMapLayer,
                        QgsFeature,
                        QgsGeometry,
@@ -167,9 +168,14 @@ class InterpolateTool(QgsMapTool):
                 self.action().setEnabled(True)
                 self.__layer.editingStopped.connect(self.stopEditing)
                 self.__canvas.layersChanged.connect(self.__updateList)
+                self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
+                QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
+                self.__canvas.layersChanged.disconnect(self.__updateList)
+                self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
+                QgsProject.instance().snapSettingsChanged.disconnect(self.__updateSnapperList)
                 if self.__canvas.mapTool == self:
                     self.__iface.actionPan().trigger()
                 #    self.__canvas.setMapTool(self.__oldTool)
@@ -182,12 +188,17 @@ class InterpolateTool(QgsMapTool):
         To update the line layers list that we can use for interpolation
         """
         self.__layerList = []
+        legend = self.__iface.legendInterface()
+        scale = self.__iface.mapCanvas().mapRenderer().scale()
         for layer in self.__iface.mapCanvas().layers():
-            if layer is not None \
-                    and layer.type() == QgsMapLayer.VectorLayer \
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(layer.id())
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType() \
                     and layer.geometryType() == QGis.Line:
-                #    and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
-                self.__layerList.append(layer)
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    if legend.isLayerVisible(layer) and enabled:
+                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
+                        self.__layerList.append(laySettings)
 
     def canvasMoveEvent(self, event):
         """
@@ -195,7 +206,7 @@ class InterpolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureLayersAt(event.pos(), self.__layerList, self)
+            f_l = Finder.findClosestFeatureLayersAt(event.mapPoint(), self.__layerList, self)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
@@ -319,7 +330,10 @@ class InterpolateTool(QgsMapTool):
             return None
         if self.__ownSettings.linesLayer() is None:
             return None
-        f = Finder.findClosestFeatureAt(self.toCanvasCoordinates(mapPoint), self.__ownSettings.linesLayer(),self)
+        noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+            QgsProject.instance().snapSettingsForLayer(self.__ownSettings.linesLayer().id())
+        laySettings = [{'layer': self.__ownSettings.linesLayer(), 'tolerance': tolerance, 'unitType': unitType}]
+        f = Finder.findClosestFeatureAt(mapPoint, laySettings,self)
         if f is None:
             return None
         return QgsPointV2(Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint))

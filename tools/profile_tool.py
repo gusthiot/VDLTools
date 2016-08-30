@@ -23,6 +23,8 @@
 from qgis.core import (QgsMapLayer,
                        QgsGeometry,
                        QGis,
+                       QgsTolerance,
+                       QgsProject,
                        QgsPoint,
                        QgsWKBTypes)
 from qgis.gui import (QgsMapTool,
@@ -399,10 +401,8 @@ class ProfileTool(QgsMapTool):
                             z.append(None)
                     feat = []
                     for layer in self.__layers:
-                        print("layer", x, y)
-                        pixVertex = self.toCanvasCoordinates(self.toMapCoordinates(layer, QgsPoint(x, y)))
-                        print("canvas", pixVertex.x(), pixVertex.y())
-                        point = Finder.findClosestFeatureAt(QgsPoint(x, y), layer, self, 0.03)
+                        laySettings = {'layer': layer, 'tolerance': 0.03, 'unitType': QgsTolerance.LayerUnits}
+                        point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
                         feat.append(point)
                         if point is None:
                             z.append(None)
@@ -459,7 +459,10 @@ class ProfileTool(QgsMapTool):
         """
         if not self.__isChoosed:
             if self.__lineLayer is not None:
-                f = Finder.findClosestFeatureAt(event.pos(), self.__lineLayer, self)
+                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                    QgsProject.instance().snapSettingsForLayer(self.__lineLayer.id())
+                laySettings = {'layer': self.__lineLayer, 'tolerance': tolerance, 'unitType': unitType}
+                f = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
                 if not self.__inSelection:
                     if f is not None and self.__lastFeatureId != f.id():
                         self.__lastFeature = f

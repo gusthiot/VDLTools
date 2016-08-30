@@ -24,6 +24,10 @@
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
                        QGis,
+                       QgsTolerance,
+                       QgsMapLayer,
+                       QgsMapSettings,
+                       QgsProject,
                        QgsSnapper,
                        QgsGeometry,
                        QgsRectangle,
@@ -36,48 +40,40 @@ from math import (sqrt,
 class Finder:
 
     @staticmethod
-    def findClosestFeatureAt(point, layer, mapTool, tolerance=15):
+    def findClosestFeatureAt(mapPoint, layer, mapTool):
         """
         To find the closest feature from a given position in a given layer
-        :param point: the position
+        :param mapPoint: the map position
         :param layer: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param tolerance: the tolerance for finding in point coordinates
         :return: closest feature found or none
         """
-        features = Finder.findFeaturesAt(point, layer, mapTool, tolerance)
+        features = Finder.findFeaturesAt(mapPoint, layer, mapTool)
         if features is not None and len(features) > 0:
             return features[0]
         else:
             return None
 
     @staticmethod
-    def findClosestFeatureLayersAt(point, layers, mapTool, tolerance=15):
+    def findClosestFeatureLayersAt(mapPoint, layers, mapTool):
         """
         To find the closest feature from a given position in given layers
-        :param point: the position
+        :param mapPoint: the map position
         :param layers: the layers in which we are looking for features
         :param mapTool: a QsMapTool instance
-        :param tolerance: the tolerance for finding in point coordinates
         :return: closest feature found or none
         """
         features = []
         for layer in layers:
-            feats = Finder.findFeaturesAt(point, layer, mapTool, tolerance)
+            feats = Finder.findFeaturesAt(mapPoint, layer, mapTool)
             if feats is not None:
                 for f in feats:
-                    features.append([f, layer])
+                    features.append([f, layer['layer']])
         if len(features) > 0:
-            if isinstance(point, QPoint):
-                dst = Finder.sqrDistForPoints(point, mapTool.toCanvasCoordinates(features[0][0].geometry().asPoint()))
-            else:
-                dst = Finder.sqrDistForPoints(point, features[0][0].geometry().asPoint())
+            dst = Finder.sqrDistForPoints(mapPoint, features[0][0].geometry().asPoint())
             f = 0
             for i in xrange(1,len(features)):
-                if isinstance(point, QPoint):
-                    d = Finder.sqrDistForPoints(point, mapTool.toCanvasCoordinates(features[i][0].geometry().asPoint()))
-                else:
-                    dst = Finder.sqrDistForPoints(point, features[i][0].geometry().asPoint())
+                d = Finder.sqrDistForPoints(mapPoint, features[i][0].geometry().asPoint())
                 if d < dst:
                     dst = d
                     f = i
@@ -108,50 +104,50 @@ class Finder:
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     @staticmethod
-    def findFeaturesLayersAt(point, layers, mapTool, tolerance=10):
+    def findFeaturesLayersAt(mapPoint, layers, mapTool):
         """
         To find features from a given position in given layers
-        :param point: the position
+        :param mapPoint: the map position
         :param layers: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param tolerance: the tolerance for finding in point coordinates
         :return: features found in layers
         """
         features = []
         for layer in layers:
-            features += Finder.findFeaturesAt(point, layer, mapTool, tolerance)
+            features += Finder.findFeaturesAt(mapPoint, layer, mapTool)
         return features
 
     @staticmethod
-    def findFeaturesAt(point, layer, mapTool, tolerance):
+    def findFeaturesAt(mapPoint, layer, mapTool):
         """
         To find features from a given position in a given layer
-        :param point: the  position
+        :param mapPoint: the map position
         :param layer: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param tolerance: the tolerance for finding in point coordinates
         :return: features found in layer
         """
         if layer is None:
             return None
-        if isinstance(point, QPoint):
-            layPoint = mapTool.toLayerCoordinates(layer, point)
-            layTolerance = Finder.calcTolerance(point, layer, mapTool, tolerance)
+        tolerance = layer['tolerance']
+        if layer['unitType'] == QgsTolerance.Pixels:
+            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layer['layer'], mapTool, tolerance)
+        elif layer['unitType'] == QgsTolerance.ProjectUnits:
+            layTolerance = Finder.calcMapTolerance(mapPoint, layer['layer'], mapTool, tolerance)
         else:
-            layPoint = point
             layTolerance = tolerance
+        layPoint = mapTool.toLayerCoordinates(layer['layer'], mapPoint)
         searchRect = QgsRectangle(layPoint.x() - layTolerance, layPoint.y() - layTolerance,
                                   layPoint.x() + layTolerance, layPoint.y() + layTolerance)
         request = QgsFeatureRequest()
         request.setFilterRect(searchRect)
         request.setFlags(QgsFeatureRequest.ExactIntersect)
         features = []
-        for feature in layer.getFeatures(request):
+        for feature in layer['layer'].getFeatures(request):
             features.append(QgsFeature(feature))
         return features
 
     @staticmethod
-    def calcTolerance(pixPoint, layer, mapTool, distance):
+    def calcCanvasTolerance(pixPoint, layer, mapTool, distance):
         """
         To transform the tolerance from screen coordinates to layer coordinates
         :param pixPoint: a screen position
@@ -162,6 +158,23 @@ class Finder:
         """
         pt1 = QPoint(pixPoint.x(), pixPoint.y())
         pt2 = QPoint(pixPoint.x() + distance, pixPoint.y())
+        layerPt1 = mapTool.toLayerCoordinates(layer, pt1)
+        layerPt2 = mapTool.toLayerCoordinates(layer, pt2)
+        tolerance = layerPt2.x() - layerPt1.x()
+        return tolerance
+
+    @staticmethod
+    def calcMapTolerance(mapPoint, layer, mapTool, distance):
+        """
+        To transform the tolerance from map coordinates to layer coordinates
+        :param mapPoint: a map position
+        :param layer: the layer in which we are working
+        :param mapTool: a QgsMapTool instance
+        :param distance: the tolerance in map coordinates
+        :return: the tolerance in layer coordinates
+        """
+        pt1 = QgsPoint(mapPoint.x(), mapPoint.y())
+        pt2 = QgsPoint(mapPoint.x() + distance, mapPoint.y())
         layerPt1 = mapTool.toLayerCoordinates(layer, pt1)
         layerPt2 = mapTool.toLayerCoordinates(layer, pt2)
         tolerance = layerPt2.x() - layerPt1.x()
@@ -194,16 +207,15 @@ class Finder:
             return None
 
     @staticmethod
-    def snapToIntersection(pixPoint, mapTool, layers):
+    def snapToIntersection(mapPoint, mapTool, layers):
         """
         To find the closest intersection in different layers for a given point
-        :param pixPoint: the screen position
+        :param mapPoint: the map position
         :param mapTool: a QgsMapTool instance
         :param layers: the different working layers
         :return: the closest intersection as QgsPoint, or none
         """
-        mousePoint = mapTool.toMapCoordinates(pixPoint)
-        features = Finder.findFeaturesLayersAt(pixPoint, layers, mapTool)
+        features = Finder.findFeaturesLayersAt(mapPoint, layers, mapTool)
         if features is None:
             return None
         nFeat = len(features)
@@ -216,46 +228,71 @@ class Finder:
                     for curve1 in geometry1.asPolygon():
                         if geometry2.type() == QGis.Polygon:
                             for curve2 in geometry2.asPolygon():
-                                intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mousePoint)
+                                intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mapPoint)
                                 if intersect is not None:
                                     intersections.append(intersect)
                         else:
-                            intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mousePoint)
+                            intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mapPoint)
                             if intersect is not None:
                                 intersections.append(intersect)
                 elif geometry2.type() == QGis.Polygon:
                     for curve2 in geometry2.asPolygon():
-                        intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mousePoint)
+                        intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mapPoint)
                         if intersect is not None:
                             intersections.append(intersect)
                 else:
-                    intersect = Finder.intersect(geometry1, geometry2, mousePoint)
+                    intersect = Finder.intersect(geometry1, geometry2, mapPoint)
                     if intersect is not None:
                         intersections.append(intersect)
         if len(intersections) == 0:
             return None
         intersect = intersections[0]
         for point in intersections[1:]:
-            if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersect):
+            if mapPoint.sqrDist(point) < mapPoint.sqrDist(intersect):
                 intersect = QgsPoint(point.x(), point.y())
         return intersect
 
     @staticmethod
-    def snapToLayers(pixPoint, snapperList, mapCanvas):
+    def snapToLayers(mapPoint, snapperList):
         """
         To snap on different layers
-        :param pixPoint: the screen position
+        :param mapPoint: the map position
         :param snapperList: layers list to snap
-        :param mapCanvas: canvas for the interface
         :return: the closest snapped point
         """
         if len(snapperList) == 0:
             return None
-        snapper = QgsSnapper(mapCanvas.mapRenderer())
+        snapper = QgsSnapper(QgsMapSettings())
         snapper.setSnapLayers(snapperList)
         snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
-        ok, snappingResults = snapper.snapPoint(pixPoint, [])
+        ok, snappingResults = snapper.snapMapPoint(mapPoint, [])
         if ok == 0 and len(snappingResults) > 0:
             return QgsPoint(snappingResults[0].snappedVertex)
         else:
             return None
+
+    @staticmethod
+    def updateSnapperList(iface):
+        """
+        To update the list of layers that can be snapped
+        :param iface: interface
+        """
+        snapperList = []
+        layerList = []
+        legend = iface.legendInterface()
+        scale = iface.mapCanvas().scale()
+        for layer in iface.mapCanvas().layers():
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                QgsProject.instance().snapSettingsForLayer(layer.id())
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+                    if legend.isLayerVisible(layer) and enabled:
+                        snapLayer = QgsSnapper.SnapLayer()
+                        snapLayer.mLayer = layer
+                        snapLayer.mSnapTo = snappingType
+                        snapLayer.mTolerance = tolerance
+                        snapLayer.mUnitType = unitType
+                        snapperList.append(snapLayer)
+                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
+                        layerList.append(laySettings)
+        return snapperList, layerList
