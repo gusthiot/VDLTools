@@ -159,8 +159,6 @@ class IntersectTool(QgsMapTool):
         To update the list of layers that can be snapped
         """
         self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
-        print self.__snapperList
-        print self.__layerList
 
     def deactivate(self):
         """
@@ -178,7 +176,7 @@ class IntersectTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            if self.__counter > 2:
+            if self.__counter > 5:
                 print "look"
                 self.__rubber.reset()
                 snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
