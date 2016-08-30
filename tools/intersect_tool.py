@@ -176,7 +176,7 @@ class IntersectTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            if self.__counter > 5:
+            if self.__counter > 2:
                 print "look"
                 self.__rubber.reset()
                 snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
@@ -186,8 +186,6 @@ class IntersectTool(QgsMapTool):
                         print "snap"
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
-                    else:
-                        print "none"
                 else:
                     print "intersect"
                     self.__rubber.setIcon(1)

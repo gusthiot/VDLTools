@@ -23,6 +23,9 @@
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
 from PyQt4.QtCore import QCoreApplication
+from qgis.core import (QgsProject,
+                       QGis,
+                       QgsMapLayer)
 
 class ShowSettings:
 
@@ -37,7 +40,24 @@ class ShowSettings:
         self.__showDlg = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
-        self.__configTable = None
+        QgsProject.instance().readProject.connect(self.__project_loaded)
+
+    def __project_loaded(self):
+        self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
+        mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
+        mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
+
+        if mpl_id != -1 or mll_id != -1:
+            for layer in self.__iface.mapCanvas().layers():
+                if layer is not None \
+                    and layer.type() == QgsMapLayer.VectorLayer \
+                        and layer.providerType() == "memory":
+                    if layer.geometryType() == QGis.Point:
+                        if layer.id() == mpl_id:
+                            self.__memoryPointsLayer = layer
+                    if layer.geometryType() == QGis.Line:
+                        if layer.id() == mll_id:
+                            self.__memoryLinesLayer = layer
 
     def icon_path(self):
         """
@@ -68,11 +88,9 @@ class ShowSettings:
         When the Ok button in Show Settings Dialog is pushed
         """
         self.__showDlg.close()
-        self.__memoryLinesLayer = self.__showDlg.linesLayer()
-        self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
-        self.__memoryPointsLayer = self.__showDlg.pointsLayer()
-        self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
-        self.__configTable = self.__showDlg.configTable()
+        self.setLinesLayer(self.__showDlg.linesLayer())
+        self.setPointsLayer(self.__showDlg.pointsLayer())
+        self.setConfigTable(self.__showDlg.configTable())
 
     def __onCancel(self):
         """
@@ -85,12 +103,14 @@ class ShowSettings:
         To delete the saved memory lines layer
         """
         self.__memoryLinesLayer = None
+        QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", None)
 
     def __memoryPointsLayerDeleted(self):
         """
         To delete the saved memory points layer
         """
         self.__memoryPointsLayer = None
+        QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", None)
 
     def pointsLayer(self):
         """
@@ -119,7 +139,11 @@ class ShowSettings:
         :param pointsLayer: memory points layer to save
         """
         self.__memoryPointsLayer = pointsLayer
-        self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
+        id = None
+        if pointsLayer is not None:
+            id = pointsLayer.id()
+            self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
+        QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", id)
 
     def setLinesLayer(self, linesLayer):
         """
@@ -127,7 +151,11 @@ class ShowSettings:
         :param linesLayer: memory lines layer to save
         """
         self.__memoryLinesLayer = linesLayer
-        self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
+        id = None
+        if linesLayer is not None:
+            id = linesLayer.id()
+            self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
+        QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", id)
 
     def setConfigTable(self, configTable):
         """
@@ -135,3 +163,4 @@ class ShowSettings:
         :param configTable: config table to save
         """
         self.__configTable = configTable
+        QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
