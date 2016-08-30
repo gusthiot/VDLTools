@@ -189,7 +189,7 @@ class InterpolateTool(QgsMapTool):
         """
         self.__layerList = []
         legend = self.__iface.legendInterface()
-        scale = self.__iface.mapCanvas().mapRenderer().scale()
+        scale = self.__iface.mapCanvas().scale()
         for layer in self.__iface.mapCanvas().layers():
             noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
                 QgsProject.instance().snapSettingsForLayer(layer.id())
