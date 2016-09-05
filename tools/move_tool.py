@@ -59,7 +59,6 @@ class MoveTool(QgsMapTool):
         self.__onMove = 0
         self.__counter = 0
         self.__layer = None
-        # self.__oldTool = None
         self.__confDlg = None
         self.__lastFeatureId = None
         self.__selectedFeature = None
@@ -95,6 +94,8 @@ class MoveTool(QgsMapTool):
         To set the action as enable, as the layer is editable
         """
         self.action().setEnabled(True)
+        self.__updateList()
+        self.__canvas.layersChanged.connect(self.__updateList)
         QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
@@ -104,6 +105,7 @@ class MoveTool(QgsMapTool):
         To set the action as disable, as the layer is not editable
         """
         self.action().setEnabled(False)
+        self.__canvas.layersChanged.disconnect(self.__updateList)
         QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
@@ -147,6 +149,7 @@ class MoveTool(QgsMapTool):
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
+                self.__updateList()
                 self.__layer.editingStopped.connect(self.stopEditing)
             else:
                 self.action().setEnabled(False)

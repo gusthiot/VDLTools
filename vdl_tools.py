@@ -133,10 +133,15 @@ class VDLTools:
         self.importMeasures = ImportMeasures(self.iface)
         self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
 
+        self.profileTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
+        self.interpolateTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.interpolateTool.setEnable)
+        self.extrapolateTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.extrapolateTool.setEnable)
+        self.duplicateTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
+        self.moveTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
 
         self.intersectTool.setOwnSettings(self.showSettings)

@@ -21,7 +21,6 @@
  ***************************************************************************/
 """
 from math import (pi,
-                  atan2,
                   cos,
                   sin)
 from PyQt4.QtCore import (Qt,
@@ -44,8 +43,9 @@ from qgis.gui import (QgsMapTool,
 from ..ui.duplicate_distance_dialog import DuplicateDistanceDialog
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
+from ..core.circle import Circle
 
-# TODO : changer calcul distance pour curve
+
 class DuplicateTool(QgsMapTool):
 
     def __init__(self, iface):
@@ -93,6 +93,8 @@ class DuplicateTool(QgsMapTool):
         To set the action as enable, as the layer is editable
         """
         self.action().setEnabled(True)
+        self.__updateList()
+        self.__canvas.layersChanged.connect(self.__updateList)
         QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
@@ -102,6 +104,7 @@ class DuplicateTool(QgsMapTool):
         To set the action as disable, as the layer is not editable
         """
         self.action().setEnabled(False)
+        self.__canvas.layersChanged.disconnect(self.__updateList)
         QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
@@ -146,6 +149,7 @@ class DuplicateTool(QgsMapTool):
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
+                self.__updateList()
                 self.__layer.editingStopped.connect(self.stopEditing)
             else:
                 self.action().setEnabled(False)
@@ -175,16 +179,6 @@ class DuplicateTool(QgsMapTool):
         self.__canvas.scene().removeItem(self.__rubberBand)
         self.__rubberBand = None
         self.__layer.removeSelection()
-
-    @staticmethod
-    def angle(point1, point2):
-        """
-        To calculate the angle of a line between 2 points
-        :param point1: first point
-        :param point2: second point
-        :return: the calculated angle
-        """
-        return atan2(point2.y()-point1.y(), point2.x()-point1.x())
 
     @staticmethod
     def newPoint(angle, point, distance):
@@ -232,10 +226,9 @@ class DuplicateTool(QgsMapTool):
             self.__newFeature = QgsCompoundCurveV2()
             for pos in xrange(line_v2.nCurves()):
                 if curved[pos]:
-                    curve_v2 = QgsCircularStringV2()
+                    curve_v2 = self.__newArc(line_v2.curveAt(pos), distance)
                 else:
-                    curve_v2 = QgsLineStringV2()
-                curve_v2.setPoints(self.__newCurve(line_v2.curveAt(pos), distance))
+                    curve_v2 = self.__newLine(line_v2.curveAt(pos), distance)
                 self.__newFeature.addCurve(curve_v2)
                 if pos == 0:
                     self.__rubberBand.setToGeometry(QgsGeometry(curve_v2.curveToLine()), None)
@@ -243,28 +236,41 @@ class DuplicateTool(QgsMapTool):
                     self.__rubberBand.addGeometry(QgsGeometry(curve_v2.curveToLine()), None)
         else:
             if curved:
-                self.__newFeature = QgsCircularStringV2()
+                self.__newFeature = self.__newArc(line_v2, distance)
             else:
-                self.__newFeature = QgsLineStringV2()
-            self.__newFeature.setPoints(self.__newCurve(line_v2, distance))
+                self.__newFeature = self.__newLine(line_v2, distance)
             self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.curveToLine()), None)
 
-    def __newCurve(self, line_v2, distance):
+    def __newArc(self, arc_v2, distance):
+        curve_v2 = QgsCircularStringV2()
+        points = []
+        circle = Circle(arc_v2.pointN(0), arc_v2.pointN(1), arc_v2.pointN(2))
+        points.append(self.newPoint(circle.angle1(), arc_v2.pointN(0), distance))
+        points.append(self.newPoint(circle.angle2(), arc_v2.pointN(1), distance))
+        points.append(self.newPoint(circle.angle3(), arc_v2.pointN(2), distance))
+        curve_v2.setPoints(points)
+        return curve_v2
+
+    def __newLine(self, line_v2, distance):
+        curve_v2 = QgsLineStringV2()
         points = []
         for pos in xrange(line_v2.numPoints()):
             if pos == 0:
-                angle = self.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1)) + pi / 2
+                angle = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1)) + pi / 2
                 dist = distance
             elif pos == (line_v2.numPoints() - 1):
-                angle = self.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos)) + pi / 2
+                angle = Circle.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos)) + pi / 2
                 dist = distance
             else:
-                angle1 = self.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos))
-                angle2 = self.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1))
+                angle1 = Circle.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos))
+                angle2 = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1))
                 angle = float(pi + angle1 + angle2) / 2
                 dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
+            print(pos, line_v2.vertexAngle(id), angle, dist)
+            angle = line_v2.vertexAngle(id)
             points.append(self.newPoint(angle, line_v2.pointN(pos), dist))
-        return points
+        curve_v2.setPoints(points)
+        return curve_v2
 
     def __polygonPreview(self, distance):
         """
@@ -308,8 +314,8 @@ class DuplicateTool(QgsMapTool):
                 pos3 = 1
             else:
                 pos3 = pos + 1
-            angle1 = self.angle(curve_v2.pointN(pos1), curve_v2.pointN(pos2))
-            angle2 = self.angle(curve_v2.pointN(pos),curve_v2.pointN(pos3))
+            angle1 = Circle.angle(curve_v2.pointN(pos1), curve_v2.pointN(pos2))
+            angle2 = Circle.angle(curve_v2.pointN(pos),curve_v2.pointN(pos3))
             angle = float(pi + angle1 + angle2) / 2
             dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
             points.append(self.newPoint(angle, curve_v2.pointN(pos), dist))
