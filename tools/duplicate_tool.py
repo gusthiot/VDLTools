@@ -204,6 +204,8 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand = None
         if self.__dstDlg.distanceEdit().text():
             distance = float(self.__dstDlg.distanceEdit().text())
+            if self.__dstDlg.isDirectionInverted():
+                distance = -distance
             if self.__layer.geometryType() == QGis.Polygon:
                 self.__polygonPreview(distance)
             else:
@@ -266,8 +268,6 @@ class DuplicateTool(QgsMapTool):
                 angle2 = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1))
                 angle = float(pi + angle1 + angle2) / 2
                 dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
-            print(pos, line_v2.vertexAngle(id), angle, dist)
-            angle = line_v2.vertexAngle(id)
             points.append(self.newPoint(angle, line_v2.pointN(pos), dist))
         curve_v2.setPoints(points)
         return curve_v2

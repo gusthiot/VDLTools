@@ -24,6 +24,7 @@
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
+                         QCheckBox,
                          QLabel,
                          QLineEdit,
                          QDoubleValidator,
@@ -51,6 +52,8 @@ class DuplicateDistanceDialog(QDialog):
         self.__distanceEdit.setMinimumWidth(120)
         self.__distanceEdit.setValidator(QDoubleValidator(-1000, 1000, 4, self))
 
+        self.__distanceDirection = QCheckBox(QCoreApplication.translate("VDLTools","invert direction"))
+
         self.__previewButton = QPushButton(QCoreApplication.translate("VDLTools","Preview"))
         self.__previewButton.setMinimumHeight(20)
         self.__previewButton.setMinimumWidth(100)
@@ -66,6 +69,7 @@ class DuplicateDistanceDialog(QDialog):
         self.__layout = QGridLayout()
         self.__layout.addWidget(self.__distanceLabel, 0, 0)
         self.__layout.addWidget(self.__distanceEdit, 0, 1)
+        self.__layout.addWidget(self.__distanceDirection, 0, 2)
 
         if isComplexPolygon:
             self.__polygonLabel = QLabel(
@@ -114,6 +118,9 @@ class DuplicateDistanceDialog(QDialog):
         :return: distance edit widget
         """
         return self.__distanceEdit
+
+    def isDirectionInverted(self):
+        return self.__distanceDirection.checkState()
 
     def distanceEditText(self):
         """

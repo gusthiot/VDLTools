@@ -25,11 +25,13 @@ from PyQt4.QtCore import (Qt,
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
+                       QgsCircularStringV2,
+                       QgsCompoundCurveV2,
                        QgsDataSourceURI,
                        QgsVertexId,
                        QgsProject,
                        QgsFeature,
-                       QgsPolygonV2,
+                       QgsCurvePolygonV2,
                        QGis,
                        QgsGeometry,
                        QgsMapLayer)
@@ -40,7 +42,7 @@ from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 
-# TODO : ajouter les curved
+
 class MoveTool(QgsMapTool):
 
     def __init__(self, iface):
@@ -111,13 +113,11 @@ class MoveTool(QgsMapTool):
         self.__layer.editingStarted.connect(self.startEditing)
         if self.__canvas.mapTool == self:
             self.__iface.actionPan().trigger()
-        #     self.__canvas.setMapTool(self.__oldTool)
 
     def setTool(self):
         """
         To set the current tool as this one
         """
-        # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def removeLayer(self):
@@ -156,7 +156,6 @@ class MoveTool(QgsMapTool):
                 self.__layer.editingStarted.connect(self.startEditing)
                 if self.__canvas.mapTool == self:
                     self.__iface.actionPan().trigger()
-                #    self.__canvas.setMapTool(self.__oldTool)
             return
         self.action().setEnabled(False)
         self.removeLayer()
@@ -178,18 +177,39 @@ class MoveTool(QgsMapTool):
         :param point: new position as mapPoint
         """
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
-        vertex = line_v2.pointN(self.__selectedVertex)
+        print(self.__selectedVertex)
+        vertex = QgsPointV2()
+        line_v2.pointAt(self.__selectedVertex, vertex)
+        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
-        self.__newFeature = QgsLineStringV2()
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
+        if isinstance(curved, (list, tuple)):
+            self.__newFeature = QgsCompoundCurveV2()
+            for pos in xrange(line_v2.nCurves()):
+                curve_v2 = self.__newCurve(curved[pos], line_v2.curveAt(pos), dx, dy)
+                self.__newFeature.addCurve(curve_v2)
+                if pos == 0:
+                    self.__rubberBand.setToGeometry(QgsGeometry(curve_v2.curveToLine()), None)
+                else:
+                    self.__rubberBand.addGeometry(QgsGeometry(curve_v2.curveToLine()), None)
+        else:
+            self.__newFeature = self.__newCurve(curved, line_v2, dx, dy)
+            self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.curveToLine()), None)
+
+    def __newCurve(self, curved, line_v2, dx, dy):
+        if curved:
+            newCurve = QgsCircularStringV2()
+        else:
+            newCurve = QgsLineStringV2()
+        points = []
         for pos in xrange(line_v2.numPoints()):
             x = line_v2.pointN(pos).x() - dx
             y = line_v2.pointN(pos).y() - dy
             pt = QgsPointV2(x, y)
             pt.addZValue(line_v2.pointN(pos).z())
-            self.__newFeature.addVertex(pt)
-        self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
+            points.append(pt)
+        newCurve.setPoints(points)
+        return newCurve
 
     def __polygonPreview(self, point):
         """
@@ -200,15 +220,15 @@ class MoveTool(QgsMapTool):
         vertex = polygon_v2.vertexAt(self.__polygonVertexId(polygon_v2))
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
-        self.__newFeature = QgsPolygonV2()
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Polygon)
-        line_v2 = self.__newLine(polygon_v2.exteriorRing(), dx, dy)
+        self.__newFeature = QgsCurvePolygonV2()
+        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
+        line_v2 = self.__newLine(polygon_v2.exteriorRing(), dx, dy, curved[0])
         self.__newFeature.setExteriorRing(line_v2)
-        self.__rubberBand.setToGeometry(QgsGeometry(line_v2.clone()), None)
+        self.__rubberBand.setToGeometry(QgsGeometry(line_v2.curveToLine()), None)
         for num in xrange(polygon_v2.numInteriorRings()):
-            line_v2 = self.__newLine(polygon_v2.interiorRing(num), dx, dy)
+            line_v2 = self.__newLine(polygon_v2.interiorRing(num), dx, dy, curved[num+1])
             self.__newFeature.addInteriorRing(line_v2)
-            self.__rubberBand.addGeometry(QgsGeometry(line_v2.clone()), None)
+            self.__rubberBand.addGeometry(QgsGeometry(line_v2.curveToLine()), None)
 
     def __polygonVertexId(self, polygon_v2):
         """
@@ -227,7 +247,7 @@ class MoveTool(QgsMapTool):
                     return QgsVertexId(0, num+1, sel, 1)
                 sel -= iR.numPoints()
 
-    def __newLine(self, curve_v2, dx, dy):
+    def __newLine(self, curve_v2, dx, dy, curved):
         """
         To create a new moved line for a part of a polygon
         :param curve_v2: the original line
@@ -235,14 +255,19 @@ class MoveTool(QgsMapTool):
         :param dy: y translation
         :return: the line as lineV2
         """
-        new_line_v2 = QgsLineStringV2()
-        line_v2 = curve_v2.curveToLine()
-        for pos in xrange(line_v2.numPoints()):
-            x = line_v2.pointN(pos).x() - dx
-            y = line_v2.pointN(pos).y() - dy
+        if curved:
+            new_line_v2 = QgsCircularStringV2()
+        else:
+            new_line_v2 = QgsLineStringV2()
+        points = []
+
+        for pos in xrange(curve_v2.numPoints()):
+            x = curve_v2.pointN(pos).x() - dx
+            y = curve_v2.pointN(pos).y() - dy
             pt = QgsPointV2(x, y)
-            pt.addZValue(line_v2.pointN(pos).z())
-            new_line_v2.addVertex(pt)
+            pt.addZValue(curve_v2.pointN(pos).z())
+            points.append(pt)
+        new_line_v2.setPoints(points)
         return new_line_v2
 
     def __onConfirmClose(self):
