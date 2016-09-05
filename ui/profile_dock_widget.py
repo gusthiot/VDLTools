@@ -321,7 +321,7 @@ class ProfileDockWidget(QDockWidget):
                                                              linestyle='None')
                 tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                 for t in range(len(tmp)):
-                    if name == str(tmp[t].get_gid()):
+                    if name == tmp[t].get_gid():
                         tmp[i].set_color((qcol.red() / 255.0, qcol.green() / 255.0, qcol.blue() / 255.0,
                                           qcol.alpha() / 255.0))
                         self.__plotWdg.draw()

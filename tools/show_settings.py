@@ -48,7 +48,6 @@ class ShowSettings:
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
-        print(mpl_id, mll_id)
         if mpl_id != -1 or mll_id != -1:
             for layer in self.__iface.mapCanvas().layers():
                 if layer is not None \

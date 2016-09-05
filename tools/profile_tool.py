@@ -154,11 +154,11 @@ class ProfileTool(QgsMapTool):
             self.__dockWdg.close()
         self.__lineLayer = None
 
-    def __setLayerDialog(self, pointLayers):
+    def __setLayerDialog(self):
         """
         To create a Profile Layers Dialog
-        :param pointLayers: points layers available
         """
+        pointLayers = self.__lineVertices()
         self.__layDlg = ProfileLayersDialog(pointLayers)
         self.__layDlg.okButton().clicked.connect(self.__onLayOk)
         self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
@@ -353,13 +353,9 @@ class ProfileTool(QgsMapTool):
         self.__endVertex = None
         self.__inSelection = False
 
-    def __onLayOk(self):
-        """
-        When the Ok button in Profile Layers Dialog is pushed
-        """
-        self.__layDlg.close()
-        self.__layers = self.__layDlg.getLayers()
-        self.__features = []
+    def __lineVertices(self):
+        availableLayers = self.__getPointLayers()
+        pointLayers = []
         self.__points = []
         self.__selectedStarts = []
         num = 0
@@ -399,23 +395,43 @@ class ProfileTool(QgsMapTool):
                             z.append(pt_v2.z())
                         else:
                             z.append(None)
-                    feat = []
-                    for layer in self.__layers:
+                    self.__points.append({'x': x, 'y': y, 'z': z})
+                    for layer in availableLayers:
                         laySettings = {'layer': layer, 'tolerance': 0.03, 'unitType': QgsTolerance.LayerUnits}
                         point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
-                        feat.append(point)
-                        if point is None:
-                            z.append(None)
-                        else:
-                            point_v2 = GeometryV2.asPointV2(point.geometry())
-                            zp = point_v2.z()
-                            if zp is None or zp != zp:
-                                z.append(0)
-                            else:
-                                z.append(zp)
-                    self.__points.append({'x': x, 'y': y, 'z': z})
-                    self.__features.append(feat)
+                        if point is not None:
+                            if layer not in pointLayers:
+                                pointLayers.append(layer)
             num += 1
+        return pointLayers
+
+    def __onLayOk(self):
+        """
+        When the Ok button in Profile Layers Dialog is pushed
+        """
+        self.__layDlg.close()
+        self.__layers = self.__layDlg.getLayers()
+        self.__features = []
+
+        for points in self.__points:
+            feat = []
+            x = points['x']
+            y = points['y']
+            z = points['z']
+            for layer in self.__layers:
+                laySettings = {'layer': layer, 'tolerance': 0.03, 'unitType': QgsTolerance.LayerUnits}
+                point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
+                feat.append(point)
+                if point is None:
+                    z.append(None)
+                else:
+                    point_v2 = GeometryV2.asPointV2(point.geometry())
+                    zp = point_v2.z()
+                    if zp is None or zp != zp:
+                        z.append(0)
+                    else:
+                        z.append(zp)
+            self.__features.append(feat)
 
         # points = []
         # for key, p in pointz.items():
@@ -508,8 +524,7 @@ class ProfileTool(QgsMapTool):
         if event.button() == Qt.RightButton:
             if self.__lineLayer.selectedFeatures() and self.__selectedIds:
                 self.__isChoosed = 1
-                pointLayers = self.__getPointLayers()
-                self.__setLayerDialog(pointLayers)
+                self.__setLayerDialog()
                 self.__layDlg.show()
         elif event.button() == Qt.LeftButton:
             if self.__lastFeature:
