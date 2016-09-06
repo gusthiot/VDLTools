@@ -42,35 +42,35 @@ from math import (sqrt,
 class Finder:
 
     @staticmethod
-    def findClosestFeatureAt(mapPoint, layer, mapTool):
+    def findClosestFeatureAt(mapPoint, layerConfig, mapTool):
         """
         To find the closest feature from a given position in a given layer
         :param mapPoint: the map position
-        :param layer: the layer in which we are looking for features
+        :param layerConfig: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
         :return: closest feature found or none
         """
-        features = Finder.findFeaturesAt(mapPoint, layer, mapTool)
+        features = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
         if features is not None and len(features) > 0:
             return features[0]
         else:
             return None
 
     @staticmethod
-    def findClosestFeatureLayersAt(mapPoint, layers, mapTool):
+    def findClosestFeatureLayersAt(mapPoint, layersConfig, mapTool):
         """
         To find the closest feature from a given position in given layers
         :param mapPoint: the map position
-        :param layers: the layers in which we are looking for features
+        :param layersConfig: the layers in which we are looking for features
         :param mapTool: a QsMapTool instance
         :return: closest feature found or none
         """
         features = []
-        for layer in layers:
-            feats = Finder.findFeaturesAt(mapPoint, layer, mapTool)
+        for layerConfig in layersConfig:
+            feats = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
             if feats is not None:
                 for f in feats:
-                    features.append([f, layer['layer']])
+                    features.append([f, layerConfig.layer])
         if len(features) > 0:
             dst = Finder.sqrDistForPoints(mapPoint, features[0][0].geometry().asPoint())
             f = 0
@@ -106,45 +106,45 @@ class Finder:
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     @staticmethod
-    def findFeaturesLayersAt(mapPoint, layers, mapTool):
+    def findFeaturesLayersAt(mapPoint, layersConfig, mapTool):
         """
         To find features from a given position in given layers
         :param mapPoint: the map position
-        :param layers: the layers in which we are looking for features
+        :param layersConfig: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
         :return: features found in layers
         """
         features = []
-        for layer in layers:
-            features += Finder.findFeaturesAt(mapPoint, layer, mapTool)
+        for layerConfig in layersConfig:
+            features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
         return features
 
     @staticmethod
-    def findFeaturesAt(mapPoint, layer, mapTool):
+    def findFeaturesAt(mapPoint, layerConfig, mapTool):
         """
         To find features from a given position in a given layer
         :param mapPoint: the map position
-        :param layer: the layer in which we are looking for features
+        :param layerConfig: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
         :return: features found in layer
         """
-        if layer is None:
+        if layerConfig is None:
             return None
-        tolerance = layer['tolerance']
-        if layer['unitType'] == QgsTolerance.Pixels:
-            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layer['layer'], mapTool, tolerance)
-        elif layer['unitType'] == QgsTolerance.ProjectUnits:
-            layTolerance = Finder.calcMapTolerance(mapPoint, layer['layer'], mapTool, tolerance)
+        tolerance = layerConfig.tolerance
+        if layerConfig.unit == QgsTolerance.Pixels:
+            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool, tolerance)
+        elif layerConfig.unit == QgsTolerance.ProjectUnits:
+            layTolerance = Finder.calcMapTolerance(mapPoint, layerConfig.layer, mapTool, tolerance)
         else:
             layTolerance = tolerance
-        layPoint = mapTool.toLayerCoordinates(layer['layer'], mapPoint)
+        layPoint = mapTool.toLayerCoordinates(layerConfig.layer, mapPoint)
         searchRect = QgsRectangle(layPoint.x() - layTolerance, layPoint.y() - layTolerance,
                                   layPoint.x() + layTolerance, layPoint.y() + layTolerance)
         request = QgsFeatureRequest()
         request.setFilterRect(searchRect)
         request.setFlags(QgsFeatureRequest.ExactIntersect)
         features = []
-        for feature in layer['layer'].getFeatures(request):
+        for feature in layerConfig.layer.getFeatures(request):
             features.append(QgsFeature(feature))
         return features
 
@@ -303,6 +303,43 @@ class Finder:
     #                     laySettings = {'layer': layer, 'tolerance': 7, 'unitType': QgsTolerance.Pixels}
     #                     layerList.append(laySettings)
     #     return snapperList, layerList
+
+    @staticmethod
+    def snapCurvedIntersections(mapPoint, mapCanvas, mapTool):
+        snap_layers = []
+        for layer in mapCanvas.layers():
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
+            if isinstance(layer, QgsVectorLayer) and enabled:
+                if snappingType == QgsSnapper.SnapToVertex:
+                    snap_type = QgsPointLocator.Vertex
+                elif snappingType == QgsSnapper.SnapToSegment:
+                    snap_type = QgsPointLocator.Edge
+                else:
+                    snap_type = QgsPointLocator.All
+                snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
+
+        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
+        if len(features) > 1:
+            if len(features) > 2:
+                one = [-1, 9999999]
+                two = [-1, 9999999]
+                for i in xrange(len(features)):
+                    d = Finder.sqrDistForPoints(mapPoint, features[0].geometry().asPoint())
+                    if d > one[1]:
+                        two = one
+                        one[0] = i
+                        one[1] = d
+                    elif d > two[1]:
+                        two[0] = i
+                        two[1] = d
+                geom1 = features[one[0]].geometry()
+                geom2 = features[two[0]].geometry()
+            else:
+                geom1 = features[0].geometry()
+                geom2 = features[1].geometry()
+            return Finder.intersect(geom1, geom2, mapPoint)
+        else:
+            return None
 
     @staticmethod
     def snap(mapPoint, mapCanvas, snapIntersections):
