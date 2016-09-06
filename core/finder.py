@@ -263,18 +263,19 @@ class Finder:
         :param snapperList: layers list to snap
         :return: the closest snapped point
         """
-        print("nb layers snap : " + str(len(snapperList)))
-        if len(snapperList) == 0:
-            return None
-        snapper = QgsSnapper(QgsMapSettings())
-        snapper.setSnapLayers(snapperList)
-        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
-        ok, snappingResults = snapper.snapMapPoint(mapPoint, [])
-        print("nb snap : " + str(len(snappingResults)))
-        if ok == 0 and len(snappingResults) > 0:
-            return QgsPoint(snappingResults[0].snappedVertex)
-        else:
-            return None
+        # print("nb layers snap : " + str(len(snapperList)))
+        # if len(snapperList) == 0:
+        #     return None
+        # snapper = QgsSnapper(QgsMapSettings())
+        # snapper.setSnapLayers(snapperList)
+        # snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
+        # ok, snappingResults = snapper.snapMapPoint(mapPoint, [])
+        # print("nb snap : " + str(len(snappingResults)))
+        # if ok == 0 and len(snappingResults) > 0:
+        #     return QgsPoint(snappingResults[0].snappedVertex)
+        # else:
+        #     return None
+        return None
 
     @staticmethod
     def updateSnapperList(iface):
