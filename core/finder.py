@@ -215,12 +215,12 @@ class Finder:
         :param layers: the different working layers
         :return: the closest intersection as QgsPoint, or none
         """
-        print("looking for intersection")
+        print("nb layers intersects : " + str(len(layers)))
         features = Finder.findFeaturesLayersAt(mapPoint, layers, mapTool)
         if features is None:
             return None
         nFeat = len(features)
-        print("nb interesects : " + nFeat)
+        print("nb interesects : " + str(nFeat))
         intersections = []
         for i in range(nFeat - 1):
             for j in range(i + 1, nFeat):
@@ -263,14 +263,14 @@ class Finder:
         :param snapperList: layers list to snap
         :return: the closest snapped point
         """
-        print("looking for snap")
+        print("nb layers snap : " + str(len(snapperList)))
         if len(snapperList) == 0:
             return None
         snapper = QgsSnapper(QgsMapSettings())
         snapper.setSnapLayers(snapperList)
         snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
         ok, snappingResults = snapper.snapMapPoint(mapPoint, [])
-        print("nb snap : " + len(snappingResults))
+        print("nb snap : " + str(len(snappingResults)))
         if ok == 0 and len(snappingResults) > 0:
             return QgsPoint(snappingResults[0].snappedVertex)
         else:
