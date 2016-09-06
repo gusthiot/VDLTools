@@ -26,7 +26,7 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar)
 from qgis.core import (QGis,
                        QgsProject,
-                       QgsMapLayer,
+                       QgsVectorLayer,
                        QgsGeometry,
                        QgsWKBTypes)
 from PyQt4.QtCore import (Qt,
@@ -145,7 +145,7 @@ class ExtrapolateTool(QgsMapTool):
         :param layer: selected layer
         """
         if layer is not None\
-                and layer.type() == QgsMapLayer.VectorLayer\
+                and isinstance(layer, QgsVectorLayer)\
                 and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
 
             if layer == self.__layer:

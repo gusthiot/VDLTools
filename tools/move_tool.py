@@ -34,7 +34,7 @@ from qgis.core import (QgsPointV2,
                        QgsCurvePolygonV2,
                        QGis,
                        QgsGeometry,
-                       QgsMapLayer)
+                       QgsVectorLayer)
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
                       QgsMessageBar)
@@ -137,7 +137,7 @@ class MoveTool(QgsMapTool):
         :param layer: selected layer
         """
         if layer is not None\
-                and layer.type() == QgsMapLayer.VectorLayer:
+                and isinstance(layer, QgsVectorLayer):
             if layer == self.__layer:
                 return
 

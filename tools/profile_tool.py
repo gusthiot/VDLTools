@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import (QgsMapLayer,
+from qgis.core import (QgsVectorLayer,
                        QgsGeometry,
                        QGis,
                        QgsTolerance,
@@ -141,7 +141,7 @@ class ProfileTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
+        if layer is not None and isinstance(layer, QgsVectorLayer) and \
                         QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             self.__lineLayer = layer
             self.action().setEnabled(True)
@@ -213,7 +213,7 @@ class ProfileTool(QgsMapTool):
         """
         layerList = []
         for layer in self.__iface.mapCanvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+            if isinstance(layer, QgsVectorLayer) and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                     layerList.append(layer)
         return layerList
 

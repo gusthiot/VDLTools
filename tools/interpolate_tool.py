@@ -26,7 +26,7 @@ from qgis.gui import (QgsMapTool,
                       QgsRubberBand)
 from qgis.core import (QGis,
                        QgsProject,
-                       QgsMapLayer,
+                       QgsVectorLayer,
                        QgsFeature,
                        QgsGeometry,
                        QgsPointV2,
@@ -157,7 +157,7 @@ class InterpolateTool(QgsMapTool):
         :param layer: selected layer
         """
         if layer is not None \
-                and layer.type() == QgsMapLayer.VectorLayer \
+                and isinstance(layer, QgsVectorLayer) \
                 and layer.geometryType() == QGis.Point:
 
             if layer == self.__layer:
@@ -198,7 +198,7 @@ class InterpolateTool(QgsMapTool):
         for layer in self.__iface.mapCanvas().layers():
             noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
                 QgsProject.instance().snapSettingsForLayer(layer.id())
-            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType() \
+            if isinstance(layer, QgsVectorLayer) and layer.hasGeometryType() \
                     and layer.geometryType() == QGis.Line:
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
                     if legend.isLayerVisible(layer) and enabled:
