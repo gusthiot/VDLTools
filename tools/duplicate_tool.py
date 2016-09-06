@@ -27,6 +27,8 @@ from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
+                       QgsSnappingUtils,
+                       QgsPointLocator,
                        QgsProject,
                        QgsLineStringV2,
                        QgsCompoundCurveV2,
@@ -65,7 +67,7 @@ class DuplicateTool(QgsMapTool):
         self.__selectedFeature = None
         self.__rubberBand = None
         self.__newFeature = None
-        self.__laySettings = None
+        self.__layerConfig = None
 
     def icon_path(self):
         """
@@ -367,7 +369,7 @@ class DuplicateTool(QgsMapTool):
         """
         noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
             QgsProject.instance().snapSettingsForLayer(self.__layer.id())
-        self.__laySettings = {'layer': self.__layer, 'tolerance': tolerance, 'unitType': unitType}
+        self.__layerConfig = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.Vertex, tolerance, unitType)
         if not enabled or tolerance == 0:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Error"),
@@ -380,7 +382,7 @@ class DuplicateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__laySettings, self)
+            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__layerConfig, self)
             if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()
                 self.__layer.setSelectedFeatures([f.id()])

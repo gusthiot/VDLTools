@@ -27,7 +27,9 @@ from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsGeometry,
+                       QgsPointLocator,
                        QgsPointV2,
+                       QgsSnappingUtils,
                        QgsCircularStringV2,
                        QgsFeature,
                        QGis,
@@ -178,18 +180,23 @@ class IntersectTool(QgsMapTool):
         if not self.__isEditing:
             self.__rubber.reset()
             match = Finder.snap(mouseEvent.mapPoint(), self.__canvas, True)
-            print(match.hasVertex(), match.hasEdge(), match.hasArea(), match.isValid(), match.featureId())
+            # print(match.hasVertex(), match.hasEdge(), match.hasArea(), match.isValid(), match.featureId())
             if match.hasVertex() or match.hasEdge():
+                point = match.point()
                 if match.hasVertex():
                     if match.layer():
                         self.__rubber.setIcon(4)
                     else:
                         self.__rubber.setIcon(1)
                 if match.hasEdge():
-                    geom = QgsFeature(match.featureId).geometry()
-                    print(QgsGeometry.fromOldWkbType(geom.wkbType()))
-                    self.__rubber.setIcon(3)
-                self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                    if intersection:
+                        self.__rubber.setIcon(1)
+                        point = intersection
+                        print("intersect")
+                    else:
+                        self.__rubber.setIcon(3)
+                self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
 
 
             # if self.__counter > 5:

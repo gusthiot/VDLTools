@@ -25,6 +25,8 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar,
                       QgsRubberBand)
 from qgis.core import (QGis,
+                       QgsSnappingUtils,
+                       QgsPointLocator,
                        QgsProject,
                        QgsVectorLayer,
                        QgsFeature,
@@ -65,7 +67,7 @@ class InterpolateTool(QgsMapTool):
         self.__counter = 0
         self.__ownSettings = None
         self.__selectedFeature = None
-        self.__linesSets = None
+        self.__linesConfig = None
 
     def icon_path(self):
         """
@@ -202,13 +204,13 @@ class InterpolateTool(QgsMapTool):
                     and layer.geometryType() == QGis.Line:
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
                     if legend.isLayerVisible(layer) and enabled:
-                        layerSettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
-                        self.__layerList.append(layerSettings)
+                        layerConfig = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, tolerance, unitType)
+                        self.__layerList.append(layerConfig)
 
         if self.__ownSettings and self.__ownSettings.linesLayer():
             noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
                 QgsProject.instance().snapSettingsForLayer(self.__ownSettings.linesLayer().id())
-            self.__linesSets = {'layer': self.__ownSettings.linesLayer(), 'tolerance': tolerance, 'unitType': unitType}
+            self.__linesConfig = QgsSnappingUtils.LayerConfig(self.__ownSettings.linesLayer(), QgsPointLocator.Vertex, tolerance, unitType)
 
     def canvasMoveEvent(self, event):
         """
@@ -336,7 +338,7 @@ class InterpolateTool(QgsMapTool):
         :param selectedFeature: the feature that can intersect another one
         :return: an intersection QgsPointV2 or none
         """
-        f = Finder.findClosestFeatureAt(mapPoint, self.__linesSets, self)
+        f = Finder.findClosestFeatureAt(mapPoint, self.__linesConfig, self)
         if f is None:
             return None
         intersect = Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint)

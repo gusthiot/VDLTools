@@ -21,6 +21,8 @@
  ***************************************************************************/
 """
 from qgis.core import (QgsVectorLayer,
+                       QgsPointLocator,
+                       QgsSnappingUtils,
                        QgsGeometry,
                        QGis,
                        QgsTolerance,
@@ -477,8 +479,8 @@ class ProfileTool(QgsMapTool):
             if self.__lineLayer is not None:
                 noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
                     QgsProject.instance().snapSettingsForLayer(self.__lineLayer.id())
-                laySettings = {'layer': self.__lineLayer, 'tolerance': tolerance, 'unitType': unitType}
-                f = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
+                layerConfig = QgsSnappingUtils.LayerConfig(self.__lineLayer, QgsPointLocator.Vertex, tolerance, unitType)
+                f = Finder.findClosestFeatureAt(event.mapPoint(), layerConfig, self)
                 if not self.__inSelection:
                     if f is not None and self.__lastFeatureId != f.id():
                         self.__lastFeature = f

@@ -25,6 +25,8 @@ from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
                       QgsMessageBar)
 from qgis.core import (QGis,
+                       QgsPointLocator,
+                       QgsSnappingUtils,
                        QgsProject,
                        QgsVectorLayer,
                        QgsGeometry,
@@ -62,7 +64,7 @@ class ExtrapolateTool(QgsMapTool):
         self.__selectedVertex = None
         self.__elevation = None
         self.__selectedFeature = None
-        self.__laySettings = None
+        self.__layerConfig = None
 
     def icon_path(self):
         """
@@ -177,7 +179,7 @@ class ExtrapolateTool(QgsMapTool):
         """
         noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
             QgsProject.instance().snapSettingsForLayer(self.__layer.id())
-        self.__laySettings = {'layer': self.__layer, 'tolerance': tolerance, 'unitType': unitType}
+        self.__layerConfig = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.Vertex, tolerance, unitType)
         if not enabled or tolerance == 0:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Error"),
@@ -190,7 +192,7 @@ class ExtrapolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__laySettings, self)
+            f = Finder.findClosestFeatureAt(event.mapPoint(), self.layerConfig, self)
 
             if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()
