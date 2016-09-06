@@ -152,7 +152,7 @@ class IntersectTool(QgsMapTool):
         self.__updateSnapperList()
         self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
+        # QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
 
     def __updateSnapperList(self):
         """
@@ -167,7 +167,7 @@ class IntersectTool(QgsMapTool):
         self.__rubber.reset()
         self.__mapCanvas.layersChanged.disconnect(self.__updateSnapperList)
         self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateSnapperList)
+        # QgsProject.instance().snapSettingsChanged.disconnect(self.__updateSnapperList)
         QgsMapTool.deactivate(self)
 
     def canvasMoveEvent(self, mouseEvent):

@@ -215,46 +215,45 @@ class Finder:
         :param layers: the different working layers
         :return: the closest intersection as QgsPoint, or none
         """
-        # print("nb layers intersects : " + str(len(layers)))
-        # features = Finder.findFeaturesLayersAt(mapPoint, layers, mapTool)
-        # if features is None:
-        #     return None
-        # nFeat = len(features)
-        # print("nb interesects : " + str(nFeat))
-        # intersections = []
-        # for i in range(nFeat - 1):
-        #     for j in range(i + 1, nFeat):
-        #         geometry1 = features[i].geometry()
-        #         geometry2 = features[j].geometry()
-        #         if geometry1.type() == QGis.Polygon:
-        #             for curve1 in geometry1.asPolygon():
-        #                 if geometry2.type() == QGis.Polygon:
-        #                     for curve2 in geometry2.asPolygon():
-        #                         intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mapPoint)
-        #                         if intersect is not None:
-        #                             intersections.append(intersect)
-        #                 else:
-        #                     intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mapPoint)
-        #                     if intersect is not None:
-        #                         intersections.append(intersect)
-        #         elif geometry2.type() == QGis.Polygon:
-        #             for curve2 in geometry2.asPolygon():
-        #                 intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mapPoint)
-        #                 if intersect is not None:
-        #                     intersections.append(intersect)
-        #         else:
-        #             intersect = Finder.intersect(geometry1, geometry2, mapPoint)
-        #             if intersect is not None:
-        #                 intersections.append(intersect)
-        # if len(intersections) == 0:
-        #     return None
-        # intersect = intersections[0]
-        # for point in intersections[1:]:
-        #     if mapPoint.sqrDist(point) < mapPoint.sqrDist(intersect):
-        #         intersect = QgsPoint(point.x(), point.y())
-        # print("return intersect")
-        # return intersect
-        return None
+        print("nb layers intersects : " + str(len(layers)))
+        features = Finder.findFeaturesLayersAt(mapPoint, layers, mapTool)
+        if features is None:
+            return None
+        nFeat = len(features)
+        print("nb interesects : " + str(nFeat))
+        intersections = []
+        for i in range(nFeat - 1):
+            for j in range(i + 1, nFeat):
+                geometry1 = features[i].geometry()
+                geometry2 = features[j].geometry()
+                if geometry1.type() == QGis.Polygon:
+                    for curve1 in geometry1.asPolygon():
+                        if geometry2.type() == QGis.Polygon:
+                            for curve2 in geometry2.asPolygon():
+                                intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mapPoint)
+                                if intersect is not None:
+                                    intersections.append(intersect)
+                        else:
+                            intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mapPoint)
+                            if intersect is not None:
+                                intersections.append(intersect)
+                elif geometry2.type() == QGis.Polygon:
+                    for curve2 in geometry2.asPolygon():
+                        intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mapPoint)
+                        if intersect is not None:
+                            intersections.append(intersect)
+                else:
+                    intersect = Finder.intersect(geometry1, geometry2, mapPoint)
+                    if intersect is not None:
+                        intersections.append(intersect)
+        if len(intersections) == 0:
+            return None
+        intersect = intersections[0]
+        for point in intersections[1:]:
+            if mapPoint.sqrDist(point) < mapPoint.sqrDist(intersect):
+                intersect = QgsPoint(point.x(), point.y())
+        print("return intersect")
+        return intersect
 
     @staticmethod
     def snapToLayers(mapPoint, snapperList):
@@ -288,11 +287,11 @@ class Finder:
         legend = iface.legendInterface()
         scale = iface.mapCanvas().scale()
         for layer in iface.mapCanvas().layers():
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                QgsProject.instance().snapSettingsForLayer(layer.id())
+            # noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+            #    QgsProject.instance().snapSettingsForLayer(layer.id())
             if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
                 if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    if legend.isLayerVisible(layer) and enabled:
+                    if legend.isLayerVisible(layer): # and enabled:
                         snapLayer = QgsSnapper.SnapLayer()
                         snapLayer.mLayer = layer
                         snapLayer.mSnapTo = QgsSnapper.SnapToVertex  # snappingType
