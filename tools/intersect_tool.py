@@ -176,7 +176,7 @@ class IntersectTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            if self.__counter > 2:
+            if self.__counter > 5:
                 self.__rubber.reset()
                 snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
                 if snappedIntersection is None:
