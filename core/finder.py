@@ -295,10 +295,10 @@ class Finder:
                     if legend.isLayerVisible(layer) and enabled:
                         snapLayer = QgsSnapper.SnapLayer()
                         snapLayer.mLayer = layer
-                        snapLayer.mSnapTo = snappingType
-                        snapLayer.mTolerance = tolerance
-                        snapLayer.mUnitType = unitType
+                        snapLayer.mSnapTo = QgsSnapper.SnapToVertex  # snappingType
+                        snapLayer.mTolerance = 7  # tolerance
+                        snapLayer.mUnitType = QgsTolerance.Pixels  # unitType
                         snapperList.append(snapLayer)
-                        laySettings = {'layer': layer, 'tolerance': tolerance, 'unitType': unitType}
+                        laySettings = {'layer': layer, 'tolerance': 7, 'unitType': QgsTolerance.Pixels}
                         layerList.append(laySettings)
         return snapperList, layerList
