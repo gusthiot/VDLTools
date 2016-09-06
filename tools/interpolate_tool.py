@@ -107,12 +107,18 @@ class InterpolateTool(QgsMapTool):
         self.__rubber.setColor(color)
         self.__rubber.setIcon(4)
         self.__rubber.setIconSize(20)
+        self.__canvas.layersChanged.connect(self.__updateList)
+        self.__canvas.scaleChanged.connect(self.__updateList)
+        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
 
     def deactivate(self):
         """
         When the action is deselected
         """
         self.__rubber.reset()
+        self.__canvas.layersChanged.disconnect(self.__updateList)
+        self.__canvas.scaleChanged.disconnect(self.__updateList)
+        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -120,9 +126,6 @@ class InterpolateTool(QgsMapTool):
         To set the action as enable, as the layer is editable
         """
         self.action().setEnabled(True)
-        self.__canvas.layersChanged.connect(self.__updateList)
-        self.__canvas.scaleChanged.connect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
         self.__layer.editingStarted.disconnect(self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
@@ -131,9 +134,6 @@ class InterpolateTool(QgsMapTool):
         To set the action as disable, as the layer is not editable
         """
         self.action().setEnabled(False)
-        self.__canvas.layersChanged.disconnect(self.__updateList)
-        self.__canvas.scaleChanged.disconnect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
         if self.__canvas.mapTool == self:
