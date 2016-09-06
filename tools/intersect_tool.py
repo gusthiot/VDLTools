@@ -182,11 +182,9 @@ class IntersectTool(QgsMapTool):
                 if snappedIntersection is None:
                     snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
                     if snappedPoint is not None:
-                        print("snap")
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
                 else:
-                    print("intersect")
                     self.__rubber.setIcon(1)
                     self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
                 self.__counter = 0
