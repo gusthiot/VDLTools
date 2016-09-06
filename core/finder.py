@@ -24,12 +24,14 @@
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
                        QGis,
+                       QgsVectorLayer,
                        QgsTolerance,
-                       QgsMapLayer,
+                       QgsMapLayer,QgsPointLocator,
                        QgsMapSettings,
                        QgsProject,
                        QgsSnapper,
                        QgsGeometry,
+                       QgsSnappingUtils,
                        QgsRectangle,
                        QgsFeatureRequest,
                        QgsFeature)
@@ -205,99 +207,128 @@ class Finder:
             return intersectionP
         else:
             return None
+    #
+    # @staticmethod
+    # def snapToIntersection(mapPoint, mapTool, layers):
+    #     """
+    #     To find the closest intersection in different layers for a given point
+    #     :param mapPoint: the map position
+    #     :param mapTool: a QgsMapTool instance
+    #     :param layers: the different working layers
+    #     :return: the closest intersection as QgsPoint, or none
+    #     """
+    #     print("nb layers intersects : " + str(len(layers)))
+    #     features = Finder.findFeaturesLayersAt(mapPoint, layers, mapTool)
+    #     if features is None:
+    #         return None
+    #     nFeat = len(features)
+    #     print("nb interesects : " + str(nFeat))
+    #     intersections = []
+    #     for i in range(nFeat - 1):
+    #         for j in range(i + 1, nFeat):
+    #             geometry1 = features[i].geometry()
+    #             geometry2 = features[j].geometry()
+    #             if geometry1.type() == QGis.Polygon:
+    #                 for curve1 in geometry1.asPolygon():
+    #                     if geometry2.type() == QGis.Polygon:
+    #                         for curve2 in geometry2.asPolygon():
+    #                             intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mapPoint)
+    #                             if intersect is not None:
+    #                                 intersections.append(intersect)
+    #                     else:
+    #                         intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mapPoint)
+    #                         if intersect is not None:
+    #                             intersections.append(intersect)
+    #             elif geometry2.type() == QGis.Polygon:
+    #                 for curve2 in geometry2.asPolygon():
+    #                     intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mapPoint)
+    #                     if intersect is not None:
+    #                         intersections.append(intersect)
+    #             else:
+    #                 intersect = Finder.intersect(geometry1, geometry2, mapPoint)
+    #                 if intersect is not None:
+    #                     intersections.append(intersect)
+    #     if len(intersections) == 0:
+    #         return None
+    #     intersect = intersections[0]
+    #     for point in intersections[1:]:
+    #         if mapPoint.sqrDist(point) < mapPoint.sqrDist(intersect):
+    #             intersect = QgsPoint(point.x(), point.y())
+    #     print("return intersect")
+    #     return intersect
+    #
+    # @staticmethod
+    # def snapToLayers(mapPoint, snapperList):
+    #     """
+    #     To snap on different layers
+    #     :param mapPoint: the map position
+    #     :param snapperList: layers list to snap
+    #     :return: the closest snapped point
+    #     """
+    #     print("nb layers snap : " + str(len(snapperList)))
+    #     if len(snapperList) == 0:
+    #         return None
+    #     snapper = QgsSnapper(QgsMapSettings())
+    #     snapper.setSnapLayers(snapperList)
+    #     snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
+    #     ok, snappingResults = snapper.snapMapPoint(mapPoint, [])
+    #     print("nb snap : " + str(len(snappingResults)))
+    #     if ok == 0 and len(snappingResults) > 0:
+    #         return QgsPoint(snappingResults[0].snappedVertex)
+    #     else:
+    #         return None
+    #
+    # @staticmethod
+    # def updateSnapperList(iface):
+    #     """
+    #     To update the list of layers that can be snapped
+    #     :param iface: interface
+    #     """
+    #     snapperList = []
+    #     layerList = []
+    #     legend = iface.legendInterface()
+    #     scale = iface.mapCanvas().scale()
+    #     for layer in iface.mapCanvas().layers():
+    #         # noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+    #         #    QgsProject.instance().snapSettingsForLayer(layer.id())
+    #         if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
+    #             if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
+    #                 if legend.isLayerVisible(layer): # and enabled:
+    #                     snapLayer = QgsSnapper.SnapLayer()
+    #                     snapLayer.mLayer = layer
+    #                     snapLayer.mSnapTo = QgsSnapper.SnapToVertex  # snappingType
+    #                     snapLayer.mTolerance = 7  # tolerance
+    #                     snapLayer.mUnitType = QgsTolerance.Pixels  # unitType
+    #                     snapperList.append(snapLayer)
+    #                     laySettings = {'layer': layer, 'tolerance': 7, 'unitType': QgsTolerance.Pixels}
+    #                     layerList.append(laySettings)
+    #     return snapperList, layerList
 
     @staticmethod
-    def snapToIntersection(mapPoint, mapTool, layers):
-        """
-        To find the closest intersection in different layers for a given point
-        :param mapPoint: the map position
-        :param mapTool: a QgsMapTool instance
-        :param layers: the different working layers
-        :return: the closest intersection as QgsPoint, or none
-        """
-        print("nb layers intersects : " + str(len(layers)))
-        features = Finder.findFeaturesLayersAt(mapPoint, layers, mapTool)
-        if features is None:
-            return None
-        nFeat = len(features)
-        print("nb interesects : " + str(nFeat))
-        intersections = []
-        for i in range(nFeat - 1):
-            for j in range(i + 1, nFeat):
-                geometry1 = features[i].geometry()
-                geometry2 = features[j].geometry()
-                if geometry1.type() == QGis.Polygon:
-                    for curve1 in geometry1.asPolygon():
-                        if geometry2.type() == QGis.Polygon:
-                            for curve2 in geometry2.asPolygon():
-                                intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), QgsGeometry.fromPolyline(curve2), mapPoint)
-                                if intersect is not None:
-                                    intersections.append(intersect)
-                        else:
-                            intersect = Finder.intersect(QgsGeometry.fromPolyline(curve1), geometry2, mapPoint)
-                            if intersect is not None:
-                                intersections.append(intersect)
-                elif geometry2.type() == QGis.Polygon:
-                    for curve2 in geometry2.asPolygon():
-                        intersect = Finder.intersect(geometry1, QgsGeometry.fromPolyline(curve2), mapPoint)
-                        if intersect is not None:
-                            intersections.append(intersect)
+    def snap(mapPoint, mapCanvas, snapIntersections):
+
+        snap_layers = []
+        for layer in mapCanvas.layers():
+            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
+            if isinstance(layer, QgsVectorLayer) and enabled:
+                if snappingType == QgsSnapper.SnapToVertex:
+                    snap_type = QgsPointLocator.Vertex
+                elif snappingType == QgsSnapper.SnapToSegment:
+                    snap_type = QgsPointLocator.Edge
                 else:
-                    intersect = Finder.intersect(geometry1, geometry2, mapPoint)
-                    if intersect is not None:
-                        intersections.append(intersect)
-        if len(intersections) == 0:
-            return None
-        intersect = intersections[0]
-        for point in intersections[1:]:
-            if mapPoint.sqrDist(point) < mapPoint.sqrDist(intersect):
-                intersect = QgsPoint(point.x(), point.y())
-        print("return intersect")
-        return intersect
+                    snap_type = QgsPointLocator.All
+                snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
 
-    @staticmethod
-    def snapToLayers(mapPoint, snapperList):
-        """
-        To snap on different layers
-        :param mapPoint: the map position
-        :param snapperList: layers list to snap
-        :return: the closest snapped point
-        """
-        print("nb layers snap : " + str(len(snapperList)))
-        if len(snapperList) == 0:
-            return None
-        snapper = QgsSnapper(QgsMapSettings())
-        snapper.setSnapLayers(snapperList)
-        snapper.setSnapMode(QgsSnapper.SnapWithResultsWithinTolerances)
-        ok, snappingResults = snapper.snapMapPoint(mapPoint, [])
-        print("nb snap : " + str(len(snappingResults)))
-        if ok == 0 and len(snappingResults) > 0:
-            return QgsPoint(snappingResults[0].snappedVertex)
-        else:
-            return None
+        snap_util = mapCanvas.snappingUtils()
+        old_layers = snap_util.layers()
+        old_mode = snap_util.snapToMapMode()
+        old_inter = snap_util.snapOnIntersections()
+        snap_util.setLayers(snap_layers)
+        snap_util.setSnapToMapMode(QgsSnappingUtils.SnapAdvanced)
+        snap_util.setSnapOnIntersections(snapIntersections)
+        match = snap_util.snapToMap(mapPoint)
+        snap_util.setLayers(old_layers)
+        snap_util.setSnapToMapMode(old_mode)
+        snap_util.setSnapOnIntersections(old_inter)
 
-    @staticmethod
-    def updateSnapperList(iface):
-        """
-        To update the list of layers that can be snapped
-        :param iface: interface
-        """
-        snapperList = []
-        layerList = []
-        legend = iface.legendInterface()
-        scale = iface.mapCanvas().scale()
-        for layer in iface.mapCanvas().layers():
-            # noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-            #    QgsProject.instance().snapSettingsForLayer(layer.id())
-            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType():
-                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    if legend.isLayerVisible(layer): # and enabled:
-                        snapLayer = QgsSnapper.SnapLayer()
-                        snapLayer.mLayer = layer
-                        snapLayer.mSnapTo = QgsSnapper.SnapToVertex  # snappingType
-                        snapLayer.mTolerance = 7  # tolerance
-                        snapLayer.mUnitType = QgsTolerance.Pixels  # unitType
-                        snapperList.append(snapLayer)
-                        laySettings = {'layer': layer, 'tolerance': 7, 'unitType': QgsTolerance.Pixels}
-                        layerList.append(laySettings)
-        return snapperList, layerList
+        return match

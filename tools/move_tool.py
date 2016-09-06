@@ -374,26 +374,45 @@ class MoveTool(QgsMapTool):
             else:
                 self.__rubberBand.setIcon(4)
                 self.__rubberBand.setIconSize(20)
-            if self.__counter > 2:
-                if self.__rubberSnap:
-                    self.__rubberSnap.reset()
-                else:
-                    self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
-                self.__rubberSnap.setColor(color)
-                self.__rubberSnap.setWidth(2)
-                self.__rubberSnap.setIconSize(20)
-                snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
-                if snappedIntersection is None:
-                    snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
-                    if snappedPoint is not None:
-                        self.__rubberSnap.setIcon(4)
-                        self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
+            if self.__rubberSnap:
+                self.__rubberSnap.reset()
+            else:
+                self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
+            self.__rubberSnap.setColor(color)
+            self.__rubberSnap.setWidth(2)
+            self.__rubberSnap.setIconSize(20)
+            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            if match.hasVertex():
+                if match.layer():
+                    self.__rubberSnap.setIcon(4)
+                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
                 else:
                     self.__rubberSnap.setIcon(1)
-                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
-                self.__counter = 0
-            else:
-                self.__counter += 1
+                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+            if match.hasEdge():
+                self.__rubberSnap.setIcon(3)
+                self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+
+            # if self.__counter > 2:
+            #     if self.__rubberSnap:
+            #         self.__rubberSnap.reset()
+            #     else:
+            #         self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
+            #     self.__rubberSnap.setColor(color)
+            #     self.__rubberSnap.setWidth(2)
+            #     self.__rubberSnap.setIconSize(20)
+            #     snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
+            #     if snappedIntersection is None:
+            #         snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
+            #         if snappedPoint is not None:
+            #             self.__rubberSnap.setIcon(4)
+            #             self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
+            #     else:
+            #         self.__rubberSnap.setIcon(1)
+            #         self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
+            #     self.__counter = 0
+            # else:
+            #     self.__counter += 1
 
     def canvasReleaseEvent(self, event):
         """
@@ -413,23 +432,26 @@ class MoveTool(QgsMapTool):
                     self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
                 else:
                     self.__onMove = 1
-                    self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
+                    # self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
         elif self.__findVertex:
             self.__findVertex = 0
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             self.__selectedVertex = closest[1]
             self.__onMove = 1
-            self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
+            # self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
         elif self.__onMove:
             self.__onMove = 0
             mapPoint = event.mapPoint()
-            snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
-            if snappedIntersection is None:
-                snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
-                if snappedPoint is not None:
-                    mapPoint = snappedPoint
-            else:
-                mapPoint = snappedIntersection
+            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            if match.hasVertex() or match.hasEdge():
+                mapPoint = match.point()
+            # snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
+            # if snappedIntersection is None:
+            #     snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
+            #     if snappedPoint is not None:
+            #         mapPoint = snappedPoint
+            # else:
+            #     mapPoint = snappedIntersection
             self.__isEditing = 1
             if self.__rubberBand:
                 self.__rubberBand.reset()

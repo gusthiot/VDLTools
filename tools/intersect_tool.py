@@ -49,7 +49,7 @@ class IntersectTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__mapCanvas = iface.mapCanvas()
+        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","From intersection")
         self.setCursor(Qt.ArrowCursor)
@@ -78,7 +78,7 @@ class IntersectTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        self.__mapCanvas.setMapTool(self)
+        self.__canvas.setMapTool(self)
 
     def setOwnSettings(self, settings):
         """
@@ -142,31 +142,31 @@ class IntersectTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.__mapCanvas, QGis.Point)
+        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubber.setColor(color)
         self.__rubber.setIcon(4)
         self.__rubber.setIconSize(20)
         self.__rubber.setWidth(2)
-        self.__updateSnapperList()
-        self.__mapCanvas.layersChanged.connect(self.__updateSnapperList)
-        self.__mapCanvas.scaleChanged.connect(self.__updateSnapperList)
+        # self.__updateSnapperList()
+        # self.__canvas.layersChanged.connect(self.__updateSnapperList)
+        # self.__canvas.scaleChanged.connect(self.__updateSnapperList)
         # QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
 
-    def __updateSnapperList(self):
-        """
-        To update the list of layers that can be snapped
-        """
-        self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
+    # def __updateSnapperList(self):
+    #     """
+    #     To update the list of layers that can be snapped
+    #     """
+    #     self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
 
     def deactivate(self):
         """
         When the action is deselected
         """
         self.__rubber.reset()
-        self.__mapCanvas.layersChanged.disconnect(self.__updateSnapperList)
-        self.__mapCanvas.scaleChanged.disconnect(self.__updateSnapperList)
+        # self.__canvas.layersChanged.disconnect(self.__updateSnapperList)
+        # self.__canvas.scaleChanged.disconnect(self.__updateSnapperList)
         # QgsProject.instance().snapSettingsChanged.disconnect(self.__updateSnapperList)
         QgsMapTool.deactivate(self)
 
@@ -176,20 +176,33 @@ class IntersectTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            if self.__counter > 5:
-                self.__rubber.reset()
-                snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
-                if snappedIntersection is None:
-                    snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
-                    if snappedPoint is not None:
-                        self.__rubber.setIcon(4)
-                        self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
+            self.__rubber.reset()
+            match = Finder.snap(mouseEvent.mapPoint(), self.__canvas, True)
+            # print(match.hasVertex(), match.hasEdge(), match.hasArea(), match.isValid(), match.layer())
+            if match.hasVertex():
+                if match.layer():
+                    self.__rubber.setIcon(4)
+                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
                 else:
                     self.__rubber.setIcon(1)
-                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
-                self.__counter = 0
-            else:
-                self.__counter += 1
+                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+            if match.hasEdge():
+                self.__rubber.setIcon(3)
+                self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+            # if self.__counter > 5:
+            #     self.__rubber.reset()
+            #     snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
+            #     if snappedIntersection is None:
+            #         snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
+            #         if snappedPoint is not None:
+            #             self.__rubber.setIcon(4)
+            #             self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
+            #     else:
+            #         self.__rubber.setIcon(1)
+            #         self.__rubber.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
+            #     self.__counter = 0
+            # else:
+            #     self.__counter += 1
 
     def canvasReleaseEvent(self, mouseEvent):
         """
@@ -198,16 +211,19 @@ class IntersectTool(QgsMapTool):
         """
         if mouseEvent.button() != Qt.LeftButton:
             return
-        # snap to layers
-        snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
-        if snappedIntersection is None:
-            snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
-            if snappedPoint is not None:
-                self.__isEditing = True
-                self.__setDistanceDialog(snappedPoint)
-        else:
+        match = Finder.snap(mouseEvent.mapPoint(), self.__canvas, True)
+        if match.hasVertex() or match.hasEdge():
             self.__isEditing = True
-            self.__setDistanceDialog(snappedIntersection)
+            self.__setDistanceDialog(match.point())
+        # snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
+        # if snappedIntersection is None:
+        #     snappedPoint = Finder.snapToLayers(mouseEvent.mapPoint(), self.__snapperList)
+        #     if snappedPoint is not None:
+        #         self.__isEditing = True
+        #         self.__setDistanceDialog(snappedPoint)
+        # else:
+        #     self.__isEditing = True
+        #     self.__setDistanceDialog(snappedIntersection)
 
     def __lineLayer(self):
         """
