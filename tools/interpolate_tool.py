@@ -173,14 +173,14 @@ class InterpolateTool(QgsMapTool):
                 self.action().setEnabled(True)
                 self.__layer.editingStopped.connect(self.stopEditing)
                 self.__canvas.layersChanged.connect(self.__updateList)
-                self.__canvas.scaleChanged.connect(self.__updateSnapperList)
-                QgsProject.instance().snapSettingsChanged.connect(self.__updateSnapperList)
+                self.__canvas.scaleChanged.connect(self.__updateList)
+                QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
                 self.__canvas.layersChanged.disconnect(self.__updateList)
-                self.__canvas.scaleChanged.disconnect(self.__updateSnapperList)
-                QgsProject.instance().snapSettingsChanged.disconnect(self.__updateSnapperList)
+                self.__canvas.scaleChanged.disconnect(self.__updateList)
+                QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
                 if self.__canvas.mapTool == self:
                     self.__iface.actionPan().trigger()
                 #    self.__canvas.setMapTool(self.__oldTool)

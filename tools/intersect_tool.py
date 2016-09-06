@@ -178,17 +178,20 @@ class IntersectTool(QgsMapTool):
         if not self.__isEditing:
             self.__rubber.reset()
             match = Finder.snap(mouseEvent.mapPoint(), self.__canvas, True)
-            # print(match.hasVertex(), match.hasEdge(), match.hasArea(), match.isValid(), match.layer())
-            if match.hasVertex():
-                if match.layer():
-                    self.__rubber.setIcon(4)
-                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
-                else:
-                    self.__rubber.setIcon(1)
-                    self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
-            if match.hasEdge():
-                self.__rubber.setIcon(3)
+            print(match.hasVertex(), match.hasEdge(), match.hasArea(), match.isValid(), match.featureId())
+            if match.hasVertex() or match.hasEdge():
+                if match.hasVertex():
+                    if match.layer():
+                        self.__rubber.setIcon(4)
+                    else:
+                        self.__rubber.setIcon(1)
+                if match.hasEdge():
+                    geom = QgsFeature(match.featureId).geometry()
+                    print(QgsGeometry.fromOldWkbType(geom.wkbType()))
+                    self.__rubber.setIcon(3)
                 self.__rubber.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+
+
             # if self.__counter > 5:
             #     self.__rubber.reset()
             #     snappedIntersection = Finder.snapToIntersection(mouseEvent.mapPoint(), self, self.__layerList)
