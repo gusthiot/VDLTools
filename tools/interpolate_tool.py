@@ -68,6 +68,7 @@ class InterpolateTool(QgsMapTool):
         self.__ownSettings = None
         self.__selectedFeature = None
         self.__linesConfig = None
+        self.__findVertex = 0
 
     def icon_path(self):
         """
@@ -174,15 +175,9 @@ class InterpolateTool(QgsMapTool):
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
                 self.__layer.editingStopped.connect(self.stopEditing)
-                self.__canvas.layersChanged.connect(self.__updateList)
-                self.__canvas.scaleChanged.connect(self.__updateList)
-                QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                self.__canvas.layersChanged.disconnect(self.__updateList)
-                self.__canvas.scaleChanged.disconnect(self.__updateList)
-                QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
                 if self.__canvas.mapTool == self:
                     self.__iface.actionPan().trigger()
                 #    self.__canvas.setMapTool(self.__oldTool)
@@ -217,7 +212,7 @@ class InterpolateTool(QgsMapTool):
         When the mouse is moved
         :param event: mouse event
         """
-        if not self.__isEditing and self.__layerList is not None:
+        if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
             f_l = Finder.findClosestFeatureLayersAt(event.mapPoint(), self.__layerList, self)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
@@ -225,35 +220,30 @@ class InterpolateTool(QgsMapTool):
                 self.__lastFeatureId = f.id()
                 self.__lastLayer = f_l[1]
                 self.__lastLayer.setSelectedFeatures([f.id()])
-            if f_l is not None:
-                if self.__counter > 2:
-                    self.__rubber.reset()
-                    snappedIntersection = self.__snapToIntersection(event.mapPoint(), f_l[0])
-                    print f_l[1].name()
-                    if snappedIntersection is None:
-                        self.__rubber.setIcon(4)
-                        line_v2, curved = GeometryV2.asLineV2(f_l[0].geometry())
-                        vertex_v2 = QgsPointV2()
-                        vertex_id = QgsVertexId()
-                        line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
-                        self.__rubber.setToGeometry(QgsGeometry(vertex_v2), None)
-                    else:
-                        self.__rubber.setIcon(1)
-                        self.__rubber.setToGeometry(QgsGeometry(snappedIntersection), None)
-                    self.__counter = 0
-                else:
-                    self.__counter += 1
             if f_l is None and self.__lastLayer is not None:
                 self.__lastLayer.removeSelection()
-                self.__rubber.reset()
+               # self.__rubber.reset()
                 self.__lastFeatureId = None
+        elif self.__findVertex:
+            self.__rubber.reset()
+            snappedIntersection = self.__snapToIntersection(event.mapPoint(), self.__selectedFeature)
+            if snappedIntersection is None:
+                self.__rubber.setIcon(4)
+                line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
+                vertex_v2 = QgsPointV2()
+                vertex_id = QgsVertexId()
+                line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
+                self.__rubber.setToGeometry(QgsGeometry(vertex_v2), None)
+            else:
+                self.__rubber.setIcon(1)
+                self.__rubber.setToGeometry(QgsGeometry(snappedIntersection), None)
 
     def canvasReleaseEvent(self, event):
         """
         When the mouse is clicked
         :param event: mouse event
         """
-        if self.__lastLayer is not None:
+        if self.__lastLayer is not None and not self.__findVertex:
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) < 1:
@@ -261,16 +251,19 @@ class InterpolateTool(QgsMapTool):
                                                           level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
-                self.__isEditing = True
-                self.__mapPoint = event.mapPoint()
-                self.__confDlg = InterpolateConfirmDialog()
-                if self.__lastLayer.isEditable() is True:
-                    self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
-                    self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
-                    self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
-                self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
-                self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
-                self.__confDlg.show()
+                self.__findVertex = 1
+        elif self.__findVertex:
+            self.__isEditing = True
+            self.__findVertex = 0
+            self.__mapPoint = event.mapPoint()
+            self.__confDlg = InterpolateConfirmDialog()
+            if self.__lastLayer.isEditable() is True:
+                self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
+                self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
+                self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
+            self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
+            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
+            self.__confDlg.show()
 
     def __onConfirmCancel(self):
         """

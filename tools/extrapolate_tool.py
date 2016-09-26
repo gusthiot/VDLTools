@@ -192,7 +192,7 @@ class ExtrapolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            f = Finder.findClosestFeatureAt(event.mapPoint(), self.layerConfig, self)
+            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__layerConfig, self)
 
             if f is not None and self.__lastFeatureId != f.id():
                 self.__lastFeatureId = f.id()

@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import (QgsVectorLayer,
+from qgis.core import (QgsMapLayer,
                        QgsPointLocator,
                        QgsSnappingUtils,
                        QgsGeometry,
@@ -143,7 +143,7 @@ class ProfileTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and isinstance(layer, QgsVectorLayer) and \
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
                         QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             self.__lineLayer = layer
             self.action().setEnabled(True)
@@ -161,9 +161,14 @@ class ProfileTool(QgsMapTool):
         To create a Profile Layers Dialog
         """
         pointLayers = self.__lineVertices()
-        self.__layDlg = ProfileLayersDialog(pointLayers)
-        self.__layDlg.okButton().clicked.connect(self.__onLayOk)
-        self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
+        if len(pointLayers) > 0:
+            self.__layDlg = ProfileLayersDialog(pointLayers)
+            self.__layDlg.okButton().clicked.connect(self.__onLayOk)
+            self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
+            self.__layDlg.show()
+        else:
+            self.__layers = []
+            self.__layOk()
 
     def __setMessageDialog(self, situations, differences, names):
         """
@@ -215,7 +220,7 @@ class ProfileTool(QgsMapTool):
         """
         layerList = []
         for layer in self.__iface.mapCanvas().layers():
-            if isinstance(layer, QgsVectorLayer) and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                     layerList.append(layer)
         return layerList
 
@@ -399,7 +404,7 @@ class ProfileTool(QgsMapTool):
                             z.append(None)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     for layer in availableLayers:
-                        laySettings = {'layer': layer, 'tolerance': 0.03, 'unitType': QgsTolerance.LayerUnits}
+                        laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
                         point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
                         if point is not None:
                             if layer not in pointLayers:
@@ -413,6 +418,9 @@ class ProfileTool(QgsMapTool):
         """
         self.__layDlg.close()
         self.__layers = self.__layDlg.getLayers()
+        self.__layOk()
+
+    def __layOk(self):
         self.__features = []
 
         for points in self.__points:
@@ -421,7 +429,7 @@ class ProfileTool(QgsMapTool):
             y = points['y']
             z = points['z']
             for layer in self.__layers:
-                laySettings = {'layer': layer, 'tolerance': 0.03, 'unitType': QgsTolerance.LayerUnits}
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
                 point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
                 feat.append(point)
                 if point is None:
@@ -527,7 +535,6 @@ class ProfileTool(QgsMapTool):
             if self.__lineLayer.selectedFeatures() and self.__selectedIds:
                 self.__isChoosed = 1
                 self.__setLayerDialog()
-                self.__layDlg.show()
         elif event.button() == Qt.LeftButton:
             if self.__lastFeature:
                 self.__inSelection = True
