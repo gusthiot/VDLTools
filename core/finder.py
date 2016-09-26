@@ -305,7 +305,7 @@ class Finder:
     #     return snapperList, layerList
 
     @staticmethod
-    def snapCurvedIntersections(mapPoint, mapCanvas, mapTool):
+    def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, checkForAFeature=False, featureId=None):
         snap_layers = []
         for layer in mapCanvas.layers():
             noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
@@ -332,12 +332,15 @@ class Finder:
                     elif d > two[1]:
                         two[0] = i
                         two[1] = d
-                geom1 = features[one[0]].geometry()
-                geom2 = features[two[0]].geometry()
+                feat1 = features[one[0]]
+                feat2 = features[two[0]]
             else:
-                geom1 = features[0].geometry()
-                geom2 = features[1].geometry()
-            return Finder.intersect(geom1, geom2, mapPoint)
+                feat1 = features[0]
+                feat2 = features[1]
+            if not checkForAFeature or feat1.id() == featureId or feat2.id() == featureId:
+                return Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
+            else:
+                return None
         else:
             return None
 

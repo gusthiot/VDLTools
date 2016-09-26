@@ -226,17 +226,28 @@ class InterpolateTool(QgsMapTool):
                 self.__lastFeatureId = None
         elif self.__findVertex:
             self.__rubber.reset()
-            snappedIntersection = self.__snapToIntersection(event.mapPoint(), self.__selectedFeature)
-            if snappedIntersection is None:
-                self.__rubber.setIcon(4)
-                line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
-                vertex_v2 = QgsPointV2()
-                vertex_id = QgsVertexId()
-                line_v2.closestSegment(QgsPointV2(event.mapPoint()), vertex_v2, vertex_id, 0)
-                self.__rubber.setToGeometry(QgsGeometry(vertex_v2), None)
-            else:
-                self.__rubber.setIcon(1)
-                self.__rubber.setToGeometry(QgsGeometry(snappedIntersection), None)
+            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            if match.hasVertex() or match.hasEdge():
+                point = match.point()
+                if match.hasVertex():
+                    if match.layer() and self.__selectedFeature.id() == match.featureId():
+                        self.__rubber.setIcon(4)
+                        self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
+                    else:
+                        intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self, True,
+                                                                      self.__selectedFeature.id())
+                        if intersection:
+                            self.__rubber.setIcon(1)
+                            self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
+                if match.hasEdge():
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self, True,
+                                                                  self.__selectedFeature.id())
+                    if intersection:
+                        self.__rubber.setIcon(1)
+                        self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
+                    elif self.__selectedFeature.id() == match.featureId():
+                        self.__rubber.setIcon(3)
+                        self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
 
     def canvasReleaseEvent(self, event):
         """
@@ -253,17 +264,38 @@ class InterpolateTool(QgsMapTool):
                 self.__selectedFeature = found_features[0]
                 self.__findVertex = 1
         elif self.__findVertex:
-            self.__isEditing = True
-            self.__findVertex = 0
-            self.__mapPoint = event.mapPoint()
-            self.__confDlg = InterpolateConfirmDialog()
-            if self.__lastLayer.isEditable() is True:
-                self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
-                self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
-                self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
-            self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
-            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
-            self.__confDlg.show()
+            self.__rubber.reset()
+            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            if match.hasVertex() or match.hasEdge():
+                point = match.point()
+                ok = False
+                if match.hasVertex():
+                    if match.layer() and self.__selectedFeature.id() == match.featureId():
+                        ok = True
+                    else:
+                        intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self, True,
+                                                                      self.__selectedFeature.id())
+                        if intersection:
+                            ok = True
+                if match.hasEdge():
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self, True,
+                                                                  self.__selectedFeature.id())
+                    if intersection:
+                        ok = True
+                    elif self.__selectedFeature.id() == match.featureId():
+                        ok = True
+                if ok:
+                    self.__isEditing = True
+                    self.__findVertex = 0
+                    self.__mapPoint = point
+                    self.__confDlg = InterpolateConfirmDialog()
+                    if self.__lastLayer.isEditable() is True:
+                        self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
+                        self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
+                        self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
+                    self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
+                    self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
+                    self.__confDlg.show()
 
     def __onConfirmCancel(self):
         """
