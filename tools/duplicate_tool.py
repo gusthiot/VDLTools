@@ -183,6 +183,7 @@ class DuplicateTool(QgsMapTool):
         self.__dstDlg.previewButton().clicked.connect(self.__onDstPreview)
         self.__dstDlg.okButton().clicked.connect(self.__onDstOk)
         self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
+        self.__dstDlg.directionCheck().stateChanged.connect(self.__onDstPreview)
 
     def __onDstCancel(self):
         """
@@ -218,7 +219,7 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand = None
         if self.__dstDlg.distanceEdit().text():
             distance = float(self.__dstDlg.distanceEdit().text())
-            if self.__dstDlg.isDirectionInverted():
+            if self.__dstDlg.directionCheck().checkState():
                 distance = -distance
             if self.__layer.geometryType() == QGis.Polygon:
                 self.__polygonPreview(distance)

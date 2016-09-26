@@ -119,8 +119,8 @@ class DuplicateDistanceDialog(QDialog):
         """
         return self.__distanceEdit
 
-    def isDirectionInverted(self):
-        return self.__distanceDirection.checkState()
+    def directionCheck(self):
+        return self.__distanceDirection
 
     def distanceEditText(self):
         """
