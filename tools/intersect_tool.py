@@ -27,13 +27,10 @@ from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsGeometry,
-                       QgsPointLocator,
                        QgsPointV2,
-                       QgsSnappingUtils,
                        QgsCircularStringV2,
                        QgsFeature,
                        QGis,
-                       QgsProject,
                        QgsMapLayerRegistry,
                        QgsVectorLayer)
 from qgis.gui import (QgsMapTool,
@@ -108,13 +105,23 @@ class IntersectTool(QgsMapTool):
         self.__rubber.reset()
         observation = float(self.__dstDlg.observation().text())
         circle = QgsCircularStringV2()
-        circle.setPoints([QgsPointV2(self.__dstDlg.mapPoint().x() + observation * cos(pi / 180 * a),
-                                                        self.__dstDlg.mapPoint().y() + observation * sin(pi / 180 * a))
-                                               for a in range(0, 361, 90)])
+        x = self.__dstDlg.mapPoint().x()
+        y = self.__dstDlg.mapPoint().y()
+        circle.setPoints([QgsPointV2(x + observation * cos(pi / 180 * a), y + observation * sin(pi / 180 * a))
+                          for a in range(0, 361, 90)])
         lineLayer = self.__lineLayer()
         lineLayer.startEditing()
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry(circle))
+        fields = lineLayer.pendingFields()
+        feature.setFields(fields)
+        fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
+        if "distance" in fieldsNames:
+            feature.setAttribute("distance", observation)
+        if "x" in fieldsNames:
+            feature.setAttribute("x", self.__dstDlg.mapPoint().x())
+        if "y" in fieldsNames:
+            feature.setAttribute("y", self.__dstDlg.mapPoint().y())
         lineLayer.addFeature(feature)
         lineLayer.updateExtents()
         lineLayer.commitChanges()
@@ -180,7 +187,6 @@ class IntersectTool(QgsMapTool):
         if not self.__isEditing:
             self.__rubber.reset()
             match = Finder.snap(mouseEvent.mapPoint(), self.__canvas, True)
-            # print(match.hasVertex(), match.hasEdge(), match.hasArea(), match.isValid(), match.featureId())
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
@@ -248,7 +254,8 @@ class IntersectTool(QgsMapTool):
         layer = QgsMapLayerRegistry.instance().mapLayer(self.__lineLayerID)
         if layer is None:
             epsg = self.__iface.mapCanvas().mapRenderer().destinationCrs().authid()
-            layer = QgsVectorLayer("LineString?crs=%s&index=yes" % epsg, "Memory Lines", "memory")
+            layer = QgsVectorLayer("LineString?crs=%s&index=yes&field=distance:double&field=x:double&field=y:double"
+                                   % epsg, "Memory Lines", "memory")
             QgsMapLayerRegistry.instance().addMapLayer(layer)
             layer.layerDeleted.connect(self.__lineLayerDeleted)
             self.__lineLayerID = layer.id()

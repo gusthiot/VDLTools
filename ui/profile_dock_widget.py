@@ -80,7 +80,7 @@ class ProfileDockWidget(QDockWidget):
         self.__iface = iface
         self.__canvas = self.__iface.mapCanvas()
         self.__types = ['PDF', 'PNG', 'SVG', 'PS']
-        self.__libs = ['Matplotlib', 'Qwt5']
+        self.__libs = ['Qwt5', 'Matplotlib']
         self.__lib = self.__libs[0]
 
 
@@ -126,7 +126,7 @@ class ProfileDockWidget(QDockWidget):
         self.__vertLayout.addWidget(self.__maxLabel)
         self.__maxSpin = QSpinBox()
         self.__maxSpin.setFixedSize(size)
-        self.__maxSpin.setRange(0, 1000000000)
+        self.__maxSpin.setRange(-10000, 10000)
         self.__maxSpin.valueChanged.connect(self.__reScalePlot)
         self.__vertLayout.addWidget(self.__maxSpin)
         self.__vertLayout.insertSpacing(10, 20)
@@ -136,7 +136,7 @@ class ProfileDockWidget(QDockWidget):
         self.__vertLayout.addWidget(self.__minLabel)
         self.__minSpin = QSpinBox()
         self.__minSpin.setFixedSize(size)
-        self.__minSpin.setRange(0, 1000000000)
+        self.__minSpin.setRange(-10000, 10000)
         self.__minSpin.valueChanged.connect(self.__reScalePlot)
         self.__vertLayout.addWidget(self.__minSpin)
         self.__vertLayout.insertSpacing(10, 40)
@@ -305,11 +305,12 @@ class ProfileDockWidget(QDockWidget):
                     curve.setData(xx[j], yy[j])
                     curve.setPen(QPen(color, 3))
                     if i > (self.__numLines-1):
-                        curve.setStyle(QwtPlotCurve.NoCurve)
-                        symbol = QwtSymbol()
-                        symbol.setStyle(QwtSymbol.Ellipse)
-                        symbol.setPen(QPen(color, 4))
-                        curve.setSymbol(symbol)
+                        curve.setStyle(QwtPlotCurve.Dots)
+                        curve.setPen(QPen(color, 8))
+                        # symbol = QwtSymbol()
+                        # symbol.setStyle(QwtSymbol.Ellipse)
+                        # symbol.setPen(QPen(color, 4))
+                        # curve.setSymbol(symbol)
                     curve.attach(self.__plotWdg)
 
             elif self.__lib == 'Matplotlib':

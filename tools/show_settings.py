@@ -22,8 +22,11 @@
 """
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
-from PyQt4.QtCore import QCoreApplication
+from ..ui.fields_settings_dialog import FieldsSettingsDialog
+from PyQt4.QtCore import (QCoreApplication,
+                          QVariant)
 from qgis.core import (QgsProject,
+                       QgsField,
                        QGis,
                        QgsMapLayer)
 
@@ -43,6 +46,8 @@ class ShowSettings:
         self.__memoryLinesLayer = None
         self.__project_loaded()
         QgsProject.instance().readProject.connect(self.__project_loaded)
+        self.__linesLayer = None
+        self.__fieldnames = None
 
     def __project_loaded(self):
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
@@ -151,12 +156,47 @@ class ShowSettings:
         To set the saved memory lines layer
         :param linesLayer: memory lines layer to save
         """
-        self.__memoryLinesLayer = linesLayer
+        self.__linesLayer = linesLayer
+        fields = self.__linesLayer.pendingFields()
+        fieldsNames = []
+        for pos in range(fields.count()):
+            fieldsNames.append(fields.at(pos).name())
+        if "distance" not in fieldsNames or "x" not in fieldsNames or "y" not in fieldsNames:
+            self.__fieldnames = fieldsNames
+            self.__fieldsDlg = FieldsSettingsDialog()
+            self.__fieldsDlg.okButton().clicked.connect(self.__onFieldsOk)
+            self.__fieldsDlg.butButton().clicked.connect(self.__onFieldsBut)
+            self.__fieldsDlg.cancelButton().clicked.connect(self.__onFieldsCancel)
+            self.__fieldsDlg.show()
+        else:
+            self.reallySetLinesLayer()
+
+    def __onFieldsCancel(self):
+        self.__fieldsDlg.close()
+        self.__linesLayer = None
+
+    def __onFieldsOk(self):
+        self.__fieldsDlg.close()
+        if "distance" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
+        if "x" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
+        if "y" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
+        self.reallySetLinesLayer()
+
+    def __onFieldsBut(self):
+        self.__fieldsDlg.close()
+        self.reallySetLinesLayer()
+
+    def reallySetLinesLayer(self):
+        self.__memoryLinesLayer = self.__linesLayer
         id = None
-        if linesLayer is not None:
-            id = linesLayer.id()
+        if self.__linesLayer is not None:
+            id = self.__linesLayer.id()
             self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", id)
+        self.__linesLayer = None
 
     def setConfigTable(self, configTable):
         """
