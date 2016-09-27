@@ -27,6 +27,7 @@ from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
+                       QgsEditFormConfig,
                        QgsSnappingUtils,
                        QgsPointLocator,
                        QgsProject,
@@ -356,7 +357,8 @@ class DuplicateTool(QgsMapTool):
         for field in self.__selectedFeature.fields():
             if field.name() != primaryKey:
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
-        if len(self.__selectedFeature.fields()) > 0:
+        if len(self.__selectedFeature.fields()) > 0 and \
+                        self.__layer.editFormConfig().suppress() != QgsEditFormConfig.SuppressOn:
             self.__iface.openFeatureForm(self.__layer, feature)
         else:
             self.__layer.addFeature(feature)

@@ -25,6 +25,7 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar,
                       QgsRubberBand)
 from qgis.core import (QGis,
+                       QgsEditFormConfig,
                        QgsSnappingUtils,
                        QgsPointLocator,
                        QgsProject,
@@ -34,6 +35,7 @@ from qgis.core import (QGis,
                        QgsPointV2,
                        QgsVertexId)
 from PyQt4.QtCore import (Qt,
+                          QSettings,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from ..core.finder import Finder
@@ -346,8 +348,11 @@ class InterpolateTool(QgsMapTool):
         if withPoint:
             pt_feat = QgsFeature(self.__layer.pendingFields())
             pt_feat.setGeometry(QgsGeometry(vertex_v2))
-            self.__iface.openFeatureForm(self.__layer, pt_feat)
-            # self.__layer.addFeature(pt_feat)
+
+            if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
+                self.__layer.addFeature(pt_feat)
+            else:
+                self.__iface.openFeatureForm(self.__layer, pt_feat)
 
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
@@ -373,4 +378,3 @@ class InterpolateTool(QgsMapTool):
             return QgsPointV2(intersect)
         else:
             return None
-

@@ -6,22 +6,38 @@ Outils QGIS pour la Ville de Lausanne
 - Duplicate
 
 L'outil "Duplicate" permet de copier un objet dans une direction à une distance donnée. La distance est fixe pour chaque noeud de l'objet, donc la géométrie n'est pas conservée.
-La couche de l'objet doit être éditable. Sélectionner l'objet d'un clic, puis choisir la distance et la direction.
+
+    - sélectionner une couche éditable
+    - sélectionner l'outil
+    - sélectionner un élément sur la carte
+    - choisir à quelle distance et dans quelle direction dupliquer l'élément.
+    - compléter les attributs du formulaire s'il est affiché
 
 
 - Move
 
 L'outil "Move" permet de déplacer ou copier un objet.
-La couche de l'objet doit être éditable. Sélectionner l'objet d'un clic. 
-S'il ne s'agit pas d'un point, sélectionner ensuite d'un clic un vertex par lequelle vous voulez bouger l'objet.
-Déplacer l'objet et cliquer pour fixer la position. Choisir entre le déplacement et la copie. En cas de copie, le formulaire des attributs est affiché avant l'enregistrement du nouvel objet.
+
+    - sélectionner une couche éditable
+    - sélectionner l'outil
+    - sélectionner un élément sur la carte
+    - sélectionner un vertex de l'élément (si ce n'est pas un point)
+    - choisir où déplacer/copier l'éléement et cliquer (utilisation possible des options d'accrochage de la couche)
+    - choisir entre déplacer et copier
+    - pour une copie, compléter les attributs du formulaire s'il est affiché
 
 
 - Intersect
 
 L'outil "Intersect" permet de créer un cercle de construction d'un rayon donné. 
-Il utilise 2 couches mémoire qu'il faut choisir dans la fenêtre des paramètres (accessible par le menu Extension->VDLTools).
-Cliquer sur un point de centrage et choisir le diamètre.
+
+    - sélectionner une couche
+    - sélectionner l'outil
+    - sélectionner une position (utilisation possible des options d'accrochage de la couche)
+    - choisir le diamètre
+    - en cliquant sur OK le point central est enregistré dans une couche mémoire de points et le cercle dans une couche mémoire de lignes
+        ces couches peuvent être choisies dans la fenêtre des paramètres (accessible par le menu Extension->VDLTools)
+        si aucune couche n'est séléctionnée, de nouvelles couches sont créées au moment de la création des premiers éléments
 
 
 - Profile

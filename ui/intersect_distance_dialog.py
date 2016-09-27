@@ -39,11 +39,11 @@ class IntersectDistanceDialog(QDialog):
         """
         QDialog.__init__(self)
         self.__mapPoint = mapPoint
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Place distance"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Choose diameter"))
         self.resize(275, 177)
         self.__gridLayout = QGridLayout()
 
-        self.__label = QLabel(QCoreApplication.translate("VDLTools","Distance"))
+        self.__label = QLabel(QCoreApplication.translate("VDLTools","Diameter"))
         self.__gridLayout.addWidget(self.__label, 2, 1, 1, 1)
 
         self.__observation = QDoubleSpinBox()
