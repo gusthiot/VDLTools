@@ -26,6 +26,7 @@ from ..ui.fields_settings_dialog import FieldsSettingsDialog
 from PyQt4.QtCore import (QCoreApplication,
                           QVariant)
 from qgis.core import (QgsProject,
+                       edit,
                        QgsField,
                        QGis,
                        QgsMapLayer)
@@ -177,13 +178,14 @@ class ShowSettings:
 
     def __onFieldsOk(self):
         self.__fieldsDlg.close()
-        if "distance" not in self.__fieldnames:
-            self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
-        if "x" not in self.__fieldnames:
-            self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
-        if "y" not in self.__fieldnames:
-            self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
-        self.reallySetLinesLayer()
+        with edit(self.__linesLayer):
+            if "distance" not in self.__fieldnames:
+                self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
+            if "x" not in self.__fieldnames:
+                self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
+            if "y" not in self.__fieldnames:
+                self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
+            self.reallySetLinesLayer()
 
     def __onFieldsBut(self):
         self.__fieldsDlg.close()

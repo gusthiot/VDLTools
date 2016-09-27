@@ -199,7 +199,6 @@ class IntersectTool(QgsMapTool):
                     if intersection:
                         self.__rubber.setIcon(1)
                         point = intersection
-                        print("intersect")
                     else:
                         self.__rubber.setIcon(3)
                 self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
