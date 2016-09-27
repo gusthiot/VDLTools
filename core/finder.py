@@ -191,7 +191,6 @@ class Finder:
         :param mousePoint: the given point
         :return: the intersection as QgsPoint or none
         """
-        print geometry1
         intersection = geometry1.intersection(geometry2)
         intersectionMP = intersection.asMultiPoint()
         intersectionP = intersection.asPoint()
@@ -320,7 +319,6 @@ class Finder:
                 snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
 
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
-        print len(features)
         if len(features) > 1:
             if len(features) > 2:
                 one = [-1, 9999999]
@@ -340,7 +338,7 @@ class Finder:
                 feat1 = features[0]
                 feat2 = features[1]
             if not checkForAFeature or feat1.id() == featureId or feat2.id() == featureId:
-                print feat1
+                print (feat1.id(), feat1.geometry(), feat2.id(), feat2.geometry())
                 return Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
             else:
                 return None

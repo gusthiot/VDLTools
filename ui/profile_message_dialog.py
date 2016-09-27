@@ -81,6 +81,9 @@ class ProfileMessageDialog(QDialog):
         self.__passButton.setMinimumHeight(20)
         self.__passButton.setMinimumWidth(100)
 
+        pos = len(self.__situations) + len(self.__differences) + 1
+        self.__layout.addWidget(self.__passButton, pos, 0)
+
         self.__onPointsButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply line elevations to points"))
         self.__onPointsButton.setMinimumHeight(20)
         self.__onPointsButton.setMinimumWidth(200)
@@ -89,10 +92,9 @@ class ProfileMessageDialog(QDialog):
         self.__onLineButton.setMinimumHeight(20)
         self.__onLineButton.setMinimumWidth(200)
 
-        pos = len(self.__situations) + len(self.__differences) + 1
-        self.__layout.addWidget(self.__passButton, pos, 0)
-        self.__layout.addWidget(self.__onLineButton, pos, 1)
-        self.__layout.addWidget(self.__onPointsButton, pos, 2)
+        if len(self.__situations) > 0:
+            self.__layout.addWidget(self.__onLineButton, pos, 1)
+            self.__layout.addWidget(self.__onPointsButton, pos, 2)
 
         self.setLayout(self.__layout)
 

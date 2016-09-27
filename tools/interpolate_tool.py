@@ -40,7 +40,7 @@ from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
-# TODO : selection ligne, puis selection segment/point/intersection
+
 class InterpolateTool(QgsMapTool):
 
     def __init__(self, iface):
@@ -288,14 +288,17 @@ class InterpolateTool(QgsMapTool):
                     self.__isEditing = True
                     self.__findVertex = 0
                     self.__mapPoint = point
-                    self.__confDlg = InterpolateConfirmDialog()
-                    if self.__lastLayer.isEditable() is True:
-                        self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
-                        self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
-                        self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
-                    self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
-                    self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
-                    self.__confDlg.show()
+                    if not match.hasVertex:
+                        self.__confDlg = InterpolateConfirmDialog()
+                        if self.__lastLayer.isEditable() is True:
+                            self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
+                            self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
+                            self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
+                        self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
+                        self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
+                        self.__confDlg.show()
+                    else:
+                        self.__ok(False, True)
 
     def __onConfirmCancel(self):
         """
@@ -322,14 +325,13 @@ class InterpolateTool(QgsMapTool):
         if id == 2:
             withPoint = False
 
+        self.__ok(withVertex, withPoint)
+
+    def __ok(self, withVertex, withPoint):
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
         line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertex_id, 0)
-
-        snappedIntersection = self.__snapToIntersection(self.__mapPoint, self.__selectedFeature)
-        if snappedIntersection is not None:
-            vertex_v2 = snappedIntersection
 
         x0 = line_v2.xAt(vertex_id.vertex-1)
         y0 = line_v2.yAt(vertex_id.vertex-1)

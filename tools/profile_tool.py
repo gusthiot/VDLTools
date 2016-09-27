@@ -502,7 +502,7 @@ class ProfileTool(QgsMapTool):
                         self.__startVertex = None
                         self.__endVertex = None
                 else:
-                    if f is not None and self.__lastFeatureId != f.id():
+                    if f is not None and (not self.__selectedIds or f.id() not in self.__selectedIds):
                         line = f.geometry().asPolyline()
                         if self.contains(line, self.__endVertex) > -1:
                             self.__lastFeature = f
@@ -536,7 +536,7 @@ class ProfileTool(QgsMapTool):
                 self.__isChoosed = 1
                 self.__setLayerDialog()
         elif event.button() == Qt.LeftButton:
-            if self.__lastFeature:
+            if self.__lastFeature and (not self.__selectedIds or self.__lastFeature.id() not in self.__selectedIds):
                 self.__inSelection = True
                 line = self.__lastFeature.geometry().asPolyline()
                 if self.__selectedIds is None:

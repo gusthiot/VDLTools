@@ -330,7 +330,7 @@ class ProfileDockWidget(QDockWidget):
 
         # scaling this
         try:
-            self.__reScalePlot()
+            self.__reScalePlot(None, True)
         except:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools","Error"),
@@ -347,7 +347,7 @@ class ProfileDockWidget(QDockWidget):
             self.__activateMouseTracking(True)
             self.__marker.show()
 
-    def __reScalePlot(self):
+    def __reScalePlot(self, value=None, auto=False):
         """
         To rescale the profile plot depending to the bounds
         """
@@ -366,22 +366,20 @@ class ProfileDockWidget(QDockWidget):
 
         minimumValue = self.__minSpin.value()
         maximumValue = self.__maxSpin.value()
-        if minimumValue == maximumValue:
-            # Automatic mode
-            minimumValue = 1000000000
-            maximumValue = -1000000000
 
-        for i in range(len(self.__profiles)):
-            mini = self.__minTab(self.__profiles[i]['z'])
-            if int(mini) < minimumValue:
-                minimumValue = int(mini) - 1
-            maxi = self.__maxTab(self.__profiles[i]['z'])
-            if int(maxi) > maximumValue:
-                maximumValue = int(maxi) + 1
+        if auto:
+            for i in range(len(self.__profiles)):
+                mini = self.__minTab(self.__profiles[i]['z'])
+                if int(mini) < minimumValue:
+                    minimumValue = int(mini) - 1
+                maxi = self.__maxTab(self.__profiles[i]['z'])
+                if int(maxi) > maximumValue:
+                    maximumValue = int(maxi) + 1
         self.__maxSpin.setValue(maximumValue)
         self.__minSpin.setValue(minimumValue)
         self.__maxSpin.setEnabled(True)
         self.__minSpin.setEnabled(True)
+
         if self.__lib == 'Qwt5':
             rect = QRectF(0, minimumValue,maxi, maximumValue-minimumValue)
             self.__zoomer.setZoomBase(rect)
