@@ -311,6 +311,7 @@ class Finder:
     def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, checkForAFeature=False, featureId=None):
         snap_layers = []
         for layer in mapCanvas.layers():
+            print(layer.name(), layer.type())
             if isinstance(layer, QgsVectorLayer):
                 noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
                 if isinstance(layer, QgsVectorLayer) and enabled:
@@ -327,11 +328,11 @@ class Finder:
         for f in featuresL:
             features.append(f[0])
         if len(features) > 1:
-            display = ""
-            for f in featuresL:
-                display += str(f[0].id()) + " - " + f[1].name() + " | "
-            display += "| "
-            print(display)
+            # display = ""
+            # for f in featuresL:
+            #     display += str(f[0].id()) + " - " + f[1].name() + " | "
+            # display += "| "
+            # print(display)
             if len(features) > 2:
                 one = [-1, 9999999]
                 two = [-1, 9999999]
