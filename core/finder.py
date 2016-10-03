@@ -311,8 +311,9 @@ class Finder:
     def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, checkForAFeature=False, featureId=None):
         snap_layers = []
         for layer in mapCanvas.layers():
-            print(layer.name(), layer.type())
-            if isinstance(layer, QgsVectorLayer):
+            types = [0, 1, 2]
+            if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
+                print(layer.name(), layer.type())
                 noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
                 if isinstance(layer, QgsVectorLayer) and enabled:
                     if snappingType == QgsSnapper.SnapToVertex:
@@ -363,7 +364,9 @@ class Finder:
 
         snap_layers = []
         for layer in mapCanvas.layers():
-            if isinstance(layer, QgsVectorLayer):
+            types = [0, 1, 2]
+            if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
+                print(layer.name(), layer.type())
                 noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
                 if isinstance(layer, QgsVectorLayer) and enabled:
                     if snappingType == QgsSnapper.SnapToVertex:
