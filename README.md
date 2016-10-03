@@ -47,11 +47,14 @@ L'outil "Profile" permet d'afficher le profil d'une ligne 3D en parallèle de co
     - sélectionner une couche lignes
     - sélectionner l'outil
     - sélectionner la librairie d'affichage (2 à choix : "Qwt5" et "Matplotlib", la première par défaut. 
-        Comme avantages, "Qwt5" permet de zoomer sur le profil, alors que "Matplotlib" permet de voir où on en est sur la carte en passant la souris sur le profil.)
+        Comme avantages, "Qwt5" permet de zoomer sur le profil, alors que "Matplotlib" permet de voir où on en est sur la carte en passant 
+        la souris sur le profil.)
     - sélectionner une première ligne (celle-ci déterminera le sens du profil) avec le bouton gauche
     - sélectionner autant de lignes contiguës que nécessaire avec le bouton gauche
     - cliquer sur le bouton droit pour lancer le profil
     - choisir les couches de points à afficher
+    - si des altitudes ne correspondent pas entre les vertex de la lignes et les points, il est proposer de fair à choix : 
+        appliquer l'altitude du vertex au point, appliquer l'altitude du point au vertex, ne rien faire
 
 
 - Interpolate
