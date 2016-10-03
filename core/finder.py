@@ -313,7 +313,6 @@ class Finder:
         for layer in mapCanvas.layers():
             types = [0, 1, 2]
             if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
-                print(layer.name(), layer.type())
                 noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
                 if isinstance(layer, QgsVectorLayer) and enabled:
                     if snappingType == QgsSnapper.SnapToVertex:
@@ -366,7 +365,6 @@ class Finder:
         for layer in mapCanvas.layers():
             types = [0, 1, 2]
             if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
-                print(layer.name(), layer.type())
                 noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
                 if isinstance(layer, QgsVectorLayer) and enabled:
                     if snappingType == QgsSnapper.SnapToVertex:
