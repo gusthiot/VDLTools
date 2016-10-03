@@ -117,7 +117,8 @@ class Finder:
         features = []
         for layerConfig in layersConfig:
             layerFeatures = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
-            print(layerConfig.layer, layerFeatures)
+            if len(layerFeatures) > 0:
+                print(layerConfig.layer, layerFeatures)
             features += layerFeatures
         return features
 
