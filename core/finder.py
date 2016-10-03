@@ -116,7 +116,9 @@ class Finder:
         """
         features = []
         for layerConfig in layersConfig:
-            features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
+            layerFeatures = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
+            print(layerConfig.layer, layerFeatures)
+            features += layerFeatures
         return features
 
     @staticmethod
