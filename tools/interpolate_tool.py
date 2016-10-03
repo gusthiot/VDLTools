@@ -290,7 +290,7 @@ class InterpolateTool(QgsMapTool):
                     self.__isEditing = True
                     self.__findVertex = 0
                     self.__mapPoint = point
-                    if not match.hasVertex:
+                    if not match.hasVertex():
                         self.__confDlg = InterpolateConfirmDialog()
                         if self.__lastLayer.isEditable() is True:
                             self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))

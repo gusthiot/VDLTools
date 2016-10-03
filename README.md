@@ -43,22 +43,37 @@ L'outil "Intersect" permet de créer un cercle de construction d'un rayon donné
 - Profile
 
 L'outil "Profile" permet d'afficher le profil d'une ligne 3D en parallèle de couches de points 3D.
-Cliquer sur une première ligne (celle-ci déterminera le sens du profil), puis sur autant de lignes contiguës que nécessaire. Cliquer ensuite du bouton droit pour lancer le profil.
-Choisir les couches de points à afficher. 2 librairies d'affichage sont à choix (à choisir avant la sélection des objets). 
-Comme avantages, "Qwt5" permet de zoomer sur le profil, alors que "Matplotlib" permet de voir où on en est sur la carte en passant la souris sur le profil.
+
+    - sélectionner une couche lignes
+    - sélectionner l'outil
+    - sélectionner la librairie d'affichage (2 à choix : "Qwt5" et "Matplotlib", la première par défaut. 
+        Comme avantages, "Qwt5" permet de zoomer sur le profil, alors que "Matplotlib" permet de voir où on en est sur la carte en passant la souris sur le profil.)
+    - sélectionner une première ligne (celle-ci déterminera le sens du profil) avec le bouton gauche
+    - sélectionner autant de lignes contiguës que nécessaire avec le bouton gauche
+    - cliquer sur le bouton droit pour lancer le profil
+    - choisir les couches de points à afficher
 
 
 - Interpolate
 
-L'outil "Interpolate" permet d'interpoler une altitude au milieu d'un segment, et d'y créer un nouveau vertex.
-La couche de points doit être éditable (?). Cliquer en un point du segment, puis choisir entre un nouveau vertex pour la ligne, un nouveau point, ou les deux en même temps.
+L'outil "Interpolate" permet d'interpoler une altitude au milieu d'un segment de ligne, et d'y créer un nouveau vertex et/ou un nouveau point.
+
+    - sélectionner une couche points éditable
+    - sélectionner l'outil
+    - sélectionner la ligne sur laquelle se positionner
+    - sélectionner une position (utilisation possible des options d'accrochage de la couche)
+    - choisir si l'on veut créer un point, un vertex, ou les deux (si la position contient déjà un vertex : pas de choix, seul le point sera construit)
+    - compléter les attributs du formulaire s'il est affiché    
 
 
 - Extrapolate
 
 L'outil "Extrapolate" permet d'extrapoler une altitude en bout de ligne.
-La couche de l'objet doit être éditable. Cliquer sur le vertex à extrapoler. 
-Le segment reliant le vertex doit faire moins d'un quart du segment précédent sur la ligne pour pouvoir calculer une extrapolation.
+
+    - sélectionner une couche lignes éditable
+    - sélectionner l'outil
+    - sélectionner une extrémité de ligne à extrapoler (le dernier segment ne doit pas faire plus d'un quart du segment précédent)
+    
 
 
 - Import
