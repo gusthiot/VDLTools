@@ -311,15 +311,16 @@ class Finder:
     def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, checkForAFeature=False, featureId=None):
         snap_layers = []
         for layer in mapCanvas.layers():
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
-            if isinstance(layer, QgsVectorLayer) and enabled:
-                if snappingType == QgsSnapper.SnapToVertex:
-                    snap_type = QgsPointLocator.Vertex
-                elif snappingType == QgsSnapper.SnapToSegment:
-                    snap_type = QgsPointLocator.Edge
-                else:
-                    snap_type = QgsPointLocator.All
-                snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
+            if isinstance(layer, QgsVectorLayer):
+                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
+                if isinstance(layer, QgsVectorLayer) and enabled:
+                    if snappingType == QgsSnapper.SnapToVertex:
+                        snap_type = QgsPointLocator.Vertex
+                    elif snappingType == QgsSnapper.SnapToSegment:
+                        snap_type = QgsPointLocator.Edge
+                    else:
+                        snap_type = QgsPointLocator.All
+                    snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
 
         featuresL = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         features = []
@@ -361,15 +362,16 @@ class Finder:
 
         snap_layers = []
         for layer in mapCanvas.layers():
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
-            if isinstance(layer, QgsVectorLayer) and enabled:
-                if snappingType == QgsSnapper.SnapToVertex:
-                    snap_type = QgsPointLocator.Vertex
-                elif snappingType == QgsSnapper.SnapToSegment:
-                    snap_type = QgsPointLocator.Edge
-                else:
-                    snap_type = QgsPointLocator.All
-                snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
+            if isinstance(layer, QgsVectorLayer):
+                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
+                if isinstance(layer, QgsVectorLayer) and enabled:
+                    if snappingType == QgsSnapper.SnapToVertex:
+                        snap_type = QgsPointLocator.Vertex
+                    elif snappingType == QgsSnapper.SnapToSegment:
+                        snap_type = QgsPointLocator.Edge
+                    else:
+                        snap_type = QgsPointLocator.All
+                    snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
 
         snap_util = mapCanvas.snappingUtils()
         old_layers = snap_util.layers()

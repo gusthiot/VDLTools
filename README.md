@@ -22,7 +22,7 @@ L'outil "Move" permet de déplacer ou copier un objet.
     - sélectionner l'outil
     - sélectionner un élément sur la carte
     - sélectionner un vertex de l'élément (si ce n'est pas un point)
-    - choisir où déplacer/copier l'éléement et cliquer (utilisation possible des options d'accrochage de la couche)
+    - choisir où déplacer/copier l'élément et cliquer (utilisation possible des options d'accrochage de la couche)
     - choisir entre déplacer et copier
     - pour une copie, compléter les attributs du formulaire s'il est affiché
 
