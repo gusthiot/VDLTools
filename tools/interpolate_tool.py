@@ -220,6 +220,7 @@ class InterpolateTool(QgsMapTool):
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
                 self.__lastFeatureId = f.id()
+                self.__lastLayer.removeSelection()
                 self.__lastLayer = f_l[1]
                 self.__lastLayer.setSelectedFeatures([f.id()])
             if f_l is None and self.__lastLayer is not None:
