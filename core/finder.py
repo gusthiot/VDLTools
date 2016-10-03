@@ -117,10 +117,9 @@ class Finder:
         features = []
         for layerConfig in layersConfig:
             layerFeatures = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
-            if len(layerFeatures) > 0:
+            if len(layerFeatures)>0:
                 for f in layerFeatures:
-                    print(layerConfig.layer, f.id())
-            features += layerFeatures
+                    features.append([f, layerConfig.layer])
         return features
 
     @staticmethod
@@ -322,13 +321,21 @@ class Finder:
                     snap_type = QgsPointLocator.All
                 snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
 
-        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
+        featuresL = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
+        features = []
+        for f in featuresL:
+            features.append(f[0])
         if len(features) > 1:
+            display = ""
+            for f in featuresL:
+                display += str(f[0].id()) + " - " + f[1].name() + " | "
+            display += "| "
+            print(display)
             if len(features) > 2:
                 one = [-1, 9999999]
                 two = [-1, 9999999]
                 for i in xrange(len(features)):
-                    d = Finder.sqrDistForPoints(mapPoint, features[0].geometry().asPoint())
+                    d = Finder.sqrDistForPoints(mapPoint, features[i].geometry().asPoint())
                     if d > one[1]:
                         two = one
                         one[0] = i
