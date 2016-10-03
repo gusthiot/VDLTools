@@ -278,11 +278,13 @@ class InterpolateTool(QgsMapTool):
                         intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self, True,
                                                                       self.__selectedFeature.id())
                         if intersection:
+                            point = intersection
                             ok = True
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self, True,
                                                                   self.__selectedFeature.id())
                     if intersection:
+                        point = intersection
                         ok = True
                     elif self.__selectedFeature.id() == match.featureId():
                         ok = True
