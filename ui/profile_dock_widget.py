@@ -368,6 +368,8 @@ class ProfileDockWidget(QDockWidget):
         maximumValue = self.__maxSpin.value()
 
         if auto:
+            minimumValue = 1000000000
+            maximumValue = -1000000000
             for i in range(len(self.__profiles)):
                 mini = self.__minTab(self.__profiles[i]['z'])
                 if int(mini) < minimumValue:
