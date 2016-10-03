@@ -116,10 +116,7 @@ class Finder:
         """
         features = []
         for layerConfig in layersConfig:
-            layerFeatures = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
-            if len(layerFeatures)>0:
-                for f in layerFeatures:
-                    features.append([f, layerConfig.layer])
+            features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
         return features
 
     @staticmethod
@@ -323,16 +320,8 @@ class Finder:
                         snap_type = QgsPointLocator.All
                     snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
 
-        featuresL = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
-        features = []
-        for f in featuresL:
-            features.append(f[0])
+        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         if len(features) > 1:
-            # display = ""
-            # for f in featuresL:
-            #     display += str(f[0].id()) + " - " + f[1].name() + " | "
-            # display += "| "
-            # print(display)
             if len(features) > 2:
                 one = [-1, 9999999]
                 two = [-1, 9999999]
@@ -351,7 +340,6 @@ class Finder:
                 feat1 = features[0]
                 feat2 = features[1]
             if not checkForAFeature or feat1.id() == featureId or feat2.id() == featureId:
-                print (feat1.id(), feat1.geometry(), feat2.id(), feat2.geometry())
                 return Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
             else:
                 return None
