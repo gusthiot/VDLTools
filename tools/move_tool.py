@@ -25,14 +25,14 @@ from PyQt4.QtCore import (Qt,
 from PyQt4.QtGui import QColor
 from qgis.core import (QgsPointV2,
                        QgsEditFormConfig,
-                       QgsPointLocator,
                        QgsSnappingUtils,
+                       QgsTolerance,
+                       QgsPointLocator,
                        QgsLineStringV2,
                        QgsCircularStringV2,
                        QgsCompoundCurveV2,
                        QgsDataSourceURI,
                        QgsVertexId,
-                       QgsProject,
                        QgsFeature,
                        QgsCurvePolygonV2,
                        QGis,
@@ -71,7 +71,6 @@ class MoveTool(QgsMapTool):
         self.__rubberSnap = None
         self.__newFeature = None
         self.__selectedVertex = None
-        self.__layerConfig = None
 
     def icon_path(self):
         """
@@ -93,23 +92,6 @@ class MoveTool(QgsMapTool):
         :return: tool name
         """
         return QCoreApplication.translate("VDLTools","Move/Copy")
-
-    def activate(self):
-        """
-        When the action is selected
-        """
-        QgsMapTool.activate(self)
-        self.__updateList()
-        self.__canvas.layersChanged.connect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
-
-    def deactivate(self):
-        """
-        When the action is deselected
-        """
-        self.__canvas.layersChanged.disconnect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
-        QgsMapTool.deactivate(self)
 
     def startEditing(self):
         """
@@ -164,7 +146,6 @@ class MoveTool(QgsMapTool):
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
-                self.__updateList()
                 self.__layer.editingStopped.connect(self.stopEditing)
             else:
                 self.action().setEnabled(False)
@@ -337,30 +318,19 @@ class MoveTool(QgsMapTool):
         self.__layer.updateExtents()
         self.__onConfirmClose()
 
-    def __updateList(self):
-        """
-        To update the snapping options of the layer
-        """
-        noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-            QgsProject.instance().snapSettingsForLayer(self.__layer.id())
-        self.__layerConfig = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.Vertex, tolerance, unitType)
-        if not enabled or tolerance == 0:
-            self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "Error"),
-                QCoreApplication.translate("VDLTools", "This layer has no snapping options"),
-                level=QgsMessageBar.CRITICAL)
-
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
-            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__layerConfig, self)
-            if f is not None and self.__lastFeatureId != f.id():
-                self.__lastFeatureId = f.id()
-                self.__layer.setSelectedFeatures([f.id()])
-            if f is None:
+            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
+                                                       QgsTolerance.Pixels)
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+                self.__lastFeatureId = f_l[0].id()
+                self.__layer.setSelectedFeatures([f_l[0].id()])
+            if f_l is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
         elif self.__findVertex:
@@ -397,7 +367,7 @@ class MoveTool(QgsMapTool):
             self.__rubberSnap.setColor(color)
             self.__rubberSnap.setWidth(2)
             self.__rubberSnap.setIconSize(20)
-            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex():
                 if match.layer():
                     self.__rubberSnap.setIcon(4)
@@ -408,27 +378,6 @@ class MoveTool(QgsMapTool):
             if match.hasEdge():
                 self.__rubberSnap.setIcon(3)
                 self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
-
-            # if self.__counter > 2:
-            #     if self.__rubberSnap:
-            #         self.__rubberSnap.reset()
-            #     else:
-            #         self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
-            #     self.__rubberSnap.setColor(color)
-            #     self.__rubberSnap.setWidth(2)
-            #     self.__rubberSnap.setIconSize(20)
-            #     snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
-            #     if snappedIntersection is None:
-            #         snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
-            #         if snappedPoint is not None:
-            #             self.__rubberSnap.setIcon(4)
-            #             self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedPoint), None)
-            #     else:
-            #         self.__rubberSnap.setIcon(1)
-            #         self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(snappedIntersection), None)
-            #     self.__counter = 0
-            # else:
-            #     self.__counter += 1
 
     def canvasReleaseEvent(self, event):
         """
@@ -458,16 +407,9 @@ class MoveTool(QgsMapTool):
         elif self.__onMove:
             self.__onMove = 0
             mapPoint = event.mapPoint()
-            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex() or match.hasEdge():
                 mapPoint = match.point()
-            # snappedIntersection = Finder.snapToIntersection(event.mapPoint(), self, self.__layerList)
-            # if snappedIntersection is None:
-            #     snappedPoint = Finder.snapToLayers(event.mapPoint(), self.__snapperList)
-            #     if snappedPoint is not None:
-            #         mapPoint = snappedPoint
-            # else:
-            #     mapPoint = snappedIntersection
             self.__isEditing = 1
             if self.__rubberBand:
                 self.__rubberBand.reset()

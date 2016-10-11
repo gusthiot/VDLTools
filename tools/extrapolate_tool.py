@@ -27,7 +27,7 @@ from qgis.gui import (QgsMapTool,
 from qgis.core import (QGis,
                        QgsPointLocator,
                        QgsSnappingUtils,
-                       QgsProject,
+                       QgsTolerance,
                        QgsVectorLayer,
                        QgsGeometry,
                        QgsWKBTypes)
@@ -64,7 +64,6 @@ class ExtrapolateTool(QgsMapTool):
         self.__selectedVertex = None
         self.__elevation = None
         self.__selectedFeature = None
-        self.__layerConfig = None
 
     def icon_path(self):
         """
@@ -98,17 +97,12 @@ class ExtrapolateTool(QgsMapTool):
         self.__rubber.setColor(color)
         self.__rubber.setIcon(4)
         self.__rubber.setIconSize(20)
-        self.__updateList()
-        self.__canvas.layersChanged.connect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
 
     def deactivate(self):
         """
         When the action is deselected
         """
         self.__rubber.reset()
-        self.__canvas.layersChanged.disconnect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -161,7 +155,6 @@ class ExtrapolateTool(QgsMapTool):
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
-                self.__updateList()
                 self.__layer.editingStopped.connect(self.stopEditing)
             else:
                 self.action().setEnabled(False)
@@ -173,33 +166,21 @@ class ExtrapolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.removeLayer()
 
-    def __updateList(self):
-        """
-        To update the snapping options of the layer
-        """
-        noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-            QgsProject.instance().snapSettingsForLayer(self.__layer.id())
-        self.__layerConfig = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.Vertex, tolerance, unitType)
-        if not enabled or tolerance == 0:
-            self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "Error"),
-                QCoreApplication.translate("VDLTools", "This layer has no snapping options"),
-                level=QgsMessageBar.CRITICAL)
-
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
         if not self.__isEditing:
-            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__layerConfig, self)
-
-            if f is not None and self.__lastFeatureId != f.id():
-                self.__lastFeatureId = f.id()
-                self.__layer.setSelectedFeatures([f.id()])
+            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
+                                                       QgsTolerance.Pixels)
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+                self.__lastFeatureId = f_l[0].id()
+                self.__layer.setSelectedFeatures([f_l[0].id()])
                 if self.__counter > 2:
                     self.__rubber.reset()
-                    geom = f.geometry()
+                    geom = f_l[0].geometry()
                     index = geom.closestVertex(event.mapPoint())[1]
                     line_v2, curved = GeometryV2.asLineV2(geom)
                     num_p = line_v2.numPoints()
@@ -209,7 +190,7 @@ class ExtrapolateTool(QgsMapTool):
                         self.__counter = 0
                 else:
                     self.__counter += 1
-            if f is None:
+            if f_l is None:
                 self.__layer.removeSelection()
                 self.__rubber.reset()
                 self.__lastFeatureId = None

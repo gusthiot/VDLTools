@@ -27,15 +27,14 @@ from qgis.gui import (QgsMapTool,
 from qgis.core import (QGis,
                        QgsEditFormConfig,
                        QgsSnappingUtils,
+                       QgsTolerance,
                        QgsPointLocator,
-                       QgsProject,
                        QgsVectorLayer,
                        QgsFeature,
                        QgsGeometry,
                        QgsPointV2,
                        QgsVertexId)
 from PyQt4.QtCore import (Qt,
-                          QSettings,
                           QCoreApplication)
 from PyQt4.QtGui import QColor
 from ..core.finder import Finder
@@ -69,7 +68,6 @@ class InterpolateTool(QgsMapTool):
         self.__counter = 0
         self.__ownSettings = None
         self.__selectedFeature = None
-        self.__linesConfig = None
         self.__findVertex = 0
 
     def icon_path(self):
@@ -114,7 +112,6 @@ class InterpolateTool(QgsMapTool):
         self.__rubber.setIconSize(20)
         self.__canvas.layersChanged.connect(self.__updateList)
         self.__canvas.scaleChanged.connect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
 
     def deactivate(self):
         """
@@ -125,7 +122,6 @@ class InterpolateTool(QgsMapTool):
             self.__lastLayer.removeSelection()
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__canvas.scaleChanged.disconnect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -194,22 +190,11 @@ class InterpolateTool(QgsMapTool):
         To update the line layers list that we can use for interpolation
         """
         self.__layerList = []
-        legend = self.__iface.legendInterface()
-        scale = self.__iface.mapCanvas().scale()
         for layer in self.__iface.mapCanvas().layers():
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                QgsProject.instance().snapSettingsForLayer(layer.id())
             if isinstance(layer, QgsVectorLayer) and layer.hasGeometryType() \
                     and layer.geometryType() == QGis.Line:
-                if not layer.hasScaleBasedVisibility() or layer.minimumScale() < scale <= layer.maximumScale():
-                    if legend.isLayerVisible(layer) and enabled:
-                        layerConfig = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, tolerance, unitType)
-                        self.__layerList.append(layerConfig)
-
-        if self.__ownSettings and self.__ownSettings.linesLayer():
-            noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                QgsProject.instance().snapSettingsForLayer(self.__ownSettings.linesLayer().id())
-            self.__linesConfig = QgsSnappingUtils.LayerConfig(self.__ownSettings.linesLayer(), QgsPointLocator.Vertex, tolerance, unitType)
+                        self.__layerList.append(QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, 10,
+                                                                             QgsTolerance.Pixels))
 
     def canvasMoveEvent(self, event):
         """
@@ -217,7 +202,7 @@ class InterpolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureLayersAt(event.mapPoint(), self.__layerList, self)
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, self.__layerList)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
@@ -232,7 +217,7 @@ class InterpolateTool(QgsMapTool):
                 self.__lastFeatureId = None
         elif self.__findVertex:
             self.__rubber.reset()
-            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
@@ -271,7 +256,7 @@ class InterpolateTool(QgsMapTool):
                 self.__findVertex = 1
         elif self.__findVertex:
             self.__rubber.reset()
-            match = Finder.snap(event.mapPoint(), self.__canvas, True)
+            match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 ok = False
@@ -368,19 +353,3 @@ class InterpolateTool(QgsMapTool):
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__isEditing = False
-
-    def __snapToIntersection(self, mapPoint, selectedFeature):
-        """
-        To check is we can snap a close intersection
-        :param mapPoint: the point to check
-        :param selectedFeature: the feature that can intersect another one
-        :return: an intersection QgsPointV2 or none
-        """
-        f = Finder.findClosestFeatureAt(mapPoint, self.__linesConfig, self)
-        if f is None:
-            return None
-        intersect = Finder.intersect(selectedFeature.geometry(), f.geometry(), mapPoint)
-        if intersect is not None:
-            return QgsPointV2(intersect)
-        else:
-            return None

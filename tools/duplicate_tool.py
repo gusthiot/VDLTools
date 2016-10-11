@@ -30,7 +30,7 @@ from qgis.core import (QgsPointV2,
                        QgsEditFormConfig,
                        QgsSnappingUtils,
                        QgsPointLocator,
-                       QgsProject,
+                       QgsTolerance,
                        QgsLineStringV2,
                        QgsCompoundCurveV2,
                        QgsCircularStringV2,
@@ -68,7 +68,6 @@ class DuplicateTool(QgsMapTool):
         self.__selectedFeature = None
         self.__rubberBand = None
         self.__newFeature = None
-        self.__layerConfig = None
 
     def icon_path(self):
         """
@@ -90,23 +89,6 @@ class DuplicateTool(QgsMapTool):
         :return: tool name
         """
         return QCoreApplication.translate("VDLTools","Duplicate")
-
-    def activate(self):
-        """
-        When the action is selected
-        """
-        QgsMapTool.activate(self)
-        self.__updateList()
-        self.__canvas.layersChanged.connect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.connect(self.__updateList)
-
-    def deactivate(self):
-        """
-        When the action is deselected
-        """
-        self.__canvas.layersChanged.disconnect(self.__updateList)
-        QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)
-        QgsMapTool.deactivate(self)
 
     def startEditing(self):
         """
@@ -164,7 +146,6 @@ class DuplicateTool(QgsMapTool):
             self.__layer = layer
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
-                self.__updateList()
                 self.__layer.editingStopped.connect(self.stopEditing)
             else:
                 self.action().setEnabled(False)
@@ -366,30 +347,19 @@ class DuplicateTool(QgsMapTool):
         self.__isEditing = 0
         self.__layer.removeSelection()
 
-    def __updateList(self):
-        """
-        To update the snapping options of the layer
-        """
-        noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-            QgsProject.instance().snapSettingsForLayer(self.__layer.id())
-        self.__layerConfig = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.Vertex, tolerance, unitType)
-        if not enabled or tolerance == 0:
-            self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "Error"),
-                QCoreApplication.translate("VDLTools", "This layer has no snapping options"),
-                level=QgsMessageBar.CRITICAL)
-
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
         if not self.__isEditing:
-            f = Finder.findClosestFeatureAt(event.mapPoint(), self.__layerConfig, self)
-            if f is not None and self.__lastFeatureId != f.id():
-                self.__lastFeatureId = f.id()
-                self.__layer.setSelectedFeatures([f.id()])
-            if f is None:
+            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
+                                                       QgsTolerance.Pixels)
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+                self.__lastFeatureId = f_l[0].id()
+                self.__layer.setSelectedFeatures([f_l[0].id()])
+            if f_l is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
 

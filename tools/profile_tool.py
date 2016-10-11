@@ -404,9 +404,11 @@ class ProfileTool(QgsMapTool):
                             z.append(None)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     for layer in availableLayers:
-                        laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
-                        point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
-                        if point is not None:
+                        laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
+                                                                   QgsTolerance.LayerUnits)
+                        f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
+                                                    [laySettings])
+                        if f_l is not None:
                             if layer not in pointLayers:
                                 pointLayers.append(layer)
             num += 1
@@ -430,12 +432,14 @@ class ProfileTool(QgsMapTool):
             z = points['z']
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
-                point = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
-                feat.append(point)
-                if point is None:
+                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
+                                                    [laySettings])
+                if f_l is None:
+                    feat.append(None)
                     z.append(None)
                 else:
-                    point_v2 = GeometryV2.asPointV2(point.geometry())
+                    feat.append(f_l[0])
+                    point_v2 = GeometryV2.asPointV2(f_l[0].geometry())
                     zp = point_v2.z()
                     if zp is None or zp != zp:
                         z.append(0)
@@ -485,16 +489,15 @@ class ProfileTool(QgsMapTool):
         """
         if not self.__isChoosed:
             if self.__lineLayer is not None:
-                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                    QgsProject.instance().snapSettingsForLayer(self.__lineLayer.id())
-                layerConfig = QgsSnappingUtils.LayerConfig(self.__lineLayer, QgsPointLocator.Vertex, tolerance, unitType)
-                f = Finder.findClosestFeatureAt(event.mapPoint(), layerConfig, self)
+                laySettings = QgsSnappingUtils.LayerConfig(self.__lineLayer, QgsPointLocator.All, 10,
+                                                           QgsTolerance.Pixels)
+                f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
                 if not self.__inSelection:
-                    if f is not None and self.__lastFeatureId != f.id():
-                        self.__lastFeature = f
-                        self.__lastFeatureId = f.id()
-                        self.__lineLayer.setSelectedFeatures([f.id()])
-                    if f is None:
+                    if f_l is not None and self.__lastFeatureId != f_l[0].id():
+                        self.__lastFeature = f_l[0]
+                        self.__lastFeatureId = f_l[0].id()
+                        self.__lineLayer.setSelectedFeatures([f_l[0].id()])
+                    if f_l is None:
                         self.__lineLayer.removeSelection()
                         self.__lastFeatureId = None
                         self.__selectedIds = None
@@ -502,18 +505,18 @@ class ProfileTool(QgsMapTool):
                         self.__startVertex = None
                         self.__endVertex = None
                 else:
-                    if f is not None and (not self.__selectedIds or f.id() not in self.__selectedIds):
-                        line = f.geometry().asPolyline()
+                    if f_l is not None and (not self.__selectedIds or f_l[0].id() not in self.__selectedIds):
+                        line = f_l[0].geometry().asPolyline()
                         if self.contains(line, self.__endVertex) > -1:
-                            self.__lastFeature = f
-                            self.__lastFeatureId = f.id()
-                            features = self.__selectedIds + [f.id()]
+                            self.__lastFeature = f_l[0]
+                            self.__lastFeatureId = f_l[0].id()
+                            features = self.__selectedIds + [f_l[0].id()]
                             self.__lineLayer.setSelectedFeatures(features)
 
                         elif self.contains(line, self.__startVertex) > -1:
-                            self.__lastFeature = f
-                            self.__lastFeatureId = f.id()
-                            features = self.__selectedIds + [f.id()]
+                            self.__lastFeature = f_l[0]
+                            self.__lastFeatureId = f_l[0].id()
+                            features = self.__selectedIds + [f_l[0].id()]
                             self.__lineLayer.setSelectedFeatures(features)
 
                         else:
@@ -521,7 +524,7 @@ class ProfileTool(QgsMapTool):
                             self.__lastFeatureId = None
                             self.__lastFeature = None
 
-                    if f is None and self.__selectedIds is not None:
+                    if f_l is None and self.__selectedIds is not None:
                         self.__lineLayer.setSelectedFeatures(self.__selectedIds)
                         self.__lastFeatureId = None
                         self.__lastFeature = None
