@@ -121,6 +121,8 @@ class InterpolateTool(QgsMapTool):
         When the action is deselected
         """
         self.__rubber.reset()
+        if self.__lastLayer is not None:
+            self.__lastLayer.removeSelection()
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__canvas.scaleChanged.disconnect(self.__updateList)
         QgsProject.instance().snapSettingsChanged.disconnect(self.__updateList)

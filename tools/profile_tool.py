@@ -567,7 +567,7 @@ class ProfileTool(QgsMapTool):
                             direction = False
                             self.__endVertex = line[0]
                         self.__selectedDirections.append(direction)
-                self.__lineLayer.setSelectedFeatures(self.__selectedIds)
+                    self.__lineLayer.setSelectedFeatures(self.__selectedIds)
 
     def __calculateProfile(self, names):
         """
