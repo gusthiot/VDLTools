@@ -31,7 +31,11 @@ from qgis.core import (QgsProject,
                        QGis,
                        QgsMapLayer)
 
+
 class ShowSettings:
+    """
+    Class to manage plugin settings
+    """
 
     def __init__(self, iface):
         """
@@ -51,6 +55,9 @@ class ShowSettings:
         self.__fieldnames = None
 
     def __project_loaded(self):
+        """
+        Get saved settings on load
+        """
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
@@ -154,7 +161,7 @@ class ShowSettings:
 
     def setLinesLayer(self, linesLayer):
         """
-        To set the saved memory lines layer
+        To set the saved memory lines layer, but first check layer fields
         :param linesLayer: memory lines layer to save
         """
         self.__linesLayer = linesLayer
@@ -173,10 +180,16 @@ class ShowSettings:
             self.reallySetLinesLayer()
 
     def __onFieldsCancel(self):
+        """
+        When the Cancel button in Fields Settings Dialog is pushed
+        """
         self.__fieldsDlg.close()
         self.__linesLayer = None
 
     def __onFieldsOk(self):
+        """
+        When the Ok button in Fields Settings Dialog is pushed
+        """
         self.__fieldsDlg.close()
         with edit(self.__linesLayer):
             if "distance" not in self.__fieldnames:
@@ -188,16 +201,22 @@ class ShowSettings:
             self.reallySetLinesLayer()
 
     def __onFieldsBut(self):
+        """
+        When the Without Fields button in Fields Settings Dialog is pushed
+        """
         self.__fieldsDlg.close()
         self.reallySetLinesLayer()
 
     def reallySetLinesLayer(self):
+        """
+        To really set the saved memory lines layer, with parametrized fields
+        """
         self.__memoryLinesLayer = self.__linesLayer
-        id = None
+        layer_id = None
         if self.__linesLayer is not None:
-            id = self.__linesLayer.id()
+            layer_id = self.__linesLayer.id()
             self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
-        QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", id)
+        QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", layer_id)
         self.__linesLayer = None
 
     def setConfigTable(self, configTable):

@@ -29,6 +29,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ImportMeasures:
+    """
+    Class to import measurments data into given tables
+    """
 
     def __init__(self, iface):
         """

@@ -31,6 +31,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class InterpolateConfirmDialog(QDialog):
+    """
+    Dialog class to confirm the interpolation
+    """
 
     def __init__(self):
         """

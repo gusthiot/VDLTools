@@ -29,6 +29,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ExtrapolateConfirmDialog(QDialog):
+    """
+    Dialog class to confirm the extrapolation
+    """
 
     def __init__(self, oldElevation, newElevation):
         """

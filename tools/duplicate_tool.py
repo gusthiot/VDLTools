@@ -50,6 +50,9 @@ from ..core.circle import Circle
 
 
 class DuplicateTool(QgsMapTool):
+    """
+    Map tool class to duplicate an object
+    """
 
     def __init__(self, iface):
         """
@@ -241,6 +244,12 @@ class DuplicateTool(QgsMapTool):
             self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.curveToLine()), None)
 
     def __newArc(self, arc_v2, distance):
+        """
+        To duplicate a curve at a given distance
+        :param arc_v2: the curve to duplicate
+        :param distance: the given distance
+        :return: the new curve
+        """
         curve_v2 = QgsCircularStringV2()
         points = []
         circle = Circle(arc_v2.pointN(0), arc_v2.pointN(1), arc_v2.pointN(2))
@@ -251,6 +260,12 @@ class DuplicateTool(QgsMapTool):
         return curve_v2
 
     def __newLine(self, line_v2, distance):
+        """
+        To duplicate a line at a given distance
+        :param line_v2: the line to duplicate
+        :param distance: the given distance
+        :return: the new line
+        """
         curve_v2 = QgsLineStringV2()
         points = []
         for pos in xrange(line_v2.numPoints()):

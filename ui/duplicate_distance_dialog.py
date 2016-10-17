@@ -34,6 +34,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class DuplicateDistanceDialog(QDialog):
+    """
+    Dialog class to choose the duplicate distance
+    """
 
     def __init__(self, isComplexPolygon):
         """

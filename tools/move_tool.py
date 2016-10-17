@@ -47,6 +47,9 @@ from ..core.geometry_v2 import GeometryV2
 
 
 class MoveTool(QgsMapTool):
+    """
+    Map tool class to move or copy an object
+    """
 
     def __init__(self, iface):
         """
@@ -193,6 +196,14 @@ class MoveTool(QgsMapTool):
             self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.curveToLine()), None)
 
     def __newCurve(self, curved, line_v2, dx, dy):
+        """
+        To create a new moved line
+        :param curved: if the line is curved
+        :param line_v2: the original line
+        :param dx: x translation
+        :param dy: y translation
+        :return: the new line
+        """
         if curved:
             newCurve = QgsCircularStringV2()
         else:
@@ -249,7 +260,8 @@ class MoveTool(QgsMapTool):
         :param curve_v2: the original line
         :param dx: x translation
         :param dy: y translation
-        :return: the line as lineV2
+        :param curved: if the line is curved
+        :return: the new line
         """
         if curved:
             new_line_v2 = QgsCircularStringV2()
@@ -397,13 +409,11 @@ class MoveTool(QgsMapTool):
                     self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
                 else:
                     self.__onMove = 1
-                    # self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
         elif self.__findVertex:
             self.__findVertex = 0
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             self.__selectedVertex = closest[1]
             self.__onMove = 1
-            # self.__snapperList, self.__layerList = Finder.updateSnapperList(self.__iface)
         elif self.__onMove:
             self.__onMove = 0
             mapPoint = event.mapPoint()

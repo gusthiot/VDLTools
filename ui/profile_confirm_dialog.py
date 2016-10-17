@@ -29,6 +29,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileConfirmDialog(QDialog):
+    """
+    Dialog class to confirm the profile creation
+    """
 
     def __init__(self):
         """

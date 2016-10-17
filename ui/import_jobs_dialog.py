@@ -30,6 +30,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ImportJobsDialog(QDialog):
+    """
+    Dialog class to choose the imported job
+    """
 
     def __init__(self, jobs):
         """

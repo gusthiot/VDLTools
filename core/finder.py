@@ -23,14 +23,11 @@
 
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
-                       QGis,
                        QgsVectorLayer,
                        QgsTolerance,
-                       QgsMapLayer,QgsPointLocator,
-                       QgsMapSettings,
+                       QgsPointLocator,
                        QgsProject,
                        QgsSnapper,
-                       QgsGeometry,
                        QgsSnappingUtils,
                        QgsRectangle,
                        QgsFeatureRequest,
@@ -40,9 +37,19 @@ from math import (sqrt,
 
 
 class Finder:
+    """
+    Class for snapping methods
+    """
 
     @staticmethod
     def findClosestFeatureAt(mapPoint, mapCanvas, layersConfigs=None):
+        """
+        To find closest feature from a given position in given layers
+        :param mapPoint: the map position
+        :param mapCanvas: the used QgsMapCanvas
+        :param layersConfig: the layers in which we are looking for features
+        :return: features found in layers
+        """
         match = Finder.snap(mapPoint, mapCanvas, layersConfigs, QgsSnappingUtils.SnapAdvanced)
         if match.featureId():
             feature = QgsFeature()
@@ -50,48 +57,6 @@ class Finder:
             return [feature, match.layer()]
         else:
             return None
-
-    # @staticmethod
-    # def findClosestFeatureAt(mapPoint, layerConfig, mapTool):
-    #     """
-    #     To find the closest feature from a given position in a given layer
-    #     :param mapPoint: the map position
-    #     :param layerConfig: the layer in which we are looking for features
-    #     :param mapTool: a QgsMapTool instance
-    #     :return: closest feature found or none
-    #     """
-    #     features = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
-    #     if features is not None and len(features) > 0:
-    #         return features[0]
-    #     else:
-    #         return None
-    #
-    # @staticmethod
-    # def findClosestFeatureLayersAt(mapPoint, layersConfig, mapTool):
-    #     """
-    #     To find the closest feature from a given position in given layers
-    #     :param mapPoint: the map position
-    #     :param layersConfig: the layers in which we are looking for features
-    #     :param mapTool: a QsMapTool instance
-    #     :return: closest feature found or none
-    #     """
-    #     features = []
-    #     for layerConfig in layersConfig:
-    #         feats = Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
-    #         if feats is not None:
-    #             for f in feats:
-    #                 features.append([f, layerConfig.layer])
-    #     if len(features) > 0:
-    #         dst = Finder.sqrDistForPoints(mapPoint, features[0][0].geometry().asPoint())
-    #         f = 0
-    #         for i in xrange(1,len(features)):
-    #             d = Finder.sqrDistForPoints(mapPoint, features[i][0].geometry().asPoint())
-    #             if d < dst:
-    #                 dst = d
-    #                 f = i
-    #         return features[f]
-    #     else:
-    #         return None
 
     @staticmethod
     def sqrDistForPoints(pt1, pt2):
@@ -142,7 +107,8 @@ class Finder:
             return None
         tolerance = layerConfig.tolerance
         if layerConfig.unit == QgsTolerance.Pixels:
-            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool, tolerance)
+            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool,
+                                                      tolerance)
         elif layerConfig.unit == QgsTolerance.ProjectUnits:
             layTolerance = Finder.calcMapTolerance(mapPoint, layerConfig.layer, mapTool, tolerance)
         else:
@@ -219,12 +185,21 @@ class Finder:
             return None
 
     @staticmethod
-    def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, checkForAFeature=False, featureId=None):
+    def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, featureId=None):
+        """
+        To snap on curved intersections
+        :param mapPoint: the map position
+        :param mapCanvas: the used QgsMapCanvas
+        :param mapTool: a QgsMapTool instance
+        :param featureId: if we want to snap on a given feature
+        :return: intersection point
+        """
         snap_layers = []
         for layer in mapCanvas.layers():
             types = [0, 1, 2]
             if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
-                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
+                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                    QgsProject.instance().snapSettingsForLayer(layer.id())
                 if isinstance(layer, QgsVectorLayer) and enabled:
                     if snappingType == QgsSnapper.SnapToVertex:
                         snap_type = QgsPointLocator.Vertex
@@ -253,7 +228,7 @@ class Finder:
             else:
                 feat1 = features[0]
                 feat2 = features[1]
-            if not checkForAFeature or feat1.id() == featureId or feat2.id() == featureId:
+            if not featureId or feat1.id() == featureId or feat2.id() == featureId:
                 return Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
             else:
                 return None
@@ -262,6 +237,14 @@ class Finder:
 
     @staticmethod
     def snap(mapPoint, mapCanvas, layersConfigs=None, mode=None):
+        """
+        To snap on given layers for a given point
+        :param mapPoint: the map position
+        :param mapCanvas: the used QgsMapCanvas
+        :param layersConfig: the layers in which we are looking for features
+        :param mode: snapping mode
+        :return: snapping match instance
+        """
         snap_util = mapCanvas.snappingUtils()
         if layersConfigs:
             old_layers = snap_util.layers()
@@ -275,34 +258,3 @@ class Finder:
         else:
             match = snap_util.snapToMap(mapPoint)
         return match
-
-
-    # @staticmethod
-    # def snap(mapPoint, mapCanvas, snapIntersections):
-    #     snap_layers = []
-    #     for layer in mapCanvas.layers():
-    #         types = [0, 1, 2]
-    #         if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
-    #             noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = QgsProject.instance().snapSettingsForLayer(layer.id())
-    #             if isinstance(layer, QgsVectorLayer) and enabled:
-    #                 if snappingType == QgsSnapper.SnapToVertex:
-    #                     snap_type = QgsPointLocator.Vertex
-    #                 elif snappingType == QgsSnapper.SnapToSegment:
-    #                     snap_type = QgsPointLocator.Edge
-    #                 else:
-    #                     snap_type = QgsPointLocator.All
-    #                 snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
-    #
-    #     snap_util = mapCanvas.snappingUtils()
-    #     old_layers = snap_util.layers()
-    #     old_mode = snap_util.snapToMapMode()
-    #     old_inter = snap_util.snapOnIntersections()
-    #     snap_util.setLayers(snap_layers)
-    #     snap_util.setSnapToMapMode(QgsSnappingUtils.SnapAdvanced)
-    #     snap_util.setSnapOnIntersections(snapIntersections)
-    #     match = snap_util.snapToMap(mapPoint)
-    #     snap_util.setLayers(old_layers)
-    #     snap_util.setSnapToMapMode(old_mode)
-    #     snap_util.setSnapOnIntersections(old_inter)
-    #
-    #     return match

@@ -30,6 +30,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class FieldsSettingsDialog(QDialog):
+    """
+    Dialog class to parametrize the memory lines layer fields
+    """
 
     def __init__(self):
         """

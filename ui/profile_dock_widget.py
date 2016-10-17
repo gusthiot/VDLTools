@@ -20,8 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import (QgsPoint,
-                       QgsGeometry)
+from qgis.core import QgsPoint
 from qgis.gui import (QgsVertexMarker,
                       QgsMessageBar)
 from PyQt4.QtGui import (QDockWidget,
@@ -66,6 +65,9 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # , Navigation
 
 
 class ProfileDockWidget(QDockWidget):
+    """
+    DockWidget class to display the profile
+    """
 
     closeSignal = pyqtSignal()
 
@@ -82,7 +84,6 @@ class ProfileDockWidget(QDockWidget):
         self.__types = ['PDF', 'PNG', 'SVG', 'PS']
         self.__libs = ['Qwt5', 'Matplotlib']
         self.__lib = self.__libs[0]
-
 
         self.__doTracking = False
         self.__vline = None
@@ -187,7 +188,6 @@ class ProfileDockWidget(QDockWidget):
             self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
                                    self.__plotWdg.canvas())
             self.__zoomer.setRubberBandPen(QPen(Qt.blue))
-            # self.__plotWdg.insertLegend(QwtLegend())
             grid = QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
@@ -215,12 +215,6 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.setSizePolicy(sizePolicy)
             self.__frameLayout.addWidget(self.__plotWdg)
 
-            # mpltoolbar = NavigationToolbar2QTAgg(self.__plotWdg, self.__plotFrame)
-            # self.__frameLayout.addWidget(mpltoolbar)
-            # lstActions = mpltoolbar.actions()
-            # mpltoolbar.removeAction(lstActions[7])
-            # mpltoolbar.removeAction(lstActions[8])
-
     def setProfiles(self, profiles, numLines):
         """
         To set the profiles
@@ -232,15 +226,12 @@ class ProfileDockWidget(QDockWidget):
         if self.__lib == 'Matplotlib':
             self.__prepare_points()
 
-    def drawVertLine(self):
+    def __getLinearPoints(self):
         """
-        To draw vertical lines at positions on the profile
+        To extract the linear points of the profile
         """
-        if (self.__profiles is None) or (len(self.__profiles) == 0):
-            return
         profileLen = 0
         self.__profiles[0]['l'] = profileLen
-        # self.label(0, 1, 0)
         for i in range(0, len(self.__profiles)-1):
             x1 = float(self.__profiles[i]['x'])
             y1 = float(self.__profiles[i]['y'])
@@ -249,16 +240,6 @@ class ProfileDockWidget(QDockWidget):
             profileLen += sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)))
             self.__profiles[i+1]['l'] = profileLen
 
-            # zz = []
-            # for j in xrange(self.__numLines):
-            #     if self.__profiles[i+1]['z'][j] is not None:
-            #         zz.append(j)
-            # if len(zz) == 2:
-            #     width = 3
-            # else:
-            #     width = 1
-            # self.label(i+1,width, profileLen)
-
     def attachCurves(self, names):
         """
         To attach the curves for the layers to the profile
@@ -266,6 +247,9 @@ class ProfileDockWidget(QDockWidget):
         """
         if (self.__profiles is None) or (self.__profiles == 0):
             return
+
+        self.__getLinearPoints()
+
         colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
         for i in xrange(len(self.__profiles[0]['z'])):
             if i < self.__numLines:
@@ -307,10 +291,6 @@ class ProfileDockWidget(QDockWidget):
                     if i > (self.__numLines-1):
                         curve.setStyle(QwtPlotCurve.Dots)
                         curve.setPen(QPen(color, 8))
-                        # symbol = QwtSymbol()
-                        # symbol.setStyle(QwtSymbol.Ellipse)
-                        # symbol.setPen(QPen(color, 4))
-                        # curve.setSymbol(symbol)
                     curve.attach(self.__plotWdg)
 
             elif self.__lib == 'Matplotlib':
@@ -341,7 +321,6 @@ class ProfileDockWidget(QDockWidget):
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
-            # self.__plotWdg.figure.legend(self.__plotWdg.figure.get_axes()[0].get_lines(), names, 'center left')
             self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
             self.__plotWdg.draw()
             self.__activateMouseTracking(True)
@@ -367,6 +346,7 @@ class ProfileDockWidget(QDockWidget):
         minimumValue = self.__minSpin.value()
         maximumValue = self.__maxSpin.value()
 
+        # to set max y and min y displayed
         if auto:
             minimumValue = 1000000000
             maximumValue = -1000000000
@@ -386,6 +366,7 @@ class ProfileDockWidget(QDockWidget):
             rect = QRectF(0, minimumValue,maxi, maximumValue-minimumValue)
             self.__zoomer.setZoomBase(rect)
 
+        # to draw vertical lines
         for i in xrange(len(self.__profiles)):
             zz = []
             for j in xrange(self.__numLines):
@@ -636,7 +617,7 @@ class ProfileDockWidget(QDockWidget):
         """
         self.__marker = QgsVertexMarker(self.__canvas)
         self.__marker.setIconSize(5)
-        self.__marker.setIconType(QgsVertexMarker.ICON_BOX)  # or ICON_CROSS, ICON_X
+        self.__marker.setIconType(QgsVertexMarker.ICON_BOX)
         self.__marker.setPenWidth(3)
 
     def __prepare_points(self):

@@ -26,7 +26,6 @@ from qgis.core import (QgsMapLayer,
                        QgsGeometry,
                        QGis,
                        QgsTolerance,
-                       QgsProject,
                        QgsPoint,
                        QgsWKBTypes)
 from qgis.gui import (QgsMapTool,
@@ -45,6 +44,9 @@ from ..ui.profile_confirm_dialog import ProfileConfirmDialog
 
 
 class ProfileTool(QgsMapTool):
+    """
+    Tool class for making a line elevation profile
+    """
 
     def __init__(self, iface):
         """
@@ -56,7 +58,6 @@ class ProfileTool(QgsMapTool):
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
-        # self.__oldTool = None
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isChoosed = False
@@ -151,7 +152,6 @@ class ProfileTool(QgsMapTool):
         self.action().setEnabled(False)
         if self.__canvas.mapTool == self:
             self.__iface.actionPan().trigger()
-        #    self.__canvas.setMapTool(self.__oldTool)
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         self.__lineLayer = None
@@ -302,7 +302,6 @@ class ProfileTool(QgsMapTool):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
             self.__lineLayer.updateExtents()
-            #  self.__lineLayer.commitChanges()
         self.__dockWdg.clearData()
         self.__lineLayer.removeSelection()
         self.__selectedIds = None
@@ -339,7 +338,6 @@ class ProfileTool(QgsMapTool):
                 layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
             layer.updateExtents()
-            #  layer.commitChanges()
         self.__dockWdg.clearData()
         self.__selectedIds = None
         self.__selectedDirections = None
@@ -423,6 +421,9 @@ class ProfileTool(QgsMapTool):
         self.__layOk()
 
     def __layOk(self):
+        """
+        To create the profile
+        """
         self.__features = []
 
         for points in self.__points:
@@ -447,18 +448,6 @@ class ProfileTool(QgsMapTool):
                         z.append(zp)
             self.__features.append(feat)
 
-        # points = []
-        # for key, p in pointz.items():
-        #     if p is not None:
-        #         pt = p[0].geometry().asPoint()
-        #         i = 0
-        #         for l in layers:
-        #             if l == p[1]:
-        #                 break
-        #             i += 1
-        #         attName = attributes[i]
-        #         z = p[0].attribute(attName)
-        #         points.append({'x': pt.x(), 'y': pt.y(), 'z': z})
         names = [self.__lineLayer.name()]
         for layer in self.__layers:
             names.append(layer.name())
@@ -583,7 +572,6 @@ class ProfileTool(QgsMapTool):
         if len(self.__points) == 0:
             return
         self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
-        self.__dockWdg.drawVertLine()
         self.__dockWdg.attachCurves(names)
 
         situations = []

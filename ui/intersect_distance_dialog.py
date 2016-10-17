@@ -31,6 +31,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class IntersectDistanceDialog(QDialog):
+    """
+    Dialog class to choose the circle radius
+    """
 
     def __init__(self, mapPoint):
         """
@@ -39,11 +42,11 @@ class IntersectDistanceDialog(QDialog):
         """
         QDialog.__init__(self)
         self.__mapPoint = mapPoint
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Choose diameter"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","Choose radius"))
         self.resize(275, 177)
         self.__gridLayout = QGridLayout()
 
-        self.__label = QLabel(QCoreApplication.translate("VDLTools","Diameter"))
+        self.__label = QLabel(QCoreApplication.translate("VDLTools","Radius"))
         self.__gridLayout.addWidget(self.__label, 2, 1, 1, 1)
 
         self.__observation = QDoubleSpinBox()

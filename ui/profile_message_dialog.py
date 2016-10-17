@@ -30,6 +30,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class ProfileMessageDialog(QDialog):
+    """
+    Dialog class to display the issues in the profile
+    """
 
     def __init__(self, situations, differences, names, points):
         """

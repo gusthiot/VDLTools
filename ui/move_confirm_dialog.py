@@ -29,6 +29,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class MoveConfirmDialog(QDialog):
+    """
+    Dialog class ton confirm the move or copy
+    """
 
     def __init__(self):
         """

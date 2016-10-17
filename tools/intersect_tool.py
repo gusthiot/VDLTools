@@ -40,6 +40,9 @@ from ..core.finder import Finder
 
 
 class IntersectTool(QgsMapTool):
+    """
+    Map tool class to create temporary circle, with center point
+    """
 
     def __init__(self, iface):
         """

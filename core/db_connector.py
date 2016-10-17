@@ -28,6 +28,9 @@ from PyQt4.QtCore import QCoreApplication
 
 
 class DBConnector:
+    """
+    Class to manage database connection
+    """
 
     @staticmethod
     def setConnection(dbName, iface):

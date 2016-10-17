@@ -29,18 +29,20 @@ from qgis.core import (QgsPointV2,
 
 
 class GeometryV2:
+    """
+    Class to replace QgsFeature geometry().geometry() that is crashing
+    """
 
     @staticmethod
     def asPolygonV2(geometry):
         """
         To get the feature geometry from a polygon as a QgsCurvePolygonV2
-        (as soon as the geometry().geometry() is crashing)
         :param geometry: the feature geometry
         :return: the polygon as QgsCurvePolygonV2 , and true if it has curves or false if it hasn't, or none
         """
         wktPolygon = geometry.exportToWkt()
         curved = []
-        if  wktPolygon.startswith('PolygonZ'):
+        if wktPolygon.startswith('PolygonZ'):
             polygon = wktPolygon.replace('PolygonZ', '')
         elif wktPolygon.startswith('Polygon'):
             polygon = wktPolygon.replace('Polygon', '')

@@ -35,6 +35,9 @@ from ..core.db_connector import DBConnector
 
 
 class ShowSettingsDialog(QDialog):
+    """
+    Dialog class for plugin settings
+    """
 
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable):
         """
