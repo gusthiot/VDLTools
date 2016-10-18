@@ -43,6 +43,9 @@ import os.path
 
 
 class VDLTools:
+    """
+    Main plugin class
+    """
 
     def __init__(self, iface):
         """Constructor

@@ -65,12 +65,20 @@ class DuplicateTool(QgsMapTool):
         self.__icon_path = ':/plugins/VDLTools/icons/duplicate_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Duplicate a feature")
         self.setCursor(Qt.ArrowCursor)
-        self.__isEditing = 0
+        self.__isEditing = False
         self.__layer = None
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__rubberBand = None
         self.__newFeature = None
+        self.__dstDlg = None
+
+    def deactivate(self):
+        """
+        When the action is deselected
+        """
+        self.__cancel()
+        QgsMapTool.deactivate(self)
 
     def icon_path(self):
         """
@@ -108,7 +116,7 @@ class DuplicateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
+        if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
 
     def setTool(self):
@@ -117,7 +125,19 @@ class DuplicateTool(QgsMapTool):
         """
         self.__canvas.setMapTool(self)
 
-    def removeLayer(self):
+    def __cancel(self):
+        self.__isEditing = False
+        if self.__rubberBand:
+            self.__canvas.scene().removeItem(self.__rubberBand)
+            self.__rubberBand.reset()
+            self.__rubberBand = None
+        self.__dstDlg = None
+        self.__newFeature = None
+        self.__lastFeatureId = None
+        self.__selectedFeature = None
+        self.__layer.removeSelection()
+
+    def __removeLayer(self):
         """
         To remove the current working layer
         """
@@ -142,6 +162,7 @@ class DuplicateTool(QgsMapTool):
                 return
 
             if self.__layer is not None:
+                self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
@@ -153,11 +174,14 @@ class DuplicateTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool == self:
+                if self.__canvas.mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
+
+        if self.__canvas.mapTool() == self:
+            self.__iface.actionPan().trigger()
         self.action().setEnabled(False)
-        self.removeLayer()
+        self.__removeLayer()
 
     def __setDistanceDialog(self, isComplexPolygon):
         """
@@ -171,20 +195,13 @@ class DuplicateTool(QgsMapTool):
         self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
         self.__dstDlg.directionCheck().stateChanged.connect(self.__onDstPreview)
 
-    def __cancel(self):
-        self.__isEditing = 0
-        self.__canvas.scene().removeItem(self.__rubberBand)
-        self.__rubberBand = None
-        self.__layer.removeSelection()
-
     def __onDstCancel(self):
         """
         When the Cancel button in Duplicate Distance Dialog is pushed
         """
         self.__dstDlg.reject()
 
-    @staticmethod
-    def newPoint(angle, point, distance):
+    def __newPoint(self, angle, point, distance):
         """
         To create a new point at a certain distance and certain azimut from another point
         :param angle: the azimut
@@ -256,9 +273,9 @@ class DuplicateTool(QgsMapTool):
         curve_v2 = QgsCircularStringV2()
         points = []
         circle = Circle(arc_v2.pointN(0), arc_v2.pointN(1), arc_v2.pointN(2))
-        points.append(self.newPoint(circle.angle1(), arc_v2.pointN(0), distance))
-        points.append(self.newPoint(circle.angle2(), arc_v2.pointN(1), distance))
-        points.append(self.newPoint(circle.angle3(), arc_v2.pointN(2), distance))
+        points.append(self.__newPoint(circle.angle1(), arc_v2.pointN(0), distance))
+        points.append(self.__newPoint(circle.angle2(), arc_v2.pointN(1), distance))
+        points.append(self.__newPoint(circle.angle3(), arc_v2.pointN(2), distance))
         curve_v2.setPoints(points)
         return curve_v2
 
@@ -283,7 +300,7 @@ class DuplicateTool(QgsMapTool):
                 angle2 = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1))
                 angle = float(pi + angle1 + angle2) / 2
                 dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
-            points.append(self.newPoint(angle, line_v2.pointN(pos), dist))
+            points.append(self.__newPoint(angle, line_v2.pointN(pos), dist))
         curve_v2.setPoints(points)
         return curve_v2
 
@@ -333,7 +350,7 @@ class DuplicateTool(QgsMapTool):
             angle2 = Circle.angle(curve_v2.pointN(pos),curve_v2.pointN(pos3))
             angle = float(pi + angle1 + angle2) / 2
             dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
-            points.append(self.newPoint(angle, curve_v2.pointN(pos), dist))
+            points.append(self.__newPoint(angle, curve_v2.pointN(pos), dist))
         new_line_v2.setPoints(points)
         return new_line_v2
 
@@ -391,7 +408,7 @@ class DuplicateTool(QgsMapTool):
                                                       level=QgsMessageBar.INFO)
                 return
             self.__selectedFeature = found_features[0]
-            self.__isEditing = 1
+            self.__isEditing = True
             if (self.__layer.geometryType() == QGis.Polygon)\
                     and (len(self.__selectedFeature.geometry().asPolygon()) > 1):
                 self.__setDistanceDialog(True)

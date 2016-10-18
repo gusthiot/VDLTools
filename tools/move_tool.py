@@ -62,10 +62,9 @@ class MoveTool(QgsMapTool):
         self.__icon_path = ':/plugins/VDLTools/icons/move_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Move/Copy a feature")
         self.setCursor(Qt.ArrowCursor)
-        self.__isEditing = 0
-        self.__findVertex = 0
-        self.__onMove = 0
-        self.__counter = 0
+        self.__isEditing = False
+        self.__findVertex = False
+        self.__onMove = False
         self.__layer = None
         self.__confDlg = None
         self.__lastFeatureId = None
@@ -74,6 +73,13 @@ class MoveTool(QgsMapTool):
         self.__rubberSnap = None
         self.__newFeature = None
         self.__selectedVertex = None
+
+    def deactivate(self):
+        """
+        When the action is deselected
+        """
+        self.__cancel()
+        QgsMapTool.deactivate(self)
 
     def icon_path(self):
         """
@@ -111,7 +117,7 @@ class MoveTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
+        if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
 
     def setTool(self):
@@ -120,7 +126,26 @@ class MoveTool(QgsMapTool):
         """
         self.__canvas.setMapTool(self)
 
-    def removeLayer(self):
+    def __cancel(self):
+        if self.__rubberBand:
+            self.__canvas.scene().removeItem(self.__rubberBand)
+            self.__rubberBand.reset()
+            self.__rubberBand = None
+        if self.__rubberSnap:
+            self.__canvas.scene().removeItem(self.__rubberSnap)
+            self.__rubberSnap.reset()
+            self.__rubberSnap = None
+        self.__isEditing = False
+        self.__findVertex = False
+        self.__onMove = False
+        self.__lastFeatureId = None
+        self.__selectedFeature = None
+        self.__confDlg = None
+        self.__newFeature = None
+        self.__selectedVertex = None
+        self.__layer.removeSelection()
+
+    def __removeLayer(self):
         """
         To remove the current working layer
         """
@@ -142,6 +167,7 @@ class MoveTool(QgsMapTool):
                 return
 
             if self.__layer is not None:
+                self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
@@ -153,11 +179,13 @@ class MoveTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool == self:
+                if self.__canvas.mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
         self.action().setEnabled(False)
-        self.removeLayer()
+        if self.__canvas.mapTool() == self:
+            self.__iface.actionPan().trigger()
+        self.__removeLayer()
 
     def __pointPreview(self, point):
         """
@@ -176,7 +204,6 @@ class MoveTool(QgsMapTool):
         :param point: new position as mapPoint
         """
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
-        print(self.__selectedVertex)
         vertex = QgsPointV2()
         line_v2.pointAt(self.__selectedVertex, vertex)
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
@@ -284,18 +311,6 @@ class MoveTool(QgsMapTool):
         """
         self.__confDlg.reject()
 
-    def __cancel(self):
-        self.__rubberBand.reset()
-        self.__rubberSnap.reset()
-        self.__isEditing = 0
-        self.__lastFeatureId = None
-        self.__selectedFeature = None
-        self.__rubberBand = None
-        self.__rubberSnap = None
-        self.__newFeature = None
-        self.__selectedVertex = None
-        self.__layer.removeSelection()
-
     def __onConfirmMove(self):
         """
         When the Move button in Move Confirm Dialog is pushed
@@ -352,6 +367,8 @@ class MoveTool(QgsMapTool):
         elif self.__findVertex:
             self.__rubberBand.reset()
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
+            # tolerance = Finder.calcCanvasTolerance(event.mapPoint(), self.__layer, self, 20)
+            # if closest[4] < tolerance:
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
@@ -409,22 +426,22 @@ class MoveTool(QgsMapTool):
                     return
                 self.__selectedFeature = found_features[0]
                 if self.__layer.geometryType() != QGis.Point:
-                    self.__findVertex = 1
+                    self.__findVertex = True
                     self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
                 else:
-                    self.__onMove = 1
+                    self.__onMove = True
         elif self.__findVertex:
-            self.__findVertex = 0
+            self.__findVertex = False
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             self.__selectedVertex = closest[1]
-            self.__onMove = 1
+            self.__onMove = True
         elif self.__onMove:
-            self.__onMove = 0
+            self.__onMove = False
             mapPoint = event.mapPoint()
             match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex() or match.hasEdge():
                 mapPoint = match.point()
-            self.__isEditing = 1
+            self.__isEditing = True
             if self.__rubberBand:
                 self.__rubberBand.reset()
             if self.__layer.geometryType() == QGis.Polygon:

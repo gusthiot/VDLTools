@@ -61,7 +61,6 @@ class ExtrapolateTool(QgsMapTool):
         self.__isEditing = False
         self.__lastFeatureId = None
         self.__rubber = None
-        self.__counter = 0
         self.__confDlg = None
         self.__selectedVertex = None
         self.__elevation = None
@@ -103,7 +102,7 @@ class ExtrapolateTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__rubber.reset()
+        self.__cancel()
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -121,10 +120,23 @@ class ExtrapolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
+        if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
 
-    def removeLayer(self):
+    def __cancel(self):
+        self.__layer.removeSelection()
+        if self.__rubber:
+            self.__canvas.scene().removeItem(self.__rubber)
+            self.__rubber.reset()
+            self.__rubber = None
+        self.__lastFeatureId = None
+        self.__confDlg = None
+        self.__selectedFeature = None
+        self.__selectedVertex = None
+        self.__elevation = None
+        self.__isEditing = False
+
+    def __removeLayer(self):
         """
         To remove the current working layer
         """
@@ -148,6 +160,7 @@ class ExtrapolateTool(QgsMapTool):
                 return
 
             if self.__layer is not None:
+                self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
@@ -159,11 +172,11 @@ class ExtrapolateTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool == self:
+                if self.__canvas.mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
         self.action().setEnabled(False)
-        self.removeLayer()
+        self.__removeLayer()
 
     def canvasMoveEvent(self, event):
         """
@@ -174,21 +187,17 @@ class ExtrapolateTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+            if f_l is not None:
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
-                if self.__counter > 2:
-                    self.__rubber.reset()
-                    geom = f_l[0].geometry()
-                    index = geom.closestVertex(event.mapPoint())[1]
-                    line_v2, curved = GeometryV2.asLineV2(geom)
-                    num_p = line_v2.numPoints()
-                    if num_p > 2 and (index == 0 or index == (num_p-1)):
-                        self.__rubber.setIcon(4)
-                        self.__rubber.setToGeometry(QgsGeometry(line_v2.pointN(index)), None)
-                        self.__counter = 0
-                else:
-                    self.__counter += 1
+                self.__rubber.reset()
+                geom = f_l[0].geometry()
+                index = geom.closestVertex(event.mapPoint())[1]
+                line_v2, curved = GeometryV2.asLineV2(geom)
+                num_p = line_v2.numPoints()
+                if num_p > 2 and (index == 0 or index == (num_p-1)):
+                    self.__rubber.setIcon(4)
+                    self.__rubber.setToGeometry(QgsGeometry(line_v2.pointN(index)), None)
             if f_l is None:
                 self.__layer.removeSelection()
                 self.__rubber.reset()
@@ -247,14 +256,6 @@ class ExtrapolateTool(QgsMapTool):
         When the Cancel button in Extrapolate Confirm Dialog is pushed
         """
         self.__confDlg.reject()
-
-    def __cancel(self):
-        self.__layer.removeSelection()
-        self.__rubber.reset()
-        self.__lastFeatureId = None
-        self.__selectedFeature = None
-        self.__selectedVertex = None
-        self.__isEditing = False
 
     def __edit(self):
         """

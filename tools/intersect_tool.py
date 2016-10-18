@@ -57,10 +57,9 @@ class IntersectTool(QgsMapTool):
         self.setCursor(Qt.ArrowCursor)
         self.__lineLayerID = None
         self.__pointLayerID = None
-        self.__counter = 0
         self.__rubber = None
         self.__ownSettings = None
-        self.__isEditing = 0
+        self.__isEditing = False
 
     def icon_path(self):
         """
@@ -81,6 +80,33 @@ class IntersectTool(QgsMapTool):
         To set the current tool as this one
         """
         self.__canvas.setMapTool(self)
+
+    def activate(self):
+        """
+        When the action is selected
+        """
+        QgsMapTool.activate(self)
+        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
+        color = QColor("red")
+        color.setAlphaF(0.78)
+        self.__rubber.setColor(color)
+        self.__rubber.setIcon(4)
+        self.__rubber.setIconSize(20)
+        self.__rubber.setWidth(2)
+
+    def deactivate(self):
+        """
+        When the action is deselected
+        """
+        self.__cancel()
+        QgsMapTool.deactivate(self)
+
+    def __cancel(self):
+        if self.__rubber:
+            self.__canvas.scene().removeItem(self.__rubber)
+            self.__rubber.reset()
+            self.__rubber = None
+        self.__isEditing = False
 
     def setOwnSettings(self, settings):
         """
@@ -146,30 +172,6 @@ class IntersectTool(QgsMapTool):
         When the Cancel button in Intersect Distance Dialog is pushed
         """
         self.__dstDlg.reject()
-
-    def __cancel(self):
-        self.__rubber.reset()
-        self.__isEditing = False
-
-    def activate(self):
-        """
-        When the action is selected
-        """
-        QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
-        color = QColor("red")
-        color.setAlphaF(0.78)
-        self.__rubber.setColor(color)
-        self.__rubber.setIcon(4)
-        self.__rubber.setIconSize(20)
-        self.__rubber.setWidth(2)
-
-    def deactivate(self):
-        """
-        When the action is deselected
-        """
-        self.__rubber.reset()
-        QgsMapTool.deactivate(self)
 
     def canvasMoveEvent(self, mouseEvent):
         """

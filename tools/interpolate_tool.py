@@ -67,7 +67,6 @@ class InterpolateTool(QgsMapTool):
         self.__confDlg = None
         self.__mapPoint = None
         self.__rubber = None
-        self.__counter = 0
         self.__ownSettings = None
         self.__selectedFeature = None
         self.__findVertex = 0
@@ -118,9 +117,7 @@ class InterpolateTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__rubber.reset()
-        if self.__lastLayer is not None:
-            self.__lastLayer.removeSelection()
+        self.__cancel()
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__canvas.scaleChanged.disconnect(self.__updateList)
         QgsMapTool.deactivate(self)
@@ -140,10 +137,24 @@ class InterpolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool == self:
+        if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
 
-    def removeLayer(self):
+    def __cancel(self):
+        if self.__lastLayer is not None:
+            self.__lastLayer.removeSelection()
+            self.__lastLayer = None
+        if self.__rubber:
+            self.__canvas.scene().removeItem(self.__rubber)
+            self.__rubber.reset()
+            self.__rubber = None
+        self.__lastFeatureId = None
+        self.__selectedFeature = None
+        self.__isEditing = False
+        self.__confDlg = None
+        self.__mapPoint = None
+
+    def __removeLayer(self):
         """
         To remove the current working layer
         """
@@ -178,11 +189,13 @@ class InterpolateTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool == self:
+                if self.__canvas.mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
+        if self.__canvas.mapTool() == self:
+            self.__iface.actionPan().trigger()
         self.action().setEnabled(False)
-        self.removeLayer()
+        self.__removeLayer()
 
     def __updateList(self):
         """
@@ -212,7 +225,6 @@ class InterpolateTool(QgsMapTool):
                 self.__lastLayer.setSelectedFeatures([f.id()])
             if f_l is None and self.__lastLayer is not None:
                 self.__lastLayer.removeSelection()
-               # self.__rubber.reset()
                 self.__lastFeatureId = None
         elif self.__findVertex:
             self.__rubber.reset()
@@ -300,13 +312,6 @@ class InterpolateTool(QgsMapTool):
         When the Cancel button in Interpolate Confirm Dialog is pushed
         """
         self.__confDlg.reject()
-
-    def __cancel(self):
-        self.__lastLayer.removeSelection()
-        self.__rubber.reset()
-        self.__lastFeatureId = None
-        self.__selectedFeature = None
-        self.__isEditing = False
 
     def __onConfirmOk(self):
         """

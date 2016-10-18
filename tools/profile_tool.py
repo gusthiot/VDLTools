@@ -107,7 +107,7 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
-        self.__dockWdg.closeSignal.connect(self.closed)
+        self.__dockWdg.closeSignal.connect(self.__closed)
         self.__rubberSit = QgsRubberBand(self.__canvas, QGis.Point)
         self.__rubberDif = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
@@ -119,7 +119,7 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.setIcon(2)
         self.__rubberDif.setIconSize(20)
 
-    def closed(self):
+    def __closed(self):
         self.__cancel()
         self.__iface.actionPan().trigger()
 
@@ -127,12 +127,26 @@ class ProfileTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__rubberSit.reset()
-        self.__rubberDif.reset()
+        if self.__rubberSit:
+            self.__canvas.scene().removeItem(self.__rubberSit)
+            self.__rubberSit.reset()
+            self.__rubberSit = None
+        if self.__rubberDif:
+            self.__canvas.scene().removeItem(self.__rubberDif)
+            self.__rubberDif.reset()
+            self.__rubberDif = None
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         if QgsMapTool is not None:
             QgsMapTool.deactivate(self)
+
+    def __cancel(self):
+        self.__lineLayer.removeSelection()
+        self.__selectedIds = None
+        self.__selectedDirections = None
+        self.__startVertex = None
+        self.__endVertex = None
+        self.__inSelection = False
 
     def setEnable(self, layer):
         """
@@ -145,7 +159,7 @@ class ProfileTool(QgsMapTool):
             self.action().setEnabled(True)
             return
         self.action().setEnabled(False)
-        if self.__canvas.mapTool == self:
+        if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
         if self.__dockWdg is not None:
             self.__dockWdg.close()
@@ -221,14 +235,6 @@ class ProfileTool(QgsMapTool):
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                     layerList.append(layer)
         return layerList
-
-    def __cancel(self):
-        self.__lineLayer.removeSelection()
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
-        self.__inSelection = False
 
     def __onMsgPass(self):
         """
@@ -436,8 +442,7 @@ class ProfileTool(QgsMapTool):
         self.__isChoosed = 0
         self.__cancel()
 
-    @staticmethod
-    def contains(line, point):
+    def __contains(self, line, point):
         """
         To check if a position is a line vertex
         :param line: the line
@@ -473,13 +478,13 @@ class ProfileTool(QgsMapTool):
                 else:
                     if f_l is not None and (not self.__selectedIds or f_l[0].id() not in self.__selectedIds):
                         line = f_l[0].geometry().asPolyline()
-                        if self.contains(line, self.__endVertex) > -1:
+                        if self.__contains(line, self.__endVertex) > -1:
                             self.__lastFeature = f_l[0]
                             self.__lastFeatureId = f_l[0].id()
                             features = self.__selectedIds + [f_l[0].id()]
                             self.__lineLayer.setSelectedFeatures(features)
 
-                        elif self.contains(line, self.__startVertex) > -1:
+                        elif self.__contains(line, self.__startVertex) > -1:
                             self.__lastFeature = f_l[0]
                             self.__lastFeatureId = f_l[0].id()
                             features = self.__selectedIds + [f_l[0].id()]
@@ -500,6 +505,8 @@ class ProfileTool(QgsMapTool):
         When the mouse is clicked
         :param event: mouse event
         """
+        self.__rubberSit.reset()
+        self.__rubberDif.reset()
         if event.button() == Qt.RightButton:
             if self.__lineLayer.selectedFeatures() and self.__selectedIds:
                 self.__isChoosed = 1
@@ -516,7 +523,7 @@ class ProfileTool(QgsMapTool):
                     self.__selectedDirections.append(True)  # direction du premier prime
                     self.__selectedIds.append(self.__lastFeatureId)
                 else:
-                    pos = self.contains(line, self.__startVertex)
+                    pos = self.__contains(line, self.__startVertex)
                     if pos > -1:
                         self.__selectedIds = [self.__lastFeatureId] + self.__selectedIds
                         if pos == 0:
@@ -527,7 +534,7 @@ class ProfileTool(QgsMapTool):
                             self.__startVertex = line[0]
                         self.__selectedDirections = [direction] + self.__selectedDirections
                     else:
-                        pos = self.contains(line, self.__endVertex)
+                        pos = self.__contains(line, self.__endVertex)
                         self.__selectedIds.append(self.__lastFeatureId)
                         if pos == 0:
                             direction = True
