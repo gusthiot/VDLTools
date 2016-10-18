@@ -26,6 +26,7 @@ from ..ui.fields_settings_dialog import FieldsSettingsDialog
 from PyQt4.QtCore import (QCoreApplication,
                           QVariant)
 from qgis.core import (QgsProject,
+                       QgsMapLayerRegistry,
                        edit,
                        QgsField,
                        QGis,
@@ -62,8 +63,8 @@ class ShowSettings:
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
         if mpl_id != -1 or mll_id != -1:
-            for layer in self.__iface.mapCanvas().layers():
-                if layer is not None \
+            for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+                if layer is not None  \
                     and layer.type() == QgsMapLayer.VectorLayer \
                         and layer.providerType() == "memory":
                     if layer.geometryType() == QGis.Point:
@@ -165,19 +166,20 @@ class ShowSettings:
         :param linesLayer: memory lines layer to save
         """
         self.__linesLayer = linesLayer
-        fields = self.__linesLayer.pendingFields()
-        fieldsNames = []
-        for pos in range(fields.count()):
-            fieldsNames.append(fields.at(pos).name())
-        if "distance" not in fieldsNames or "x" not in fieldsNames or "y" not in fieldsNames:
-            self.__fieldnames = fieldsNames
-            self.__fieldsDlg = FieldsSettingsDialog()
-            self.__fieldsDlg.okButton().clicked.connect(self.__onFieldsOk)
-            self.__fieldsDlg.butButton().clicked.connect(self.__onFieldsBut)
-            self.__fieldsDlg.cancelButton().clicked.connect(self.__onFieldsCancel)
-            self.__fieldsDlg.show()
-        else:
-            self.reallySetLinesLayer()
+        if linesLayer is not None:
+            fields = self.__linesLayer.pendingFields()
+            fieldsNames = []
+            for pos in range(fields.count()):
+                fieldsNames.append(fields.at(pos).name())
+            if "distance" not in fieldsNames or "x" not in fieldsNames or "y" not in fieldsNames:
+                self.__fieldnames = fieldsNames
+                self.__fieldsDlg = FieldsSettingsDialog()
+                self.__fieldsDlg.okButton().clicked.connect(self.__onFieldsOk)
+                self.__fieldsDlg.butButton().clicked.connect(self.__onFieldsBut)
+                self.__fieldsDlg.cancelButton().clicked.connect(self.__onFieldsCancel)
+                self.__fieldsDlg.show()
+            else:
+                self.reallySetLinesLayer()
 
     def __onFieldsCancel(self):
         """

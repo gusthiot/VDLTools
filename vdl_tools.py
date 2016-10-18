@@ -100,6 +100,7 @@ class VDLTools:
             tool.setAction(action)
             action.triggered.connect(tool.setTool)
             action.setEnabled(enable)
+            action.setCheckable(True)
         else:
             action.triggered.connect(tool.start)
         if inToolBar:

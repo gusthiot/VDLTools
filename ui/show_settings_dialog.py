@@ -28,6 +28,7 @@ from PyQt4.QtGui import (QDialog,
                          QLabel,
                          QComboBox)
 from qgis.core import (QgsMapLayer,
+                       QgsMapLayerRegistry,
                        QgsDataSourceURI,
                        QGis)
 from PyQt4.QtCore import QCoreApplication
@@ -67,7 +68,8 @@ class ShowSettingsDialog(QDialog):
         #         self.__tables.append(query.value(0))
         #     db.close()
 
-        for layer in self.__iface.mapCanvas().layers():
+        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+            print "on n'est plus en version 0.1"
             if layer is not None \
                 and layer.type() == QgsMapLayer.VectorLayer \
                     and layer.providerType() == "memory":

@@ -372,8 +372,10 @@ class ProfileDockWidget(QDockWidget):
             for j in xrange(self.__numLines):
                 if self.__profiles[i]['z'][j] is not None:
                     zz.append(j)
+            color = None
             if len(zz) == 2:
                 width = 3
+                color = QColor('red')
             else:
                 width = 1
 
@@ -382,6 +384,8 @@ class ProfileDockWidget(QDockWidget):
                 vertLine.setLineStyle(QwtPlotMarker.VLine)
                 pen = vertLine.linePen()
                 pen.setWidth(width)
+                if color:
+                    pen.setColor(color)
                 vertLine.setLinePen(pen)
                 vertLine.setXValue(self.__profiles[i]['l'])
                 label = vertLine.label()
