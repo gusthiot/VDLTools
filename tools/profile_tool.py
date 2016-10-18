@@ -60,7 +60,7 @@ class ProfileTool(QgsMapTool):
         self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
-        self.__isChoosed = False
+        self.__isChoosed = 0
         self.__lastFeatureId = None
         self.__lastFeature = None
         self.__dockWdg = None
@@ -120,12 +120,7 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.setIconSize(20)
 
     def closed(self):
-        self.__lineLayer.removeSelection()
-        self.__lastFeatureId = None
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
+        self.__cancel()
         self.__iface.actionPan().trigger()
 
     def deactivate(self):
@@ -163,6 +158,7 @@ class ProfileTool(QgsMapTool):
         pointLayers = self.__lineVertices()
         if len(pointLayers) > 0:
             self.__layDlg = ProfileLayersDialog(pointLayers)
+            self.__layDlg.rejected.connect(self.__cancel)
             self.__layDlg.okButton().clicked.connect(self.__onLayOk)
             self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
             self.__layDlg.show()
@@ -178,6 +174,7 @@ class ProfileTool(QgsMapTool):
         :param names: layers names
         """
         self.__msgDlg = ProfileMessageDialog(situations, differences, names, self.__points)
+        self.__msgDlg.rejected.connect(self.__cancel)
         self.__msgDlg.passButton().clicked.connect(self.__onMsgPass)
         self.__msgDlg.onLineButton().clicked.connect(self.__onMsgLine)
         self.__msgDlg.onPointsButton().clicked.connect(self.__onMsgPoints)
@@ -191,8 +188,9 @@ class ProfileTool(QgsMapTool):
         if origin == 0 and self.__lineLayer.isEditable() is False:
             self.__confDlg.setMessage(
                 QCoreApplication.translate("VDLTools","Do you really want to edit the LineString layer ?"))
+            self.__confDlg.rejected.connect(self.__cancel)
             self.__confDlg.okButton().clicked.connect(self.__onConfirmLine)
-            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmClose)
+            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
             self.__confDlg.show()
         elif origin != 0:
             situations = self.__msgDlg.getSituations()
@@ -224,27 +222,25 @@ class ProfileTool(QgsMapTool):
                     layerList.append(layer)
         return layerList
 
-    def __onMsgPass(self):
-        """
-        When the Pass button in Profile Message Dialog is pushed
-        """
-        self.__msgDlg.close()
+    def __cancel(self):
+        self.__lineLayer.removeSelection()
         self.__selectedIds = None
         self.__selectedDirections = None
         self.__startVertex = None
         self.__endVertex = None
         self.__inSelection = False
 
-    def __onConfirmClose(self):
+    def __onMsgPass(self):
+        """
+        When the Pass button in Profile Message Dialog is pushed
+        """
+        self.__msgDlg.reject()
+
+    def __onConfirmCancel(self):
         """
         When the Cancel button in Profile Confirm Dialog is pushed
         """
-        self.__confDlg.close()
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
-        self.__inSelection = False
+        self.__confDlg.reject()
 
     def __onMsgLine(self):
         """
@@ -262,7 +258,7 @@ class ProfileTool(QgsMapTool):
         """
         When the Line button in Profile Confirm Dialog is pushed
         """
-        self.__confDlg.close()
+        self.__confDlg.accept()
         self.__confirmLine()
 
     def __confirmLine(self):
@@ -280,7 +276,7 @@ class ProfileTool(QgsMapTool):
                     QCoreApplication.translate("VDLTools","There is more than one elevation for the point ") +
                     str(s['point']))
                 return
-        self.__msgDlg.close()
+        self.__msgDlg.accept()
         lines = []
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
@@ -303,25 +299,20 @@ class ProfileTool(QgsMapTool):
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
             self.__lineLayer.updateExtents()
         self.__dockWdg.clearData()
-        self.__lineLayer.removeSelection()
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
-        self.__inSelection = False
+        self.__cancel()
 
     def __onConfirmPoints(self):
         """
         When the Points button in Profile Confirm Dialog is pushed
         """
-        self.__confDlg.close()
+        self.__confDlg.accept()
         self.__confirmPoints()
 
     def __confirmPoints(self):
         """
         To change the elevations of certain points
         """
-        self.__msgDlg.close()
+        self.__msgDlg.accept()
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
         for s in situations:
@@ -339,24 +330,14 @@ class ProfileTool(QgsMapTool):
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
             layer.updateExtents()
         self.__dockWdg.clearData()
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
-        self.__inSelection = False
+        self.__cancel()
 
     def __onLayCancel(self):
         """
         When the Cancel button in Profile Layers Dialog is pushed
         """
-        self.__layDlg.close()
+        self.__layDlg.reject()
         self.__isChoosed = 0
-        self.__lineLayer.removeSelection()
-        self.__selectedIds = None
-        self.__selectedDirections = None
-        self.__startVertex = None
-        self.__endVertex = None
-        self.__inSelection = False
 
     def __lineVertices(self):
         availableLayers = self.__getPointLayers()
@@ -416,7 +397,7 @@ class ProfileTool(QgsMapTool):
         """
         When the Ok button in Profile Layers Dialog is pushed
         """
-        self.__layDlg.close()
+        self.__layDlg.accept()
         self.__layers = self.__layDlg.getLayers()
         self.__layOk()
 
@@ -453,6 +434,7 @@ class ProfileTool(QgsMapTool):
             names.append(layer.name())
         self.__calculateProfile(names)
         self.__isChoosed = 0
+        self.__cancel()
 
     @staticmethod
     def contains(line, point):
@@ -487,12 +469,7 @@ class ProfileTool(QgsMapTool):
                         self.__lastFeatureId = f_l[0].id()
                         self.__lineLayer.setSelectedFeatures([f_l[0].id()])
                     if f_l is None:
-                        self.__lineLayer.removeSelection()
-                        self.__lastFeatureId = None
-                        self.__selectedIds = None
-                        self.__selectedDirections = None
-                        self.__startVertex = None
-                        self.__endVertex = None
+                        self.__cancel()
                 else:
                     if f_l is not None and (not self.__selectedIds or f_l[0].id() not in self.__selectedIds):
                         line = f_l[0].geometry().asPolyline()
@@ -632,8 +609,4 @@ class ProfileTool(QgsMapTool):
 
             self.__msgDlg.show()
         else:
-            self.__selectedIds = None
-            self.__selectedDirections = None
-            self.__startVertex = None
-            self.__endVertex = None
-            self.__inSelection = False
+            self.__cancel()

@@ -102,7 +102,7 @@ class ShowSettings:
         """
         When the Ok button in Show Settings Dialog is pushed
         """
-        self.__showDlg.close()
+        self.__showDlg.accept()
         self.setLinesLayer(self.__showDlg.linesLayer())
         self.setPointsLayer(self.__showDlg.pointsLayer())
         self.setConfigTable(self.__showDlg.configTable())
@@ -111,7 +111,7 @@ class ShowSettings:
         """
         When the Cancel button in Show Settings Dialog is pushed
         """
-        self.__showDlg.close()
+        self.__showDlg.reject()
 
     def __memoryLinesLayerDeleted(self):
         """
@@ -174,6 +174,7 @@ class ShowSettings:
             if "distance" not in fieldsNames or "x" not in fieldsNames or "y" not in fieldsNames:
                 self.__fieldnames = fieldsNames
                 self.__fieldsDlg = FieldsSettingsDialog()
+                self.__fieldsDlg.rejected.connect(self.__cancel)
                 self.__fieldsDlg.okButton().clicked.connect(self.__onFieldsOk)
                 self.__fieldsDlg.butButton().clicked.connect(self.__onFieldsBut)
                 self.__fieldsDlg.cancelButton().clicked.connect(self.__onFieldsCancel)
@@ -185,14 +186,16 @@ class ShowSettings:
         """
         When the Cancel button in Fields Settings Dialog is pushed
         """
-        self.__fieldsDlg.close()
+        self.__fieldsDlg.reject()
+
+    def __cancel(self):
         self.__linesLayer = None
 
     def __onFieldsOk(self):
         """
         When the Ok button in Fields Settings Dialog is pushed
         """
-        self.__fieldsDlg.close()
+        self.__fieldsDlg.accept()
         with edit(self.__linesLayer):
             if "distance" not in self.__fieldnames:
                 self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
@@ -206,7 +209,7 @@ class ShowSettings:
         """
         When the Without Fields button in Fields Settings Dialog is pushed
         """
-        self.__fieldsDlg.close()
+        self.__fieldsDlg.accept()
         self.reallySetLinesLayer()
 
     def reallySetLinesLayer(self):
@@ -219,7 +222,7 @@ class ShowSettings:
             layer_id = self.__linesLayer.id()
             self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", layer_id)
-        self.__linesLayer = None
+        self.__cancel()
 
     def setConfigTable(self, configTable):
         """

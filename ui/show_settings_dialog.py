@@ -69,7 +69,6 @@ class ShowSettingsDialog(QDialog):
         #     db.close()
 
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-            print "on n'est plus en version 0.1"
             if layer is not None \
                 and layer.type() == QgsMapLayer.VectorLayer \
                     and layer.providerType() == "memory":

@@ -278,11 +278,13 @@ class MoveTool(QgsMapTool):
         new_line_v2.setPoints(points)
         return new_line_v2
 
-    def __onConfirmClose(self):
+    def __onConfirmCancel(self):
         """
         When the Cancel button in Move Confirm Dialog is pushed
         """
-        self.__confDlg.close()
+        self.__confDlg.reject()
+
+    def __cancel(self):
         self.__rubberBand.reset()
         self.__rubberSnap.reset()
         self.__isEditing = 0
@@ -305,7 +307,8 @@ class MoveTool(QgsMapTool):
                 QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
         self.__layer.updateExtents()
-        self.__onConfirmClose()
+        self.__confDlg.accept()
+        self.__cancel()
 
     def __onConfirmCopy(self):
         """
@@ -328,7 +331,8 @@ class MoveTool(QgsMapTool):
         else:
             self.__layer.addFeature(feature)
         self.__layer.updateExtents()
-        self.__onConfirmClose()
+        self.__confDlg.accept()
+        self.__cancel()
 
     def canvasMoveEvent(self, event):
         """
@@ -439,7 +443,8 @@ class MoveTool(QgsMapTool):
                 self.__rubberBand.setIcon(4)
                 self.__rubberBand.setIconSize(20)
             self.__confDlg = MoveConfirmDialog()
+            self.__confDlg.rejected.connect(self.__cancel)
             self.__confDlg.moveButton().clicked.connect(self.__onConfirmMove)
             self.__confDlg.copyButton().clicked.connect(self.__onConfirmCopy)
-            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmClose)
+            self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
             self.__confDlg.show()

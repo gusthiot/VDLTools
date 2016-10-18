@@ -104,6 +104,7 @@ class ImportMeasures:
                 jobs.append(query.value(0))
 
             self.__jobsDlg = ImportJobsDialog(jobs)
+            self.__jobsDlg.rejected.connect(self.__cancel)
             self.__jobsDlg.okButton().clicked.connect(self.__onOk)
             self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
             self.__jobsDlg.show()
@@ -113,23 +114,19 @@ class ImportMeasures:
         When the Ok button in Import Jobs Dialog is pushed
         """
         job = self.__jobsDlg.job()
-        self.__jobsDlg.close()
-        self.__jobsDlg.okButton().clicked.disconnect(self.__onOk)
-        self.__jobsDlg.cancelButton().clicked.disconnect(self.__onCancel)
+        self.__jobsDlg.accept()
         query = self.__db.exec_("""SELECT 1,2,3 FROM """ + self.__sourceTable + """ WHERE job = '""" + job + """'""")
         while query.next():
             pass # then traiter les records du job...
 
-
+    def __cancel(self):
+        self.__db.close()
 
     def __onCancel(self):
         """
         When the Cancel button in Import Jobs Dialog is pushed
         """
-        self.__jobsDlg.close()
-        self.__jobsDlg.okButton().clicked.disconnect(self.__onOk)
-        self.__jobsDlg.cancelButton().clicked.disconnect(self.__onCancel)
-        self.__db.close()
+        self.__jobsDlg.reject()
 
 
 

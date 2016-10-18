@@ -216,7 +216,8 @@ class InterpolateTool(QgsMapTool):
                 self.__lastFeatureId = None
         elif self.__findVertex:
             self.__rubber.reset()
-            match = Finder.snap(event.mapPoint(), self.__canvas)
+            snap_layers = Finder.getLayersSettings(self.__canvas, [QGis.Line, QGis.Polygon], QgsPointLocator.All)
+            match = Finder.snap(event.mapPoint(), self.__canvas, snap_layers, QgsSnappingUtils.SnapAdvanced)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
@@ -255,7 +256,8 @@ class InterpolateTool(QgsMapTool):
                 self.__findVertex = 1
         elif self.__findVertex:
             self.__rubber.reset()
-            match = Finder.snap(event.mapPoint(), self.__canvas)
+            snap_layers = Finder.getLayersSettings(self.__canvas, [QGis.Line, QGis.Polygon], QgsPointLocator.All)
+            match = Finder.snap(event.mapPoint(), self.__canvas, snap_layers, QgsSnappingUtils.SnapAdvanced)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 ok = False
@@ -286,6 +288,7 @@ class InterpolateTool(QgsMapTool):
                             self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
                             self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
                             self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
+                        self.__confDlg.rejected.connect(self.__cancel)
                         self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
                         self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
                         self.__confDlg.show()
@@ -296,10 +299,13 @@ class InterpolateTool(QgsMapTool):
         """
         When the Cancel button in Interpolate Confirm Dialog is pushed
         """
-        self.__confDlg.close()
+        self.__confDlg.reject()
+
+    def __cancel(self):
         self.__lastLayer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None
+        self.__selectedFeature = None
         self.__isEditing = False
 
     def __onConfirmOk(self):
@@ -307,7 +313,7 @@ class InterpolateTool(QgsMapTool):
         When the Ok button in Interpolate Confirm Dialog is pushed
         """
         id = self.__confDlg.getCheckedId()
-        self.__confDlg.close()
+        self.__confDlg.accept()
 
         withVertex = True
         withPoint = True
@@ -354,8 +360,3 @@ class InterpolateTool(QgsMapTool):
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-        self.__lastLayer.removeSelection()
-        self.__rubber.reset()
-        self.__lastFeatureId = None
-        self.__selectedFeature = None
-        self.__isEditing = False

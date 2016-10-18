@@ -165,20 +165,23 @@ class DuplicateTool(QgsMapTool):
         :param isComplexPolygon: for a polygon, if it has interior ring(s)
         """
         self.__dstDlg = DuplicateDistanceDialog(isComplexPolygon)
+        self.__dstDlg.rejected.connect(self.__cancel)
         self.__dstDlg.previewButton().clicked.connect(self.__onDstPreview)
         self.__dstDlg.okButton().clicked.connect(self.__onDstOk)
         self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
         self.__dstDlg.directionCheck().stateChanged.connect(self.__onDstPreview)
 
-    def __onDstCancel(self):
-        """
-        When the Cancel button in Duplicate Distance Dialog is pushed
-        """
-        self.__dstDlg.close()
+    def __cancel(self):
         self.__isEditing = 0
         self.__canvas.scene().removeItem(self.__rubberBand)
         self.__rubberBand = None
         self.__layer.removeSelection()
+
+    def __onDstCancel(self):
+        """
+        When the Cancel button in Duplicate Distance Dialog is pushed
+        """
+        self.__dstDlg.reject()
 
     @staticmethod
     def newPoint(angle, point, distance):
@@ -339,14 +342,13 @@ class DuplicateTool(QgsMapTool):
         When the Ok button in Duplicate Distance Dialog is pushed
         """
         self.__onDstPreview()
-        self.__dstDlg.close()
+        self.__dstDlg.accept()
         self.__canvas.scene().removeItem(self.__rubberBand)
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","Geos geometry problem"),
                                                   level=QgsMessageBar.CRITICAL)
-        self.__rubberBand = None
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
@@ -359,8 +361,7 @@ class DuplicateTool(QgsMapTool):
         else:
             self.__layer.addFeature(feature)
         self.__layer.updateExtents()
-        self.__isEditing = 0
-        self.__layer.removeSelection()
+        self.__cancel()
 
     def canvasMoveEvent(self, event):
         """

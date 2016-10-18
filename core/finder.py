@@ -23,6 +23,7 @@
 
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
+                       QGis,
                        QgsVectorLayer,
                        QgsTolerance,
                        QgsPointLocator,
@@ -185,6 +186,27 @@ class Finder:
             return None
 
     @staticmethod
+    def getLayersSettings(mapCanvas, types, snapType=None):
+        snap_layers = []
+        for layer in mapCanvas.layers():
+            if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
+                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                    QgsProject.instance().snapSettingsForLayer(layer.id())
+                if isinstance(layer, QgsVectorLayer) and enabled:
+                    if snapType is None:
+                        if snappingType == QgsSnapper.SnapToVertex:
+                            snap_type = QgsPointLocator.Vertex
+                        elif snappingType == QgsSnapper.SnapToSegment:
+                            snap_type = QgsPointLocator.Edge
+                        else:
+                            snap_type = QgsPointLocator.All
+                    else:
+                        snap_type = snapType
+                    snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
+        return snap_layers
+
+
+    @staticmethod
     def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, featureId=None):
         """
         To snap on curved intersections
@@ -194,37 +216,19 @@ class Finder:
         :param featureId: if we want to snap on a given feature
         :return: intersection point
         """
-        snap_layers = []
-        for layer in mapCanvas.layers():
-            types = [0, 1, 2]
-            if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
-                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                    QgsProject.instance().snapSettingsForLayer(layer.id())
-                if isinstance(layer, QgsVectorLayer) and enabled:
-                    if snappingType == QgsSnapper.SnapToVertex:
-                        snap_type = QgsPointLocator.Vertex
-                    elif snappingType == QgsSnapper.SnapToSegment:
-                        snap_type = QgsPointLocator.Edge
-                    else:
-                        snap_type = QgsPointLocator.All
-                    snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
-
+        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Point, QGis.Line, QGis.Polygon])
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         if len(features) > 1:
             if len(features) > 2:
-                one = [-1, 9999999]
-                two = [-1, 9999999]
                 for i in xrange(len(features)):
-                    d = Finder.sqrDistForPoints(mapPoint, features[i].geometry().asPoint())
-                    if d > one[1]:
-                        two = one
-                        one[0] = i
-                        one[1] = d
-                    elif d > two[1]:
-                        two[0] = i
-                        two[1] = d
-                feat1 = features[one[0]]
-                feat2 = features[two[0]]
+                    for j in xrange(i, len(features)):
+                        feat1 = features[i]
+                        feat2 = features[j]
+                        if not featureId or feat1.id() == featureId or feat2.id() == featureId:
+                            intersect = Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
+                            if intersect is not None:
+                                return intersect
+                return None
             else:
                 feat1 = features[0]
                 feat2 = features[1]

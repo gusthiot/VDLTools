@@ -95,6 +95,7 @@ class IntersectTool(QgsMapTool):
         :param mapPoint: radius of the circle
         """
         self.__dstDlg = IntersectDistanceDialog(mapPoint)
+        self.__dstDlg.rejected.connect(self.__cancel)
         self.__dstDlg.okButton().clicked.connect(self.__onDstOk)
         self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
         self.__dstDlg.observation().setValue(6.0)
@@ -105,7 +106,6 @@ class IntersectTool(QgsMapTool):
         """
         When the Ok button in Intersect Distance Dialog is pushed
         """
-        self.__rubber.reset()
         observation = float(self.__dstDlg.observation().text())
         circle = QgsCircularStringV2()
         x = self.__dstDlg.mapPoint().x()
@@ -138,14 +138,16 @@ class IntersectTool(QgsMapTool):
         pointLayer.updateExtents()
         pointLayer.commitChanges()
 
-        self.__isEditing = False
-        self.__dstDlg.close()
+        self.__dstDlg.accept()
+        self.__cancel()
 
     def __onDstCancel(self):
         """
         When the Cancel button in Intersect Distance Dialog is pushed
         """
-        self.__dstDlg.close()
+        self.__dstDlg.reject()
+
+    def __cancel(self):
         self.__rubber.reset()
         self.__isEditing = False
 

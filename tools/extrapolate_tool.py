@@ -225,6 +225,7 @@ class ExtrapolateTool(QgsMapTool):
                     self.__elevation = pt0.z() + (1 + small_d/big_d) * (pt1.z() - pt0.z())
                     if pt.z() is not None and pt.z() != 0:
                         self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
+                        self.__confDlg.rejected.connect(self.__cancel)
                         self.__confDlg.okButton().clicked.connect(self.__onEditOk)
                         self.__confDlg.cancelButton().clicked.connect(self.__onEditCancel)
                         self.__confDlg.show()
@@ -238,20 +239,22 @@ class ExtrapolateTool(QgsMapTool):
         """
         When the Ok button in Extrapolate Confirm Dialog is pushed
         """
-        self.__confDlg.close()
+        self.__confDlg.accept()
         self.__edit()
 
     def __onEditCancel(self):
         """
         When the Cancel button in Extrapolate Confirm Dialog is pushed
         """
-        self.__confDlg.close()
+        self.__confDlg.reject()
+
+    def __cancel(self):
+        self.__layer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__selectedVertex = None
         self.__isEditing = False
-
 
     def __edit(self):
         """
@@ -260,9 +263,4 @@ class ExtrapolateTool(QgsMapTool):
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         line_v2.setZAt(self.__selectedVertex, self.__elevation)
         self.__layer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-        self.__layer.removeSelection()
-        self.__rubber.reset()
-        self.__lastFeatureId = None
-        self.__selectedFeature = None
-        self.__selectedVertex = None
-        self.__isEditing = False
+        self.__cancel()
