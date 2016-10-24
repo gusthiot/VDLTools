@@ -226,7 +226,7 @@ class Finder:
                         feat2 = features[j]
                         if not featureId or feat1.id() == featureId or feat2.id() == featureId:
                             intersect = Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
-                            if intersect is not None:
+                            if intersect:
                                 return intersect
                 return None
             else:

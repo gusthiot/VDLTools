@@ -103,6 +103,7 @@ class ExtrapolateTool(QgsMapTool):
         When the action is deselected
         """
         self.__cancel()
+        self.__rubber = None
         QgsMapTool.deactivate(self)
 
     def startEditing(self):
@@ -125,10 +126,7 @@ class ExtrapolateTool(QgsMapTool):
 
     def __cancel(self):
         self.__layer.removeSelection()
-        if self.__rubber:
-            self.__canvas.scene().removeItem(self.__rubber)
-            self.__rubber.reset()
-            self.__rubber = None
+        self.__rubber.reset()
         self.__lastFeatureId = None
         self.__confDlg = None
         self.__selectedFeature = None
@@ -140,7 +138,7 @@ class ExtrapolateTool(QgsMapTool):
         """
         To remove the current working layer
         """
-        if self.__layer is not None:
+        if self.__layer:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -152,14 +150,12 @@ class ExtrapolateTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None\
-                and isinstance(layer, QgsVectorLayer)\
+        if layer and isinstance(layer, QgsVectorLayer)\
                 and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
-
             if layer == self.__layer:
                 return
 
-            if self.__layer is not None:
+            if self.__layer:
                 self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -187,7 +183,7 @@ class ExtrapolateTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l is not None:
+            if f_l:
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
                 self.__rubber.reset()
@@ -232,7 +228,7 @@ class ExtrapolateTool(QgsMapTool):
                     self.__isEditing = True
                     self.__selectedFeature = found_features[0]
                     self.__elevation = pt0.z() + (1 + small_d/big_d) * (pt1.z() - pt0.z())
-                    if pt.z() is not None and pt.z() != 0:
+                    if pt.z() and pt.z() != 0:
                         self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
                         self.__confDlg.rejected.connect(self.__cancel)
                         self.__confDlg.okButton().clicked.connect(self.__onEditOk)
@@ -242,7 +238,8 @@ class ExtrapolateTool(QgsMapTool):
                         self.__edit()
                 else:
                     self.__iface.messageBar().pushMessage(
-                        QCoreApplication.translate("VDLTools", "The segment is too big"), level=QgsMessageBar.INFO)
+                        QCoreApplication.translate("VDLTools", "The segment is too big"), level=QgsMessageBar.INFO,
+                        duration=5)
 
     def __onEditOk(self):
         """

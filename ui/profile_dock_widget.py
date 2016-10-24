@@ -370,7 +370,7 @@ class ProfileDockWidget(QDockWidget):
         for i in xrange(len(self.__profiles)):
             zz = []
             for j in xrange(self.__numLines):
-                if self.__profiles[i]['z'][j] is not None:
+                if self.__profiles[i]['z'][j]:
                     zz.append(j)
             color = None
             if len(zz) == 2:
@@ -583,7 +583,7 @@ class ProfileDockWidget(QDockWidget):
             if self.__marker:
                 self.__canvas.scene().removeItem(self.__marker)
             try:
-                if self.__vline is not None:
+                if self.__vline:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
             except Exception, e:
@@ -596,7 +596,7 @@ class ProfileDockWidget(QDockWidget):
         """
         if event.xdata:
             try:
-                if self.__vline is not None:
+                if self.__vline:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
             except Exception, e:
                 print("Mouse event exception : " +str(e))
@@ -643,19 +643,19 @@ class ProfileDockWidget(QDockWidget):
         When the dock widget is closed
         :param event: close event
         """
-        if self.__maxSpin is not None:
+        if self.__maxSpin:
             self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__maxSpin = None
-        if self.__minSpin is not None:
+        if self.__minSpin:
             self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__minSpin = None
-        if self.__saveButton is not None:
+        if self.__saveButton:
             self.__saveButton.clicked.disconnect(self.__save)
             self.__saveButton = None
-        if self.__libCombo is not None:
+        if self.__libCombo:
             self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
             self.__libCombo = None
         self.closeSignal.emit()
-        if self.__marker is not None:
+        if self.__marker:
             self.__marker.hide()
         QDockWidget.closeEvent(self, event)

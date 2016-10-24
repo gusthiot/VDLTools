@@ -118,6 +118,7 @@ class InterpolateTool(QgsMapTool):
         When the action is deselected
         """
         self.__cancel()
+        self.__rubber = None
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__canvas.scaleChanged.disconnect(self.__updateList)
         QgsMapTool.deactivate(self)
@@ -141,13 +142,10 @@ class InterpolateTool(QgsMapTool):
             self.__iface.actionPan().trigger()
 
     def __cancel(self):
-        if self.__lastLayer is not None:
+        if self.__lastLayer:
             self.__lastLayer.removeSelection()
             self.__lastLayer = None
-        if self.__rubber:
-            self.__canvas.scene().removeItem(self.__rubber)
-            self.__rubber.reset()
-            self.__rubber = None
+        self.__rubber.reset()
         self.__lastFeatureId = None
         self.__selectedFeature = None
         self.__isEditing = False
@@ -158,7 +156,7 @@ class InterpolateTool(QgsMapTool):
         """
         To remove the current working layer
         """
-        if self.__layer is not None:
+        if self.__layer:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -170,14 +168,11 @@ class InterpolateTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None \
-                and isinstance(layer, QgsVectorLayer) \
-                and layer.geometryType() == QGis.Point:
-
+        if layer and isinstance(layer, QgsVectorLayer) and layer.geometryType() == QGis.Point:
             if layer == self.__layer:
                 return
 
-            if self.__layer is not None:
+            if self.__layer:
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
@@ -208,22 +203,26 @@ class InterpolateTool(QgsMapTool):
                         self.__layerList.append(QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, 10,
                                                                              QgsTolerance.Pixels))
 
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.__cancel()
+
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
-        if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
+        if not self.__isEditing and not self.__findVertex and self.__layerList:
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, self.__layerList)
 
-            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+            if f_l and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
                 self.__lastFeatureId = f.id()
-                if self.__lastLayer is not None:
+                if self.__lastLayer:
                     self.__lastLayer.removeSelection()
                 self.__lastLayer = f_l[1]
                 self.__lastLayer.setSelectedFeatures([f.id()])
-            if f_l is None and self.__lastLayer is not None:
+            if f_l is None and self.__lastLayer:
                 self.__lastLayer.removeSelection()
                 self.__lastFeatureId = None
         elif self.__findVertex:
@@ -257,7 +256,7 @@ class InterpolateTool(QgsMapTool):
         When the mouse is clicked
         :param event: mouse event
         """
-        if self.__lastLayer is not None and not self.__findVertex:
+        if self.__lastLayer and not self.__findVertex:
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) < 1:
@@ -265,6 +264,11 @@ class InterpolateTool(QgsMapTool):
                                                           level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
+
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools",
+                                               "Select the position for interpolation (ESC to undo)"),
+                    level=QgsMessageBar.INFO, duration=3)
                 self.__findVertex = 1
         elif self.__findVertex:
             self.__rubber.reset()

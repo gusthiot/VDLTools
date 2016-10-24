@@ -64,9 +64,7 @@ class ShowSettings:
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
         if mpl_id != -1 or mll_id != -1:
             for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-                if layer is not None  \
-                    and layer.type() == QgsMapLayer.VectorLayer \
-                        and layer.providerType() == "memory":
+                if layer and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
                     if layer.geometryType() == QGis.Point:
                         if layer.id() == mpl_id:
                             self.__memoryPointsLayer = layer
@@ -155,7 +153,7 @@ class ShowSettings:
         """
         self.__memoryPointsLayer = pointsLayer
         id = None
-        if pointsLayer is not None:
+        if pointsLayer:
             id = pointsLayer.id()
             self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", id)
@@ -166,7 +164,7 @@ class ShowSettings:
         :param linesLayer: memory lines layer to save
         """
         self.__linesLayer = linesLayer
-        if linesLayer is not None:
+        if linesLayer:
             fields = self.__linesLayer.pendingFields()
             fieldsNames = []
             for pos in range(fields.count()):
@@ -218,7 +216,7 @@ class ShowSettings:
         """
         self.__memoryLinesLayer = self.__linesLayer
         layer_id = None
-        if self.__linesLayer is not None:
+        if self.__linesLayer:
             layer_id = self.__linesLayer.id()
             self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", layer_id)

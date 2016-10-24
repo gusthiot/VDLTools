@@ -60,7 +60,7 @@ class ProfileTool(QgsMapTool):
         self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
-        self.__isChoosed = 0
+        self.__isChoosed = False
         self.__lastFeatureId = None
         self.__lastFeature = None
         self.__dockWdg = None
@@ -127,33 +127,35 @@ class ProfileTool(QgsMapTool):
         """
         When the action is deselected
         """
-        if self.__rubberSit:
-            self.__canvas.scene().removeItem(self.__rubberSit)
-            self.__rubberSit.reset()
-            self.__rubberSit = None
-        if self.__rubberDif:
-            self.__canvas.scene().removeItem(self.__rubberDif)
-            self.__rubberDif.reset()
-            self.__rubberDif = None
-        if self.__dockWdg is not None:
+        self.__canvas.scene().removeItem(self.__rubberSit)
+        self.__rubberSit.reset()
+        self.__rubberSit = None
+        self.__canvas.scene().removeItem(self.__rubberDif)
+        self.__rubberDif.reset()
+        self.__rubberDif = None
+        if self.__dockWdg:
             self.__dockWdg.close()
-        if QgsMapTool is not None:
-            QgsMapTool.deactivate(self)
+        QgsMapTool.deactivate(self)
 
     def __cancel(self):
         self.__lineLayer.removeSelection()
+        self.__lastFeatureId = None
+        self.__lastFeature = None
         self.__selectedIds = None
         self.__selectedDirections = None
         self.__startVertex = None
         self.__endVertex = None
         self.__inSelection = False
+        self.__layDlg = None
+        self.__msgDlg = None
+        self.__confDlg = None
 
     def setEnable(self, layer):
         """
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
+        if layer and layer.type() == QgsMapLayer.VectorLayer and \
                         QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             self.__lineLayer = layer
             self.action().setEnabled(True)
@@ -161,7 +163,7 @@ class ProfileTool(QgsMapTool):
         self.action().setEnabled(False)
         if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
-        if self.__dockWdg is not None:
+        if self.__dockWdg:
             self.__dockWdg.close()
         self.__lineLayer = None
 
@@ -293,7 +295,7 @@ class ProfileTool(QgsMapTool):
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']+num_lines-1]
             for i in xrange(num_lines):
-                if self.__points[s['point']]['z'][i] is not None:
+                if self.__points[s['point']]['z'][i]:
                     index = s['point']-self.__selectedStarts[i]
                     if self.__selectedDirections[i] is False:
                         index = lines[i].numPoints()-1-index
@@ -303,7 +305,7 @@ class ProfileTool(QgsMapTool):
         for i in xrange(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
-            self.__lineLayer.updateExtents()
+            # self.__lineLayer.updateExtents()
         self.__dockWdg.clearData()
         self.__cancel()
 
@@ -327,14 +329,14 @@ class ProfileTool(QgsMapTool):
             point_v2 = GeometryV2.asPointV2(point.geometry())
             newZ = point_v2.z()
             for i in xrange(num_lines):
-                if self.__points[s['point']]['z'][i] is not None:
+                if self.__points[s['point']]['z'][i]:
                     newZ = self.__points[s['point']]['z'][i]
                     break
             point_v2.setZ(newZ)
             if not layer.isEditable():
                 layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
-            layer.updateExtents()
+            # layer.updateExtents()
         self.__dockWdg.clearData()
         self.__cancel()
 
@@ -343,7 +345,7 @@ class ProfileTool(QgsMapTool):
         When the Cancel button in Profile Layers Dialog is pushed
         """
         self.__layDlg.reject()
-        self.__isChoosed = 0
+        self.__isChoosed = False
 
     def __lineVertices(self):
         availableLayers = self.__getPointLayers()
@@ -393,7 +395,7 @@ class ProfileTool(QgsMapTool):
                                                                    QgsTolerance.LayerUnits)
                         f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
                                                     [laySettings])
-                        if f_l is not None:
+                        if f_l:
                             if layer not in pointLayers:
                                 pointLayers.append(layer)
             num += 1
@@ -439,7 +441,7 @@ class ProfileTool(QgsMapTool):
         for layer in self.__layers:
             names.append(layer.name())
         self.__calculateProfile(names)
-        self.__isChoosed = 0
+        self.__isChoosed = False
         self.__cancel()
 
     def __contains(self, line, point):
@@ -458,25 +460,29 @@ class ProfileTool(QgsMapTool):
             pos += 1
         return -1
 
+    def keyReleaseEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            self.__cancel()
+
     def canvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
         """
         if not self.__isChoosed:
-            if self.__lineLayer is not None:
+            if self.__lineLayer:
                 laySettings = QgsSnappingUtils.LayerConfig(self.__lineLayer, QgsPointLocator.All, 10,
                                                            QgsTolerance.Pixels)
                 f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
                 if not self.__inSelection:
-                    if f_l is not None and self.__lastFeatureId != f_l[0].id():
+                    if f_l and self.__lastFeatureId != f_l[0].id():
                         self.__lastFeature = f_l[0]
                         self.__lastFeatureId = f_l[0].id()
                         self.__lineLayer.setSelectedFeatures([f_l[0].id()])
                     if f_l is None:
                         self.__cancel()
                 else:
-                    if f_l is not None and (not self.__selectedIds or f_l[0].id() not in self.__selectedIds):
+                    if f_l and (not self.__selectedIds or f_l[0].id() not in self.__selectedIds):
                         line = f_l[0].geometry().asPolyline()
                         if self.__contains(line, self.__endVertex) > -1:
                             self.__lastFeature = f_l[0]
@@ -495,10 +501,11 @@ class ProfileTool(QgsMapTool):
                             self.__lastFeatureId = None
                             self.__lastFeature = None
 
-                    if f_l is None and self.__selectedIds is not None:
+                if f_l is None:
+                    if self.__selectedIds:
                         self.__lineLayer.setSelectedFeatures(self.__selectedIds)
-                        self.__lastFeatureId = None
-                        self.__lastFeature = None
+                    self.__lastFeatureId = None
+                    self.__lastFeature = None
 
     def canvasReleaseEvent(self, event):
         """
@@ -509,12 +516,17 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.reset()
         if event.button() == Qt.RightButton:
             if self.__lineLayer.selectedFeatures() and self.__selectedIds:
-                self.__isChoosed = 1
+                self.__isChoosed = True
                 self.__setLayerDialog()
         elif event.button() == Qt.LeftButton:
             if self.__lastFeature and (not self.__selectedIds or self.__lastFeature.id() not in self.__selectedIds):
                 self.__inSelection = True
                 line = self.__lastFeature.geometry().asPolyline()
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools",
+                                               "Select more lines with click left or process "
+                                               "with click right (ESC to undo)"),
+                    level=QgsMessageBar.INFO, duration=3)
                 if self.__selectedIds is None:
                     self.__selectedIds = []
                     self.__startVertex = line[0]
@@ -565,7 +577,7 @@ class ProfileTool(QgsMapTool):
             num_lines = len(self.__selectedIds)
             zz = []
             for i in xrange(num_lines):
-                if pt['z'][i] is not None:
+                if pt['z'][i]:
                     zz.append(i)
             if len(zz) == 0:
                 self.__iface.messageBar().pushMessage(

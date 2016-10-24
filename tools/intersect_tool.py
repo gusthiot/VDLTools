@@ -99,13 +99,11 @@ class IntersectTool(QgsMapTool):
         When the action is deselected
         """
         self.__cancel()
+        self.__rubber = None
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
-        if self.__rubber:
-            self.__canvas.scene().removeItem(self.__rubber)
-            self.__rubber.reset()
-            self.__rubber = None
+        self.__rubber.reset()
         self.__isEditing = False
 
     def setOwnSettings(self, settings):
@@ -152,7 +150,7 @@ class IntersectTool(QgsMapTool):
         if "y" in fieldsNames:
             feature.setAttribute("y", self.__dstDlg.mapPoint().y())
         lineLayer.addFeature(feature)
-        lineLayer.updateExtents()
+        # lineLayer.updateExtents()
         lineLayer.commitChanges()
 
         # center
@@ -160,8 +158,9 @@ class IntersectTool(QgsMapTool):
         pointLayer.startEditing()
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry().fromPoint(self.__dstDlg.mapPoint()))
-        pointLayer.addFeature(feature)
-        pointLayer.updateExtents()
+        fields = pointLayer.pendingFields()
+        feature.setFields(fields)
+        # pointLayer.updateExtents()
         pointLayer.commitChanges()
 
         self.__dstDlg.accept()
@@ -218,8 +217,8 @@ class IntersectTool(QgsMapTool):
         To get the line layer to create the circle
         :return: a line layer
         """
-        if self.__ownSettings is not None:
-            if self.__ownSettings.linesLayer() is not None:
+        if self.__ownSettings:
+            if self.__ownSettings.linesLayer():
                 layer = self.__ownSettings.linesLayer()
                 self.__lineLayerID = layer.id()
                 return layer
@@ -231,7 +230,7 @@ class IntersectTool(QgsMapTool):
             QgsMapLayerRegistry.instance().addMapLayer(layer)
             layer.layerDeleted.connect(self.__lineLayerDeleted)
             self.__lineLayerID = layer.id()
-            if self.__ownSettings is not None:
+            if self.__ownSettings:
                 self.__ownSettings.setLinesLayer(layer)
         else:
             self.__iface.legendInterface().setLayerVisible(layer, True)
@@ -248,8 +247,8 @@ class IntersectTool(QgsMapTool):
         To get the point layer to create the center
         :return: a point layer
         """
-        if self.__ownSettings is not None:
-            if self.__ownSettings.pointsLayer() is not None:
+        if self.__ownSettings:
+            if self.__ownSettings.pointsLayer():
                 layer = self.__ownSettings.pointsLayer()
                 self.__pointLayerID = layer.id()
                 return layer
@@ -260,7 +259,7 @@ class IntersectTool(QgsMapTool):
             QgsMapLayerRegistry.instance().addMapLayer(layer)
             layer.layerDeleted.connect(self.__pointLayerDeleted)
             self.__pointLayerID = layer.id()
-            if self.__ownSettings is not None:
+            if self.__ownSettings:
                 self.__ownSettings.setPointsLayer(layer)
         else:
             self.__iface.legendInterface().setLayerVisible(layer, True)

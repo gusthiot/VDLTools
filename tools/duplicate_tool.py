@@ -141,7 +141,7 @@ class DuplicateTool(QgsMapTool):
         """
         To remove the current working layer
         """
-        if self.__layer is not None:
+        if self.__layer:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -154,14 +154,11 @@ class DuplicateTool(QgsMapTool):
         :param layer: selected layer
         """
         types = [QGis.Line, QGis.Polygon]
-        if layer is not None\
-                and isinstance(layer, QgsVectorLayer)\
-                and layer.geometryType() in types:
-
+        if layer and isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
             if layer == self.__layer:
                 return
 
-            if self.__layer is not None:
+            if self.__layer:
                 self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -360,7 +357,6 @@ class DuplicateTool(QgsMapTool):
         """
         self.__onDstPreview()
         self.__dstDlg.accept()
-        self.__canvas.scene().removeItem(self.__rubberBand)
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
@@ -377,7 +373,7 @@ class DuplicateTool(QgsMapTool):
             self.__iface.openFeatureForm(self.__layer, feature)
         else:
             self.__layer.addFeature(feature)
-        self.__layer.updateExtents()
+        # self.__layer.updateExtents()
         self.__cancel()
 
     def canvasMoveEvent(self, event):
@@ -389,7 +385,7 @@ class DuplicateTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l is not None and self.__lastFeatureId != f_l[0].id():
+            if f_l and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
             if f_l is None:
