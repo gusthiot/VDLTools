@@ -290,7 +290,9 @@ class ProfileDockWidget(QDockWidget):
                     curve.setPen(QPen(color, 3))
                     if i > (self.__numLines-1):
                         curve.setStyle(QwtPlotCurve.Dots)
-                        curve.setPen(QPen(color, 8))
+                        pen = QPen(color, 8)
+                        pen.setCapStyle(Qt.RoundCap)
+                        curve.setPen(pen)
                     curve.attach(self.__plotWdg)
 
             elif self.__lib == 'Matplotlib':

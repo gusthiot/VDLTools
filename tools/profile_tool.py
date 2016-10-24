@@ -190,7 +190,7 @@ class ProfileTool(QgsMapTool):
         :param names: layers names
         """
         self.__msgDlg = ProfileMessageDialog(situations, differences, names, self.__points)
-        self.__msgDlg.rejected.connect(self.__cancel)
+        self.__msgDlg.rejected.connect(self.__checkZeros)
         self.__msgDlg.passButton().clicked.connect(self.__onMsgPass)
         self.__msgDlg.onLineButton().clicked.connect(self.__onMsgLine)
         self.__msgDlg.onPointsButton().clicked.connect(self.__onMsgPoints)
@@ -204,7 +204,7 @@ class ProfileTool(QgsMapTool):
         if origin == 0 and self.__lineLayer.isEditable() is False:
             self.__confDlg.setMessage(
                 QCoreApplication.translate("VDLTools","Do you really want to edit the LineString layer ?"))
-            self.__confDlg.rejected.connect(self.__cancel)
+            self.__confDlg.rejected.connect(self.__checkZeros)
             self.__confDlg.okButton().clicked.connect(self.__onConfirmLine)
             self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
             self.__confDlg.show()
@@ -219,8 +219,9 @@ class ProfileTool(QgsMapTool):
             if case is False:
                 self.__confDlg.setMessage(
                     QCoreApplication.translate("VDLTools","Do you really want to edit the Point layer(s) ?"))
+                self.__confDlg.rejected.connect(self.__checkZeros)
                 self.__confDlg.okButton().clicked.connect(self.__onConfirmPoints)
-                self.__confDlg.cancelButton().clicked.connect(self.__onConfirmClose)
+                self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
                 self.__confDlg.show()
             else:
                 self.__confirmPoints()
@@ -269,9 +270,14 @@ class ProfileTool(QgsMapTool):
         self.__confDlg.accept()
         self.__confirmLine()
 
+    def __checkZeros(self):
+        for pt in self.__points:
+            print pt['z'][:len(self.__selectedIds)]
+        self.__cancel()
+
     def __confirmLine(self):
         """
-        To change the elevations of certains vertices of the line
+        To change the elevations of some vertices of the line
         """
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
@@ -306,8 +312,10 @@ class ProfileTool(QgsMapTool):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
             # self.__lineLayer.updateExtents()
-        self.__dockWdg.clearData()
-        self.__cancel()
+        #self.__dockWdg.clearData()
+        self.__lineVertices()
+        self.__createProfile()
+        self.__checkZeros()
 
     def __onConfirmPoints(self):
         """
@@ -337,8 +345,10 @@ class ProfileTool(QgsMapTool):
                 layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
             # layer.updateExtents()
-        self.__dockWdg.clearData()
-        self.__cancel()
+        #self.__dockWdg.clearData()
+        self.__lineVertices()
+        self.__createProfile()
+        self.__checkZeros()
 
     def __onLayCancel(self):
         """
@@ -413,6 +423,10 @@ class ProfileTool(QgsMapTool):
         """
         To create the profile
         """
+        self.__createProfile()
+        self.__isChoosed = False
+
+    def __createProfile(self):
         self.__features = []
 
         for points in self.__points:
@@ -441,8 +455,6 @@ class ProfileTool(QgsMapTool):
         for layer in self.__layers:
             names.append(layer.name())
         self.__calculateProfile(names)
-        self.__isChoosed = False
-        self.__cancel()
 
     def __contains(self, line, point):
         """

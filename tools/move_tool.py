@@ -410,11 +410,19 @@ class MoveTool(QgsMapTool):
                     self.__rubberSnap.setIcon(4)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
                 else:
-                    self.__rubberSnap.setIcon(1)
-                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                    if intersection:
+                        self.__rubberSnap.setIcon(1)
+                        self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
             if match.hasEdge():
-                self.__rubberSnap.setIcon(3)
-                self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+                intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                if intersection:
+                    print "move intersect"
+                    self.__rubberSnap.setIcon(1)
+                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
+                elif self.__selectedFeature.id() == match.featureId():
+                    self.__rubberSnap.setIcon(3)
+                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
 
     def canvasReleaseEvent(self, event):
         """
@@ -449,6 +457,16 @@ class MoveTool(QgsMapTool):
             match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex() or match.hasEdge():
                 mapPoint = match.point()
+                if match.hasVertex():
+                    if match.layer() is None:
+                        intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                        if intersection:
+                            mapPoint = intersection
+                if match.hasEdge():
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                    if intersection:
+                        print "release intersect"
+                        mapPoint = intersection
             self.__isEditing = True
             if self.__rubberBand:
                 self.__rubberBand.reset()

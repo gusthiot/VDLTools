@@ -160,6 +160,7 @@ class IntersectTool(QgsMapTool):
         feature.setGeometry(QgsGeometry().fromPoint(self.__dstDlg.mapPoint()))
         fields = pointLayer.pendingFields()
         feature.setFields(fields)
+        pointLayer.addFeature(feature)
         # pointLayer.updateExtents()
         pointLayer.commitChanges()
 
