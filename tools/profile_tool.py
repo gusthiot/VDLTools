@@ -271,8 +271,17 @@ class ProfileTool(QgsMapTool):
         self.__confirmLine()
 
     def __checkZeros(self):
+        alts = []
         for pt in self.__points:
-            print pt['z'][:len(self.__selectedIds)]
+            zz = pt['z']
+            alt = None
+            for z in zz:
+                if z:
+                    if alt is None or z > alt:
+                        alt = z
+            alts.append(alt)
+        print alts
+
         self.__cancel()
 
     def __confirmLine(self):
@@ -312,7 +321,7 @@ class ProfileTool(QgsMapTool):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
             # self.__lineLayer.updateExtents()
-        #self.__dockWdg.clearData()
+        self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
         self.__checkZeros()
@@ -345,7 +354,7 @@ class ProfileTool(QgsMapTool):
                 layer.startEditing()
             layer.changeGeometry(point.id(), QgsGeometry(point_v2))
             # layer.updateExtents()
-        #self.__dockWdg.clearData()
+        self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
         self.__checkZeros()
@@ -358,7 +367,7 @@ class ProfileTool(QgsMapTool):
         self.__isChoosed = False
 
     def __lineVertices(self):
-        availableLayers = self.__getPointLayers()
+        availablePointsLayers = self.__getPointLayers()
         pointLayers = []
         self.__points = []
         self.__selectedStarts = []
@@ -400,7 +409,7 @@ class ProfileTool(QgsMapTool):
                         else:
                             z.append(None)
                     self.__points.append({'x': x, 'y': y, 'z': z})
-                    for layer in availableLayers:
+                    for layer in availablePointsLayers:
                         laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
                                                                    QgsTolerance.LayerUnits)
                         f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,

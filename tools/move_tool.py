@@ -417,7 +417,6 @@ class MoveTool(QgsMapTool):
             if match.hasEdge():
                 intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
                 if intersection:
-                    print "move intersect"
                     self.__rubberSnap.setIcon(1)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                 elif self.__selectedFeature.id() == match.featureId():
