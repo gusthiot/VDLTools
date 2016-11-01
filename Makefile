@@ -2,20 +2,20 @@
 # VDLTools
 #
 # Tools needed by the Ville de Lausanne
-#							 -------------------
-#		begin				: 2016-04-05
-#		git sha				: $Format:%H$
-#		copyright			: (C) 2016 by Christophe Gusthiot
-#		email				: christophe.gusthiot@lausanne.ch
+#-------------------
+#	begin				: 2016-04-05
+#	git sha				: $Format:%H$
+#	copyright			: (C) 2016 by Christophe Gusthiot
+#	email				: christophe.gusthiot@lausanne.ch
 # ***************************************************************************/
 #
 #/***************************************************************************
-# *																		 *
+# *									    *
 # *   This program is free software; you can redistribute it and/or modify  *
 # *   it under the terms of the GNU General Public License as published by  *
-# *   the Free Software Foundation; either version 2 of the License, or	 *
-# *   (at your option) any later version.								   *
-# *																		 *
+# *   the Free Software Foundation; either version 2 of the License, or	    *
+# *   (at your option) any later version.				    *
+# *									    *
 # ***************************************************************************/
 
 
@@ -34,3 +34,6 @@ resources.py: resources.qrc
 
 clean:
 	rm -f resources.py i18n/*.qm *.pyc */*.pyc
+
+update:
+	lupdate i18n/VDLTools.pro

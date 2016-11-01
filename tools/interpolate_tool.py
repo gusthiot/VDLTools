@@ -151,6 +151,7 @@ class InterpolateTool(QgsMapTool):
         self.__isEditing = False
         self.__confDlg = None
         self.__mapPoint = None
+        self.__findVertex = 0
 
     def __removeLayer(self):
         """
@@ -369,3 +370,5 @@ class InterpolateTool(QgsMapTool):
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+
+        self.__cancel()
