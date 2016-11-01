@@ -41,6 +41,7 @@ from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
 from ..ui.profile_confirm_dialog import ProfileConfirmDialog
+from ..ui.profile_zeros_dialog import ProfileZerosDialog
 
 
 class ProfileTool(QgsMapTool):
@@ -67,6 +68,7 @@ class ProfileTool(QgsMapTool):
         self.__layDlg = None
         self.__msgDlg = None
         self.__confDlg = None
+        self.__zeroDlg = None
         self.__points = None
         self.__layers = None
         self.__features = None
@@ -149,6 +151,7 @@ class ProfileTool(QgsMapTool):
         self.__layDlg = None
         self.__msgDlg = None
         self.__confDlg = None
+        self.__zeroDlg = None
 
     def setEnable(self, layer):
         """
@@ -171,9 +174,9 @@ class ProfileTool(QgsMapTool):
         """
         To create a Profile Layers Dialog
         """
-        pointLayers = self.__lineVertices()
-        if len(pointLayers) > 0:
-            self.__layDlg = ProfileLayersDialog(pointLayers)
+        otherLayers = self.__lineVertices()
+        if len(otherLayers) > 0:
+            self.__layDlg = ProfileLayersDialog(otherLayers)
             self.__layDlg.rejected.connect(self.__cancel)
             self.__layDlg.okButton().clicked.connect(self.__onLayOk)
             self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
@@ -228,14 +231,16 @@ class ProfileTool(QgsMapTool):
         else:
             self.__confirmLine()
 
-    def __getPointLayers(self):
+    def __getOtherLayers(self):
         """
         To get all points layers that can be used
         :return: layers list
         """
         layerList = []
+        types = [QgsWKBTypes.PointZ] #, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
+                 #QgsWKBTypes.CurvePolygonZ]
         for layer in self.__iface.mapCanvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
                     layerList.append(layer)
         return layerList
 
@@ -272,16 +277,67 @@ class ProfileTool(QgsMapTool):
 
     def __checkZeros(self):
         alts = []
-        for pt in self.__points:
-            zz = pt['z']
-            alt = None
+        for i in xrange(len(self.__points)):
+            zz = self.__points[i]['z']
+            alt = 0
             for z in zz:
                 if z is not None:
-                    if alt is None or z > alt:
+                    if z > alt:
                         alt = z
             alts.append(alt)
-        print alts
 
+        zeros = []
+        for i in xrange(len(self.__points)):
+            if alts[i] == 0:
+                if i == 0 or i == len(self.__points)-1 or alts[i-1] == 0 or alts[i+1] == 0:
+                    zeros.append([i, None])
+                else:
+                    d0 = Finder.sqrDistForCoords(
+                        self.__points[i-1]['x'], self.__points[i]['x'], self.__points[i-1]['y'], self.__points[i]['y'])
+                    d1 = Finder.sqrDistForCoords(
+                        self.__points[i+1]['x'], self.__points[i]['x'], self.__points[i+1]['y'], self.__points[i]['y'])
+                    zinter = (d0*alts[i+1] + d1*alts[i-1])/(d0 + d1)
+                    zeros.append([i, zinter])
+        if len(zeros) > 0:
+            self.__zeroDlg = ProfileZerosDialog(zeros)
+            self.__zeroDlg.rejected.connect(self.__cancel)
+            self.__zeroDlg.passButton().clicked.connect(self.__onZeroPass)
+            self.__zeroDlg.applyButton().clicked.connect(self.__onZeroApply)
+            self.__zeroDlg.show()
+        else:
+            self.__cancel()
+
+    def __onZeroPass(self):
+        self.__zeroDlg.reject()
+
+    def __onZeroApply(self):
+        self.__zeroDlg.accept()
+        zeros = self.__zeroDlg.getZeros()
+
+        num_lines = len(self.__selectedIds)
+        lines = []
+        for iden in self.__selectedIds:
+            for f in self.__lineLayer.selectedFeatures():
+                if f.id() == iden:
+                    line, curved = GeometryV2.asLineV2(f.geometry())
+                    lines.append(line)
+                    break
+        for z in zeros:
+            for i in xrange(num_lines):
+                if self.__points[z[0]]['z'][i] is not None:
+                    index = z[0]-self.__selectedStarts[i]
+                    if not self.__selectedDirections[i]:
+                        index = lines[i].numPoints()-1-index
+                    lines[i].setZAt(index, z[1])
+        if not self.__lineLayer.isEditable():
+            self.__lineLayer.startEditing()
+        for i in xrange(len(lines)):
+            geom = QgsGeometry(lines[i].clone())
+            self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
+            # self.__lineLayer.updateExtents()
+        self.__dockWdg.clearData()
+        self.__lineVertices()
+        self.__createProfile()
         self.__cancel()
 
     def __confirmLine(self):
@@ -367,8 +423,8 @@ class ProfileTool(QgsMapTool):
         self.__isChoosed = False
 
     def __lineVertices(self):
-        availablePointsLayers = self.__getPointLayers()
-        pointLayers = []
+        availableLayers = self.__getOtherLayers()
+        otherLayers = []
         self.__points = []
         self.__selectedStarts = []
         num = 0
@@ -412,16 +468,16 @@ class ProfileTool(QgsMapTool):
                         else:
                             z.append(None)
                     self.__points.append({'x': x, 'y': y, 'z': z})
-                    for layer in availablePointsLayers:
+                    for layer in availableLayers:
                         laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
                                                                    QgsTolerance.LayerUnits)
                         f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
                                                     [laySettings])
                         if f_l is not None:
-                            if layer not in pointLayers:
-                                pointLayers.append(layer)
+                            if layer not in otherLayers:
+                                otherLayers.append(layer)
             num += 1
-        return pointLayers
+        return otherLayers
 
     def __onLayOk(self):
         """
@@ -653,4 +709,3 @@ class ProfileTool(QgsMapTool):
             self.__msgDlg.show()
         else:
             self.__checkZeros()
-            self.__cancel()

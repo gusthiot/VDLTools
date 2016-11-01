@@ -52,7 +52,7 @@ class Finder:
         :return: features found in layers
         """
         match = Finder.snap(mapPoint, mapCanvas, layersConfigs, QgsSnappingUtils.SnapAdvanced)
-        if match.featureId() is not None:
+        if match.featureId():
             feature = QgsFeature()
             match.layer().getFeatures(QgsFeatureRequest().setFilterFid(match.featureId())).nextFeature(feature)
             return [feature, match.layer()]
