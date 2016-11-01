@@ -372,7 +372,7 @@ class ProfileDockWidget(QDockWidget):
         for i in xrange(len(self.__profiles)):
             zz = []
             for j in xrange(self.__numLines):
-                if self.__profiles[i]['z'][j]:
+                if self.__profiles[i]['z'][j] is not None:
                     zz.append(j)
             color = None
             if len(zz) == 2:
@@ -386,7 +386,7 @@ class ProfileDockWidget(QDockWidget):
                 vertLine.setLineStyle(QwtPlotMarker.VLine)
                 pen = vertLine.linePen()
                 pen.setWidth(width)
-                if color:
+                if color is not None:
                     pen.setColor(color)
                 vertLine.setLinePen(pen)
                 vertLine.setXValue(self.__profiles[i]['l'])
@@ -471,7 +471,7 @@ class ProfileDockWidget(QDockWidget):
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools", "Profile of curve.ps"),"PostScript Format (*.ps)")
-        if fileName:
+        if fileName is not None:
             if self.__lib == 'Qwt5':
                 printer = QPrinter()
                 printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
@@ -492,7 +492,7 @@ class ProfileDockWidget(QDockWidget):
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile of curve.pdf"),"Portable Document Format (*.pdf)")
-        if fileName:
+        if fileName is not None:
             if self.__lib == 'Qwt5':
                 printer = QPrinter()
                 printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
@@ -510,7 +510,7 @@ class ProfileDockWidget(QDockWidget):
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile of curve.svg"), "Scalable Vector Graphics (*.svg)")
-        if fileName:
+        if fileName is not None:
             if self.__lib == 'Qwt5':
                 printer = QSvgGenerator()
                 printer.setFileName(fileName)
@@ -526,7 +526,7 @@ class ProfileDockWidget(QDockWidget):
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile of curve.png"),"Portable Network Graphics (*.png)")
-        if fileName:
+        if fileName is not None:
             if self.__lib == 'Qwt5':
                 QPixmap.grabWidget(self.__plotWdg).save(fileName, "PNG")
             elif self.__lib == 'Matplotlib':
@@ -582,10 +582,10 @@ class ProfileDockWidget(QDockWidget):
         elif self.__doTracking:
             self.__doTracking = False
             self.__plotWdg.mpl_disconnect(self.cid)
-            if self.__marker:
+            if self.__marker is not None:
                 self.__canvas.scene().removeItem(self.__marker)
             try:
-                if self.__vline:
+                if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
             except Exception, e:
@@ -596,9 +596,9 @@ class ProfileDockWidget(QDockWidget):
         To manage matplotlib mouse tracking event
         :param event: mouse tracking event
         """
-        if event.xdata:
+        if event.xdata is not None:
             try:
-                if self.__vline:
+                if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
             except Exception, e:
                 print("Mouse event exception : " +str(e))
@@ -645,19 +645,19 @@ class ProfileDockWidget(QDockWidget):
         When the dock widget is closed
         :param event: close event
         """
-        if self.__maxSpin:
+        if self.__maxSpin is not None:
             self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__maxSpin = None
-        if self.__minSpin:
+        if self.__minSpin is not None:
             self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__minSpin = None
-        if self.__saveButton:
+        if self.__saveButton is not None:
             self.__saveButton.clicked.disconnect(self.__save)
             self.__saveButton = None
-        if self.__libCombo:
+        if self.__libCombo is not None:
             self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
             self.__libCombo = None
         self.closeSignal.emit()
-        if self.__marker:
+        if self.__marker is not None:
             self.__marker.hide()
         QDockWidget.closeEvent(self, event)

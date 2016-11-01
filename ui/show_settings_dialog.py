@@ -69,7 +69,7 @@ class ShowSettingsDialog(QDialog):
         #     db.close()
 
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
-            if layer and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
+            if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
                 if layer.geometryType() == QGis.Point:
                     self.__pointsLayers.append(layer)
                 if layer.geometryType() == QGis.Line:
@@ -90,7 +90,7 @@ class ShowSettingsDialog(QDialog):
             self.__pointCombo.addItem(layer.name())
         self.__layout.addWidget(self.__pointCombo, 0, 2)
         self.__pointCombo.currentIndexChanged.connect(self.__pointComboChanged)
-        if self.__memoryPointsLayer:
+        if self.__memoryPointsLayer is not None:
             if self.__memoryPointsLayer in self.__pointsLayers:
                 self.__pointCombo.setCurrentIndex(self.__pointsLayers.index(self.__memoryPointsLayer)+1)
 
@@ -107,7 +107,7 @@ class ShowSettingsDialog(QDialog):
             self.__lineCombo.addItem(layer.name())
         self.__layout.addWidget(self.__lineCombo, 1, 2)
         self.__lineCombo.currentIndexChanged.connect(self.__lineComboChanged)
-        if self.__memoryLinesLayer:
+        if self.__memoryLinesLayer is not None:
             if self.__memoryLinesLayer in self.__linesLayers:
                 self.__lineCombo.setCurrentIndex(self.__linesLayers.index(self.__memoryLinesLayer)+1)
 
@@ -124,7 +124,7 @@ class ShowSettingsDialog(QDialog):
             self.__tableCombo.addItem(table)
         self.__layout.addWidget(self.__tableCombo, 2, 2)
         self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
-        if self.__configTable:
+        if self.__configTable is not None:
             if self.__configTable in self.__tables:
                 self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
 

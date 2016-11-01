@@ -127,11 +127,11 @@ class MoveTool(QgsMapTool):
         self.__canvas.setMapTool(self)
 
     def __cancel(self):
-        if self.__rubberBand:
+        if self.__rubberBand is not None:
             self.__canvas.scene().removeItem(self.__rubberBand)
             self.__rubberBand.reset()
             self.__rubberBand = None
-        if self.__rubberSnap:
+        if self.__rubberSnap is not None:
             self.__canvas.scene().removeItem(self.__rubberSnap)
             self.__rubberSnap.reset()
             self.__rubberSnap = None
@@ -149,7 +149,7 @@ class MoveTool(QgsMapTool):
         """
         To remove the current working layer
         """
-        if self.__layer:
+        if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -161,11 +161,11 @@ class MoveTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer and isinstance(layer, QgsVectorLayer):
+        if layer  is not None and isinstance(layer, QgsVectorLayer):
             if layer == self.__layer:
                 return
 
-            if self.__layer:
+            if self.__layer is not None:
                 self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -255,11 +255,11 @@ class MoveTool(QgsMapTool):
         dy = vertex.y() - point.y()
         self.__newFeature = QgsCurvePolygonV2()
         self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
-        line_v2 = self.__newLine(polygon_v2.exteriorRing(), dx, dy, curved[0])
+        line_v2 = self.__newCurve(curved[0], polygon_v2.exteriorRing(), dx, dy)
         self.__newFeature.setExteriorRing(line_v2)
         self.__rubberBand.setToGeometry(QgsGeometry(line_v2.curveToLine()), None)
         for num in xrange(polygon_v2.numInteriorRings()):
-            line_v2 = self.__newLine(polygon_v2.interiorRing(num), dx, dy, curved[num+1])
+            line_v2 = self.__newCurve(curved[num+1], polygon_v2.interiorRing(num), dx, dy)
             self.__newFeature.addInteriorRing(line_v2)
             self.__rubberBand.addGeometry(QgsGeometry(line_v2.curveToLine()), None)
 
@@ -279,30 +279,6 @@ class MoveTool(QgsMapTool):
                 if sel < iR.numPoints():
                     return QgsVertexId(0, num+1, sel, 1)
                 sel -= iR.numPoints()
-
-    def __newLine(self, curve_v2, dx, dy, curved):
-        """
-        To create a new moved line for a part of a polygon
-        :param curve_v2: the original line
-        :param dx: x translation
-        :param dy: y translation
-        :param curved: if the line is curved
-        :return: the new line
-        """
-        if curved:
-            new_line_v2 = QgsCircularStringV2()
-        else:
-            new_line_v2 = QgsLineStringV2()
-        points = []
-
-        for pos in xrange(curve_v2.numPoints()):
-            x = curve_v2.pointN(pos).x() - dx
-            y = curve_v2.pointN(pos).y() - dy
-            pt = QgsPointV2(x, y)
-            pt.addZValue(curve_v2.pointN(pos).z())
-            points.append(pt)
-        new_line_v2.setPoints(points)
-        return new_line_v2
 
     def __onConfirmCancel(self):
         """
@@ -361,14 +337,14 @@ class MoveTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l and self.__lastFeatureId != f_l[0].id():
+            if f_l  is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
             if f_l is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
         elif self.__findVertex:
-            if self.__rubberBand:
+            if self.__rubberBand is not None:
                 self.__rubberBand.reset()
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             # tolerance = Finder.calcCanvasTolerance(event.mapPoint(), self.__layer, self, 20)
@@ -380,7 +356,7 @@ class MoveTool(QgsMapTool):
             self.__rubberBand.setIconSize(20)
             self.__rubberBand.setToGeometry(QgsGeometry().fromPoint(closest[0]), None)
         elif self.__onMove:
-            if self.__rubberBand:
+            if self.__rubberBand is not None:
                 self.__rubberBand.reset()
             if self.__layer.geometryType() == QGis.Polygon:
                 self.__polygonPreview(event.mapPoint())
@@ -397,7 +373,7 @@ class MoveTool(QgsMapTool):
             else:
                 self.__rubberBand.setIcon(4)
                 self.__rubberBand.setIconSize(20)
-            if self.__rubberSnap:
+            if self.__rubberSnap is not None:
                 self.__rubberSnap.reset()
             else:
                 self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
@@ -406,17 +382,17 @@ class MoveTool(QgsMapTool):
             self.__rubberSnap.setIconSize(20)
             match = Finder.snap(event.mapPoint(), self.__canvas)
             if match.hasVertex():
-                if match.layer():
+                if match.layer() is not None:
                     self.__rubberSnap.setIcon(4)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
                 else:
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
-                    if intersection:
+                    if intersection is not None:
                         self.__rubberSnap.setIcon(1)
                         self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
             if match.hasEdge():
                 intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
-                if intersection:
+                if intersection is not None:
                     self.__rubberSnap.setIcon(1)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                 elif self.__selectedFeature.id() == match.featureId():
@@ -459,15 +435,15 @@ class MoveTool(QgsMapTool):
                 if match.hasVertex():
                     if match.layer() is None:
                         intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
-                        if intersection:
+                        if intersection is not None:
                             mapPoint = intersection
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
-                    if intersection:
+                    if intersection is not None:
                         print "release intersect"
                         mapPoint = intersection
             self.__isEditing = True
-            if self.__rubberBand:
+            if self.__rubberBand is not None:
                 self.__rubberBand.reset()
             if self.__layer.geometryType() == QGis.Polygon:
                 self.__polygonPreview(mapPoint)

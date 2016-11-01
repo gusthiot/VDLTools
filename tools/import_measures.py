@@ -86,7 +86,7 @@ class ImportMeasures:
 
         dataSource = QgsDataSourceURI(self.__layer.source())
         self.__db = DBConnector.setConnection(dataSource.database(), self.__iface)
-        if self.__db:
+        if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable +
                                     """ WHERE source NOT NULL""")
             while query.next():

@@ -69,7 +69,7 @@ class InterpolateTool(QgsMapTool):
         self.__rubber = None
         self.__ownSettings = None
         self.__selectedFeature = None
-        self.__findVertex = 0
+        self.__findVertex = False
 
     def icon_path(self):
         """
@@ -142,7 +142,7 @@ class InterpolateTool(QgsMapTool):
             self.__iface.actionPan().trigger()
 
     def __cancel(self):
-        if self.__lastLayer:
+        if self.__lastLayer is not None:
             self.__lastLayer.removeSelection()
             self.__lastLayer = None
         self.__rubber.reset()
@@ -151,13 +151,13 @@ class InterpolateTool(QgsMapTool):
         self.__isEditing = False
         self.__confDlg = None
         self.__mapPoint = None
-        self.__findVertex = 0
+        self.__findVertex = False
 
     def __removeLayer(self):
         """
         To remove the current working layer
         """
-        if self.__layer:
+        if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -169,11 +169,11 @@ class InterpolateTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer and isinstance(layer, QgsVectorLayer) and layer.geometryType() == QGis.Point:
+        if layer is not None and isinstance(layer, QgsVectorLayer) and layer.geometryType() == QGis.Point:
             if layer == self.__layer:
                 return
 
-            if self.__layer:
+            if self.__layer is not None:
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
@@ -213,17 +213,17 @@ class InterpolateTool(QgsMapTool):
         When the mouse is moved
         :param event: mouse event
         """
-        if not self.__isEditing and not self.__findVertex and self.__layerList:
+        if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, self.__layerList)
 
-            if f_l and self.__lastFeatureId != f_l[0].id():
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
                 self.__lastFeatureId = f.id()
-                if self.__lastLayer:
+                if self.__lastLayer is not None:
                     self.__lastLayer.removeSelection()
                 self.__lastLayer = f_l[1]
                 self.__lastLayer.setSelectedFeatures([f.id()])
-            if f_l is None and self.__lastLayer:
+            if f_l is None and self.__lastLayer is not None:
                 self.__lastLayer.removeSelection()
                 self.__lastFeatureId = None
         elif self.__findVertex:
@@ -233,19 +233,19 @@ class InterpolateTool(QgsMapTool):
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
-                    if match.layer() and self.__selectedFeature.id() == match.featureId():
+                    if match.layer() is not None and self.__selectedFeature.id() == match.featureId():
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
                     else:
                         intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                       self.__selectedFeature.id())
-                        if intersection:
+                        if intersection is not None:
                             self.__rubber.setIcon(1)
                             self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                   self.__selectedFeature.id())
-                    if intersection:
+                    if intersection is not None:
                         self.__rubber.setIcon(1)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                     elif self.__selectedFeature.id() == match.featureId():
@@ -257,7 +257,7 @@ class InterpolateTool(QgsMapTool):
         When the mouse is clicked
         :param event: mouse event
         """
-        if self.__lastLayer and not self.__findVertex:
+        if self.__lastLayer is not None and not self.__findVertex:
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) < 1:
@@ -270,7 +270,7 @@ class InterpolateTool(QgsMapTool):
                     QCoreApplication.translate("VDLTools",
                                                "Select the position for interpolation (ESC to undo)"),
                     level=QgsMessageBar.INFO, duration=3)
-                self.__findVertex = 1
+                self.__findVertex = True
         elif self.__findVertex:
             self.__rubber.reset()
             snap_layers = Finder.getLayersSettings(self.__canvas, [QGis.Line, QGis.Polygon], QgsPointLocator.All)
@@ -279,29 +279,29 @@ class InterpolateTool(QgsMapTool):
                 point = match.point()
                 ok = False
                 if match.hasVertex():
-                    if match.layer() and self.__selectedFeature.id() == match.featureId():
+                    if match.layer() is not None and self.__selectedFeature.id() == match.featureId():
                         ok = True
                     else:
                         intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                       self.__selectedFeature.id())
-                        if intersection:
+                        if intersection is not None:
                             point = intersection
                             ok = True
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                   self.__selectedFeature.id())
-                    if intersection:
+                    if intersection is not None:
                         point = intersection
                         ok = True
                     elif self.__selectedFeature.id() == match.featureId():
                         ok = True
                 if ok:
                     self.__isEditing = True
-                    self.__findVertex = 0
+                    self.__findVertex = False
                     self.__mapPoint = point
                     if not match.hasVertex():
                         self.__confDlg = InterpolateConfirmDialog()
-                        if self.__lastLayer.isEditable() is True:
+                        if self.__lastLayer.isEditable():
                             self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
                             self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
                             self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
@@ -330,7 +330,7 @@ class InterpolateTool(QgsMapTool):
         if id == 1:
             withVertex = False
         else:
-            if self.__lastLayer.isEditable() is False:
+            if not self.__lastLayer.isEditable():
                 self.__lastLayer.startEditing()
         if id == 2:
             withPoint = False

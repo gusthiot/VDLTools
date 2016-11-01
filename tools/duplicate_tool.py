@@ -127,7 +127,7 @@ class DuplicateTool(QgsMapTool):
 
     def __cancel(self):
         self.__isEditing = False
-        if self.__rubberBand:
+        if self.__rubberBand is not None:
             self.__canvas.scene().removeItem(self.__rubberBand)
             self.__rubberBand.reset()
             self.__rubberBand = None
@@ -141,7 +141,7 @@ class DuplicateTool(QgsMapTool):
         """
         To remove the current working layer
         """
-        if self.__layer:
+        if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -154,11 +154,11 @@ class DuplicateTool(QgsMapTool):
         :param layer: selected layer
         """
         types = [QGis.Line, QGis.Polygon]
-        if layer and isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
+        if layer is not None and isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
             if layer == self.__layer:
                 return
 
-            if self.__layer:
+            if self.__layer is not None:
                 self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -216,10 +216,10 @@ class DuplicateTool(QgsMapTool):
         """
         When the Preview button in Duplicate Distance Dialog is pushed
         """
-        if self.__rubberBand:
+        if self.__rubberBand is not None:
             self.__canvas.scene().removeItem(self.__rubberBand)
             self.__rubberBand = None
-        if self.__dstDlg.distanceEdit().text():
+        if self.__dstDlg.distanceEdit().text() is not None:
             distance = float(self.__dstDlg.distanceEdit().text())
             if self.__dstDlg.directionCheck().checkState():
                 distance = -distance
@@ -385,7 +385,7 @@ class DuplicateTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l and self.__lastFeatureId != f_l[0].id():
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
             if f_l is None:
@@ -405,8 +405,8 @@ class DuplicateTool(QgsMapTool):
                 return
             self.__selectedFeature = found_features[0]
             self.__isEditing = True
-            if (self.__layer.geometryType() == QGis.Polygon)\
-                    and (len(self.__selectedFeature.geometry().asPolygon()) > 1):
+            if self.__layer.geometryType() == QGis.Polygon\
+                    and len(self.__selectedFeature.geometry().asPolygon()) > 1:
                 self.__setDistanceDialog(True)
             else:
                 self.__setDistanceDialog(False)

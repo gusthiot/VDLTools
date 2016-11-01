@@ -52,7 +52,7 @@ class Finder:
         :return: features found in layers
         """
         match = Finder.snap(mapPoint, mapCanvas, layersConfigs, QgsSnappingUtils.SnapAdvanced)
-        if match.featureId():
+        if match.featureId() is not None:
             feature = QgsFeature()
             match.layer().getFeatures(QgsFeatureRequest().setFilterFid(match.featureId())).nextFeature(feature)
             return [feature, match.layer()]
@@ -224,15 +224,15 @@ class Finder:
                     for j in xrange(i, len(features)):
                         feat1 = features[i]
                         feat2 = features[j]
-                        if not featureId or feat1.id() == featureId or feat2.id() == featureId:
+                        if featureId is None or feat1.id() == featureId or feat2.id() == featureId:
                             intersect = Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
-                            if intersect:
+                            if intersect is not None:
                                 return intersect
                 return None
             else:
                 feat1 = features[0]
                 feat2 = features[1]
-            if not featureId or feat1.id() == featureId or feat2.id() == featureId:
+            if featureId is None or feat1.id() == featureId or feat2.id() == featureId:
                 return Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
             else:
                 return None
@@ -250,11 +250,11 @@ class Finder:
         :return: snapping match instance
         """
         snap_util = mapCanvas.snappingUtils()
-        if layersConfigs:
+        if layersConfigs is not None:
             old_layers = snap_util.layers()
             old_mode = snap_util.snapToMapMode()
             snap_util.setLayers(layersConfigs)
-            if mode:
+            if mode is not None:
                 snap_util.setSnapToMapMode(mode)
             match = snap_util.snapToMap(mapPoint)
             snap_util.setLayers(old_layers)

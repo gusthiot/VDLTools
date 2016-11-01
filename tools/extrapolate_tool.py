@@ -138,7 +138,7 @@ class ExtrapolateTool(QgsMapTool):
         """
         To remove the current working layer
         """
-        if self.__layer:
+        if self.__layer is not None:
             if self.__layer.isEditable():
                 self.__layer.editingStopped.disconnect(self.stopEditing)
             else:
@@ -150,12 +150,12 @@ class ExtrapolateTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer and isinstance(layer, QgsVectorLayer)\
+        if layer is not None and isinstance(layer, QgsVectorLayer)\
                 and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             if layer == self.__layer:
                 return
 
-            if self.__layer:
+            if self.__layer is not None:
                 self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
@@ -183,7 +183,7 @@ class ExtrapolateTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l:
+            if f_l is not None:
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
                 self.__rubber.reset()
@@ -194,7 +194,7 @@ class ExtrapolateTool(QgsMapTool):
                 if num_p > 2 and (index == 0 or index == (num_p-1)):
                     self.__rubber.setIcon(4)
                     self.__rubber.setToGeometry(QgsGeometry(line_v2.pointN(index)), None)
-            if f_l is None:
+            else:
                 self.__layer.removeSelection()
                 self.__rubber.reset()
                 self.__lastFeatureId = None
@@ -228,7 +228,7 @@ class ExtrapolateTool(QgsMapTool):
                     self.__isEditing = True
                     self.__selectedFeature = found_features[0]
                     self.__elevation = pt0.z() + (1 + small_d/big_d) * (pt1.z() - pt0.z())
-                    if pt.z() and pt.z() != 0:
+                    if pt.z() is not None and pt.z() != 0:
                         self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
                         self.__confDlg.rejected.connect(self.__cancel)
                         self.__confDlg.okButton().clicked.connect(self.__onEditOk)
