@@ -275,31 +275,36 @@ class InterpolateTool(QgsMapTool):
             self.__rubber.reset()
             snap_layers = Finder.getLayersSettings(self.__canvas, [QGis.Line, QGis.Polygon], QgsPointLocator.All)
             match = Finder.snap(event.mapPoint(), self.__canvas, snap_layers, QgsSnappingUtils.SnapAdvanced)
+            print(match.hasVertex(), match.hasEdge(), match.featureId())
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 ok = False
                 if match.hasVertex():
                     if match.layer() is not None and self.__selectedFeature.id() == match.featureId():
+                        print "vertex"
                         ok = True
                     else:
                         intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                       self.__selectedFeature.id())
                         if intersection is not None:
                             point = intersection
+                            print "inter v"
                             ok = True
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                   self.__selectedFeature.id())
                     if intersection is not None:
                         point = intersection
+                        print "inter e"
                         ok = True
                     elif self.__selectedFeature.id() == match.featureId():
+                        print "edge"
                         ok = True
                 if ok:
                     self.__isEditing = True
                     self.__findVertex = False
                     self.__mapPoint = point
-                    if not match.hasVertex():
+                    if not match.hasVertex() or match.featureId() == 0:
                         self.__confDlg = InterpolateConfirmDialog()
                         if self.__lastLayer.isEditable():
                             self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))

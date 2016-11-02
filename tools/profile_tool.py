@@ -129,12 +129,10 @@ class ProfileTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__canvas.scene().removeItem(self.__rubberSit)
-        self.__rubberSit.reset()
-        self.__rubberSit = None
         self.__canvas.scene().removeItem(self.__rubberDif)
-        self.__rubberDif.reset()
         self.__rubberDif = None
+        self.__canvas.scene().removeItem(self.__rubberSit)
+        self.__rubberSit = None
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         QgsMapTool.deactivate(self)
@@ -174,7 +172,7 @@ class ProfileTool(QgsMapTool):
         """
         To create a Profile Layers Dialog
         """
-        otherLayers = self.__lineVertices()
+        otherLayers = self.__lineVertices(True)
         if len(otherLayers) > 0:
             self.__layDlg = ProfileLayersDialog(otherLayers)
             self.__layDlg.rejected.connect(self.__cancel)
@@ -211,7 +209,7 @@ class ProfileTool(QgsMapTool):
             self.__confDlg.okButton().clicked.connect(self.__onConfirmLine)
             self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
             self.__confDlg.show()
-        elif origin is not None:
+        elif origin != 0:
             situations = self.__msgDlg.getSituations()
             case = True
             for s in situations:
@@ -238,7 +236,7 @@ class ProfileTool(QgsMapTool):
         """
         layerList = []
         types = [QgsWKBTypes.PointZ] #, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
-                 #QgsWKBTypes.CurvePolygonZ]
+                 # QgsWKBTypes.CurvePolygonZ]
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
                     layerList.append(layer)
@@ -422,9 +420,10 @@ class ProfileTool(QgsMapTool):
         self.__layDlg.reject()
         self.__isChoosed = False
 
-    def __lineVertices(self):
-        availableLayers = self.__getOtherLayers()
-        otherLayers = []
+    def __lineVertices(self, checkLayers=False):
+        if checkLayers:
+            availableLayers = self.__getOtherLayers()
+            otherLayers = []
         self.__points = []
         self.__selectedStarts = []
         num = 0
@@ -468,16 +467,30 @@ class ProfileTool(QgsMapTool):
                         else:
                             z.append(None)
                     self.__points.append({'x': x, 'y': y, 'z': z})
-                    for layer in availableLayers:
-                        laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
-                                                                   QgsTolerance.LayerUnits)
-                        f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
-                                                    [laySettings])
-                        if f_l is not None:
-                            if layer not in otherLayers:
-                                otherLayers.append(layer)
+                    if checkLayers:
+                        for layer in availableLayers:
+                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
+                                                                       QgsTolerance.LayerUnits)
+                            f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
+                                                        [laySettings])
+                            if f_l is not None:
+                                if layer == self.__lineLayer:
+                                    other = False
+                                    if f.id() not in self.__selectedIds:
+                                        other = True
+                                    else:
+                                        fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
+                                        for f in fs:
+                                            if f.id() not in self.__selectedIds:
+                                                other = True
+                                                break
+                                    if other and layer not in otherLayers:
+                                        otherLayers.append(layer)
+                                elif layer not in otherLayers:
+                                    otherLayers.append(layer)
             num += 1
-        return otherLayers
+        if checkLayers:
+            return otherLayers
 
     def __onLayOk(self):
         """
@@ -510,9 +523,37 @@ class ProfileTool(QgsMapTool):
                     feat.append(None)
                     z.append(None)
                 else:
-                    feat.append(f_l[0])
-                    point_v2 = GeometryV2.asPointV2(f_l[0].geometry())
-                    zp = point_v2.z()
+                    if f_l[1].geometryType() == QGis.Polygon:
+                        pass
+                        # closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
+                        # polygon_v2 = GeometryV2.asPolygonV2(f_l[0].geometry())
+                        # zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, self.__selectedVertex))
+                        # feat.append(f_l[0])
+                    elif f_l[1].geometryType() == QGis.Line:
+                        f_ok = None
+                        if layer == self.__lineLayer:
+                            print("selected", self.__selectedIds)
+                            print("snapped", f_l[0].id())
+                            if f_l[0].id() not in self.__selectedIds:
+                                f_ok = f_l[0]
+                            else:
+                                fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
+                                for f in fs:
+                                    print("found", f.id())
+                                    if f.id() not in self.__selectedIds:
+                                        f_ok = f
+                                        break
+                        else:
+                            f_ok = f_l[0]
+                        if f_ok is not None:
+                            closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
+                            print closest
+                            feat.append(f_ok)
+                        else:
+                            feat.append(None)
+                    else:
+                        zp = GeometryV2.asPointV2(f_l[0].geometry()).z()
+                        feat.append(f_l[0])
                     if zp is None or zp != zp:
                         z.append(0)
                     else:

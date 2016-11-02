@@ -22,6 +22,7 @@
 """
 
 from qgis.core import (QgsPointV2,
+                       QgsVertexId,
                        QgsCompoundCurveV2,
                        QgsLineStringV2,
                        QgsCurvePolygonV2,
@@ -180,3 +181,21 @@ class GeometryV2:
         if len(tab) > 3:
             pointV2.addMValue(float(tab[3]))
         return pointV2
+
+    @staticmethod
+    def polygonVertexId(polygon_v2, vertex_id):
+        """
+        To get the id of the selected vertex from a polygon
+        :param polygon_v2: the polygon as polygonV2
+        :return: id as QgsVertexId
+        """
+        eR = polygon_v2.exteriorRing()
+        if vertex_id < eR.numPoints():
+            return QgsVertexId(0, 0, vertex_id, 1)
+        else:
+            sel = vertex_id - eR.numPoints()
+            for num in xrange(polygon_v2.numInteriorRings()):
+                iR = polygon_v2.interiorRing(num)
+                if sel < iR.numPoints():
+                    return QgsVertexId(0, num + 1, sel, 1)
+                sel -= iR.numPoints()

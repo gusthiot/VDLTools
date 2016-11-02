@@ -32,7 +32,6 @@ from qgis.core import (QgsPointV2,
                        QgsCircularStringV2,
                        QgsCompoundCurveV2,
                        QgsDataSourceURI,
-                       QgsVertexId,
                        QgsFeature,
                        QgsCurvePolygonV2,
                        QGis,
@@ -250,7 +249,7 @@ class MoveTool(QgsMapTool):
         :param point: new position as mapPoint
         """
         polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
-        vertex = polygon_v2.vertexAt(self.__polygonVertexId(polygon_v2))
+        vertex = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, self.__selectedVertex))
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
         self.__newFeature = QgsCurvePolygonV2()
@@ -262,23 +261,6 @@ class MoveTool(QgsMapTool):
             line_v2 = self.__newCurve(curved[num+1], polygon_v2.interiorRing(num), dx, dy)
             self.__newFeature.addInteriorRing(line_v2)
             self.__rubberBand.addGeometry(QgsGeometry(line_v2.curveToLine()), None)
-
-    def __polygonVertexId(self, polygon_v2):
-        """
-        To get the id of the selected vertex from a polygon
-        :param polygon_v2: the polygon as polygonV2
-        :return: id as QgsVertexId
-        """
-        eR = polygon_v2.exteriorRing()
-        if self.__selectedVertex < eR.numPoints():
-            return QgsVertexId(0, 0, self.__selectedVertex, 1)
-        else:
-            sel = self.__selectedVertex - eR.numPoints()
-            for num in xrange(polygon_v2.numInteriorRings()):
-                iR = polygon_v2.interiorRing(num)
-                if sel < iR.numPoints():
-                    return QgsVertexId(0, num+1, sel, 1)
-                sel -= iR.numPoints()
 
     def __onConfirmCancel(self):
         """

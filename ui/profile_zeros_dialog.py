@@ -46,6 +46,8 @@ class ProfileZerosDialog(QDialog):
         self.__zeroLabels = []
         self.__zeroChecks = []
 
+        displayButton = False
+
         for i in xrange(len(self.__zeros)):
             msg = "- vertex " + str(self.__zeros[i][0])
             msg += QCoreApplication.translate("VDLTools",", elevation : '0', ")
@@ -56,6 +58,7 @@ class ProfileZerosDialog(QDialog):
                 msgCheck.setChecked(True)
                 self.__zeroChecks.append(msgCheck)
                 self.__layout.addWidget(self.__zeroChecks[i], i+1, 2)
+                displayButton = True
             else:
                 msg += QCoreApplication.translate("VDLTools","no interpolated elevation")
                 self.__zeroChecks.append(None)
@@ -74,7 +77,8 @@ class ProfileZerosDialog(QDialog):
         self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools","Apply interpolation"))
         self.__applyButton.setMinimumHeight(20)
         self.__applyButton.setMinimumWidth(100)
-        self.__layout.addWidget(self.__applyButton, pos, 1)
+        if displayButton:
+            self.__layout.addWidget(self.__applyButton, pos, 1)
 
         # self.__onPointsButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply line elevations to points"))
         # self.__onPointsButton.setMinimumHeight(20)

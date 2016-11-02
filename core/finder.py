@@ -49,10 +49,10 @@ class Finder:
         :param mapPoint: the map position
         :param mapCanvas: the used QgsMapCanvas
         :param layersConfig: the layers in which we are looking for features
-        :return: features found in layers
+        :return: feature found in layers
         """
         match = Finder.snap(mapPoint, mapCanvas, layersConfigs, QgsSnappingUtils.SnapAdvanced)
-        if match.featureId():
+        if match.featureId() and match.layer():
             feature = QgsFeature()
             match.layer().getFeatures(QgsFeatureRequest().setFilterFid(match.featureId())).nextFeature(feature)
             return [feature, match.layer()]
