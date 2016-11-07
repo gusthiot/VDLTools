@@ -205,7 +205,6 @@ class Finder:
                     snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
         return snap_layers
 
-
     @staticmethod
     def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, featureId=None):
         """
@@ -245,7 +244,7 @@ class Finder:
         To snap on given layers for a given point
         :param mapPoint: the map position
         :param mapCanvas: the used QgsMapCanvas
-        :param layersConfig: the layers in which we are looking for features
+        :param layersConfigs: the layers in which we are looking for features
         :param mode: snapping mode
         :return: snapping match instance
         """

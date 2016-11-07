@@ -156,8 +156,8 @@ class ProfileTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer  is not None and layer.type() == QgsMapLayer.VectorLayer and \
-                        QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == \
+                QgsWKBTypes.LineStringZ:
             self.__lineLayer = layer
             self.action().setEnabled(True)
             return
@@ -235,8 +235,8 @@ class ProfileTool(QgsMapTool):
         :return: layers list
         """
         layerList = []
-        types = [QgsWKBTypes.PointZ] #, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
-                 # QgsWKBTypes.CurvePolygonZ]
+        types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
+                 QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
                     layerList.append(layer)
@@ -274,6 +274,7 @@ class ProfileTool(QgsMapTool):
         self.__confirmLine()
 
     def __checkZeros(self):
+        print("check zeros")
         alts = []
         for i in xrange(len(self.__points)):
             zz = self.__points[i]['z']
@@ -287,15 +288,99 @@ class ProfileTool(QgsMapTool):
         zeros = []
         for i in xrange(len(self.__points)):
             if alts[i] == 0:
-                if i == 0 or i == len(self.__points)-1 or alts[i-1] == 0 or alts[i+1] == 0:
-                    zeros.append([i, None])
+                if i == 0:
+                    ap = None
+                    app = None
+                    j = 1
+                    while True:
+                        if i+j > len(self.__points)-1:
+                            break
+                        if alts[i+j] != 0:
+                            ap = j
+                            j += 1
+                            while True:
+                                if i+j > len(self.__points)-1:
+                                    break
+                                if alts[i+j] != 0:
+                                    app = j
+                                    break
+                                j += 1
+                            break
+                        j += 1
+                    if ap is None or app is None:
+                        zeros.append([i, None])
+                    else:
+                        big_d = Finder.sqrDistForCoords(self.__points[ap]['x'], self.__points[app]['x'],
+                                                        self.__points[ap]['y'], self.__points[app]['y'])
+                        small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
+                                                          self.__points[i]['y'], self.__points[ap]['y'])
+                        print(big_d, small_d)
+                        if small_d < (big_d/4):
+                            zextra = alts[app] + (1 + small_d / big_d) * (alts[ap] - alts[app])
+                            zeros.append([i, zextra])
+                        else:
+                            zeros.append([i, None])
+                elif i == len(self.__points)-1:
+                    av = None
+                    avv = None
+                    j = 1
+                    while True:
+                        if i-j < 0:
+                            break
+                        if alts[i-j] != 0:
+                            av = j
+                            j += 1
+                            while True:
+                                if i-j < 0:
+                                    break
+                                if alts[i-j] != 0:
+                                    avv = j
+                                    break
+                                j += 1
+                            break
+                        j += 1
+                    if av is None or avv is None:
+                        zeros.append([i, None])
+                    else:
+                        big_d = Finder.sqrDistForCoords(self.__points[i-av]['x'], self.__points[i-avv]['x'],
+                                                        self.__points[i-av]['y'], self.__points[i-avv]['y'])
+                        small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
+                                                          self.__points[i]['y'], self.__points[i-av]['y'])
+                        print(big_d, small_d)
+                        if small_d < (big_d/4):
+                            print(alts[i-av], alts[i-avv])
+                            zextra = alts[i-avv] + (1 + small_d / big_d) * (alts[i-av] - alts[i-avv])
+                            zeros.append([i, zextra])
+                        else:
+                            zeros.append([i, None])
                 else:
-                    d0 = Finder.sqrDistForCoords(
-                        self.__points[i-1]['x'], self.__points[i]['x'], self.__points[i-1]['y'], self.__points[i]['y'])
-                    d1 = Finder.sqrDistForCoords(
-                        self.__points[i+1]['x'], self.__points[i]['x'], self.__points[i+1]['y'], self.__points[i]['y'])
-                    zinter = (d0*alts[i+1] + d1*alts[i-1])/(d0 + d1)
-                    zeros.append([i, zinter])
+                    av = None
+                    j = 1
+                    while True:
+                        if i-j < 0:
+                            break
+                        if alts[i-j] != 0:
+                            av = j
+                            break
+                        j += 1
+                    ap = None
+                    j = 1
+                    while True:
+                        if i+j > len(self.__points)-1:
+                            break
+                        if alts[i+j] != 0:
+                            ap = j
+                            break
+                        j += 1
+                    if av is None or ap is None:
+                        zeros.append([i, None])
+                    else:
+                        d0 = Finder.sqrDistForCoords(
+                            self.__points[i-av]['x'], self.__points[i]['x'], self.__points[i-av]['y'], self.__points[i]['y'])
+                        d1 = Finder.sqrDistForCoords(
+                            self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'], self.__points[i]['y'])
+                        zinter = (d0*alts[i+ap] + d1*alts[i-av])/(d0 + d1)
+                        zeros.append([i, zinter])
         if len(zeros) > 0:
             self.__zeroDlg = ProfileZerosDialog(zeros)
             self.__zeroDlg.rejected.connect(self.__cancel)
@@ -429,7 +514,7 @@ class ProfileTool(QgsMapTool):
         num = 0
         num_lines = len(self.__selectedIds)
         for iden in self.__selectedIds:
-            self.__selectedStarts.append(max(0,len(self.__points)-1))
+            self.__selectedStarts.append(max(0, len(self.__points)-1))
             direction = self.__selectedDirections[num]
             selected = None
             for f in self.__lineLayer.selectedFeatures():
@@ -471,12 +556,12 @@ class ProfileTool(QgsMapTool):
                         for layer in availableLayers:
                             laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
                                                                        QgsTolerance.LayerUnits)
-                            f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
-                                                        [laySettings])
+                            f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
+                                                              self.__canvas, [laySettings])
                             if f_l is not None:
                                 if layer == self.__lineLayer:
                                     other = False
-                                    if f.id() not in self.__selectedIds:
+                                    if f_l[0].id() not in self.__selectedIds:
                                         other = True
                                     else:
                                         fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
@@ -524,22 +609,24 @@ class ProfileTool(QgsMapTool):
                     z.append(None)
                 else:
                     if f_l[1].geometryType() == QGis.Polygon:
-                        pass
-                        # closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
-                        # polygon_v2 = GeometryV2.asPolygonV2(f_l[0].geometry())
-                        # zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, self.__selectedVertex))
-                        # feat.append(f_l[0])
+                        closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
+                        print closest
+                        polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry())
+                        zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
+                        print zp
+                        feat.append(f_l[0])
+                        if zp is None or zp != zp:
+                            z.append(0)
+                        else:
+                            z.append(zp)
                     elif f_l[1].geometryType() == QGis.Line:
                         f_ok = None
                         if layer == self.__lineLayer:
-                            print("selected", self.__selectedIds)
-                            print("snapped", f_l[0].id())
                             if f_l[0].id() not in self.__selectedIds:
                                 f_ok = f_l[0]
                             else:
                                 fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                                 for f in fs:
-                                    print("found", f.id())
                                     if f.id() not in self.__selectedIds:
                                         f_ok = f
                                         break
@@ -547,17 +634,23 @@ class ProfileTool(QgsMapTool):
                             f_ok = f_l[0]
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
-                            print closest
                             feat.append(f_ok)
+                            line, curved = GeometryV2.asLineV2(f_ok.geometry())
+                            zp = line.zAt(closest[1])
+                            if zp is None or zp != zp:
+                                z.append(0)
+                            else:
+                                z.append(zp)
                         else:
                             feat.append(None)
+                            z.append(None)
                     else:
                         zp = GeometryV2.asPointV2(f_l[0].geometry()).z()
                         feat.append(f_l[0])
-                    if zp is None or zp != zp:
-                        z.append(0)
-                    else:
-                        z.append(zp)
+                        if zp is None or zp != zp:
+                            z.append(0)
+                        else:
+                            z.append(zp)
             self.__features.append(feat)
 
         names = [self.__lineLayer.name()]
@@ -565,7 +658,8 @@ class ProfileTool(QgsMapTool):
             names.append(layer.name())
         self.__calculateProfile(names)
 
-    def __contains(self, line, point):
+    @staticmethod
+    def __contains(line, point):
         """
         To check if a position is a line vertex
         :param line: the line
@@ -640,7 +734,8 @@ class ProfileTool(QgsMapTool):
                 self.__isChoosed = True
                 self.__setLayerDialog()
         elif event.button() == Qt.LeftButton:
-            if self.__lastFeature is not None and (self.__selectedIds is None or self.__lastFeature.id() not in self.__selectedIds):
+            if self.__lastFeature is not None and \
+                    (self.__selectedIds is None or self.__lastFeature.id() not in self.__selectedIds):
                 self.__inSelection = True
                 line = self.__lastFeature.geometry().asPolyline()
                 self.__iface.messageBar().pushMessage(

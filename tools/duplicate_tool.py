@@ -198,7 +198,8 @@ class DuplicateTool(QgsMapTool):
         """
         self.__dstDlg.reject()
 
-    def __newPoint(self, angle, point, distance):
+    @staticmethod
+    def __newPoint(angle, point, distance):
         """
         To create a new point at a certain distance and certain azimut from another point
         :param angle: the azimut
@@ -344,7 +345,7 @@ class DuplicateTool(QgsMapTool):
             else:
                 pos3 = pos + 1
             angle1 = Circle.angle(curve_v2.pointN(pos1), curve_v2.pointN(pos2))
-            angle2 = Circle.angle(curve_v2.pointN(pos),curve_v2.pointN(pos3))
+            angle2 = Circle.angle(curve_v2.pointN(pos), curve_v2.pointN(pos3))
             angle = float(pi + angle1 + angle2) / 2
             dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
             points.append(self.__newPoint(angle, curve_v2.pointN(pos), dist))
@@ -368,8 +369,8 @@ class DuplicateTool(QgsMapTool):
         for field in self.__selectedFeature.fields():
             if field.name() != primaryKey:
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
-        if len(self.__selectedFeature.fields()) > 0 and \
-                        self.__layer.editFormConfig().suppress() != QgsEditFormConfig.SuppressOn:
+        if len(self.__selectedFeature.fields()) > 0 and self.__layer.editFormConfig().suppress() != \
+                QgsEditFormConfig.SuppressOn:
             self.__iface.openFeatureForm(self.__layer, feature)
         else:
             self.__layer.addFeature(feature)

@@ -160,7 +160,7 @@ class MoveTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer  is not None and isinstance(layer, QgsVectorLayer):
+        if layer is not None and isinstance(layer, QgsVectorLayer):
             if layer == self.__layer:
                 return
 
@@ -220,7 +220,8 @@ class MoveTool(QgsMapTool):
             self.__newFeature = self.__newCurve(curved, line_v2, dx, dy)
             self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.curveToLine()), None)
 
-    def __newCurve(self, curved, line_v2, dx, dy):
+    @staticmethod
+    def __newCurve(curved, line_v2, dx, dy):
         """
         To create a new moved line
         :param curved: if the line is curved
@@ -297,8 +298,8 @@ class MoveTool(QgsMapTool):
         for field in self.__selectedFeature.fields():
             if field.name() != primaryKey:
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
-        if len(self.__selectedFeature.fields()) > 0 and \
-                        self.__layer.editFormConfig().suppress() != QgsEditFormConfig.SuppressOn:
+        if len(self.__selectedFeature.fields()) > 0 and self.__layer.editFormConfig().suppress() != \
+                QgsEditFormConfig.SuppressOn:
             self.__iface.openFeatureForm(self.__layer, feature)
         else:
             self.__layer.addFeature(feature)
@@ -319,7 +320,7 @@ class MoveTool(QgsMapTool):
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
             f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
-            if f_l  is not None and self.__lastFeatureId != f_l[0].id():
+            if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
             if f_l is None:

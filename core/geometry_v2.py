@@ -187,6 +187,7 @@ class GeometryV2:
         """
         To get the id of the selected vertex from a polygon
         :param polygon_v2: the polygon as polygonV2
+        :param vertex_id: selected vertex
         :return: id as QgsVertexId
         """
         eR = polygon_v2.exteriorRing()

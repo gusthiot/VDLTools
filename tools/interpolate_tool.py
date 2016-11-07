@@ -327,17 +327,17 @@ class InterpolateTool(QgsMapTool):
         """
         When the Ok button in Interpolate Confirm Dialog is pushed
         """
-        id = self.__confDlg.getCheckedId()
+        checkedId = self.__confDlg.getCheckedId()
         self.__confDlg.accept()
 
         withVertex = True
         withPoint = True
-        if id == 1:
+        if checkedId == 1:
             withVertex = False
         else:
             if not self.__lastLayer.isEditable():
                 self.__lastLayer.startEditing()
-        if id == 2:
+        if checkedId == 2:
             withPoint = False
 
         self.__ok(withVertex, withPoint)

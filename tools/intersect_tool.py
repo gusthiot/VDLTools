@@ -176,7 +176,7 @@ class IntersectTool(QgsMapTool):
     def canvasMoveEvent(self, mouseEvent):
         """
         When the mouse is moved
-        :param event: mouse event
+        :param mouseEvent: mouse event
         """
         if not self.__isEditing:
             self.__rubber.reset()
@@ -200,7 +200,7 @@ class IntersectTool(QgsMapTool):
     def canvasReleaseEvent(self, mouseEvent):
         """
         When the mouse is clicked
-        :param event: mouse event
+        :param mouseEvent: mouse event
         """
         if mouseEvent.button() != Qt.LeftButton:
             return

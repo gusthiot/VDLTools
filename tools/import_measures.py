@@ -84,7 +84,7 @@ class ImportMeasures:
             return
         self.__configTable = self.__ownSettings.configTable()
 
-        dataSource = QgsDataSourceURI(self.__layer.source())
+        dataSource = QgsDataSourceURI(self.__layer.source())  # where did __layer come from...
         self.__db = DBConnector.setConnection(dataSource.database(), self.__iface)
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable +
@@ -117,7 +117,7 @@ class ImportMeasures:
         self.__jobsDlg.accept()
         query = self.__db.exec_("""SELECT 1,2,3 FROM """ + self.__sourceTable + """ WHERE job = '""" + job + """'""")
         while query.next():
-            pass # then traiter les records du job...
+            pass  # then traiter les records du job...
 
     def __cancel(self):
         self.__db.close()
