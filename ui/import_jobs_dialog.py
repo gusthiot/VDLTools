@@ -75,8 +75,8 @@ class ImportJobsDialog(QDialog):
         """
         When the selected job has changed
         """
-        if self.__pointCombo.itemText(0) == "":
-            self.__pointCombo.removeItem(0)
+        if self.__jobCombo.itemText(0) == "":
+            self.__jobCombo.removeItem(0)
 
     def okButton(self):
         """

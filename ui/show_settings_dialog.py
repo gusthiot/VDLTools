@@ -40,7 +40,7 @@ class ShowSettingsDialog(QDialog):
     Dialog class for plugin settings
     """
 
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable, importDb, schemaDb):
         """
         Constructor
         :param iface: interface
@@ -53,20 +53,14 @@ class ShowSettingsDialog(QDialog):
         self.__memoryPointsLayer = memoryPointsLayer
         self.__memoryLinesLayer = memoryLinesLayer
         self.__configTable = configTable
+        self.__importDb = importDb
+        self.__schemaDb = schemaDb
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Settings"))
         self.__pointsLayers = []
         self.__linesLayers = []
         self.__tables = []
-
-        # dataSource = QgsDataSourceURI(self.__layer.source())
-        # db = DBConnector.setConnection(dataSource.database(), self.__iface)
-        # if db:
-        #     query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema NOT IN
-        #         ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
-        #         (SELECT f_table_name FROM geometry_columns)""")
-        #     while query.next():
-        #         self.__tables.append(query.value(0))
-        #     db.close()
+        self.__schemas = []
+        self.__dbs = DBConnector.getDatabases()
 
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
@@ -111,22 +105,40 @@ class ShowSettingsDialog(QDialog):
             if self.__memoryLinesLayer in self.__linesLayers:
                 self.__lineCombo.setCurrentIndex(self.__linesLayers.index(self.__memoryLinesLayer)+1)
 
+        dbLabel = QLabel(QCoreApplication.translate("VDLTools","Import database : "))
+        dbLabel.setMinimumHeight(20)
+        dbLabel.setMinimumWidth(50)
+        self.__layout.addWidget(dbLabel, 2, 1)
+
+        self.__dbCombo = QComboBox()
+        self.__dbCombo.setMinimumHeight(20)
+        self.__dbCombo.setMinimumWidth(50)
+        self.__dbCombo.addItem("")
+        for db in self.__dbs:
+            self.__dbCombo.addItem(db)
+        self.__layout.addWidget(self.__dbCombo, 2, 2)
+
+        schemaLabel = QLabel(QCoreApplication.translate("VDLTools","Database schema : "))
+        schemaLabel.setMinimumHeight(20)
+        schemaLabel.setMinimumWidth(50)
+        self.__layout.addWidget(schemaLabel, 3, 1)
+
+        self.__schemaCombo = QComboBox()
+        self.__schemaCombo.setMinimumHeight(20)
+        self.__schemaCombo.setMinimumWidth(50)
+        self.__schemaCombo.addItem("")
+        self.__layout.addWidget(self.__schemaCombo, 3, 2)
+
         tableLabel = QLabel(QCoreApplication.translate("VDLTools","Config table : "))
         tableLabel.setMinimumHeight(20)
         tableLabel.setMinimumWidth(50)
-        self.__layout.addWidget(tableLabel, 2, 1)
+        self.__layout.addWidget(tableLabel, 4, 1)
 
         self.__tableCombo = QComboBox()
         self.__tableCombo.setMinimumHeight(20)
         self.__tableCombo.setMinimumWidth(50)
         self.__tableCombo.addItem("")
-        for table in self.__tables:
-            self.__tableCombo.addItem(table)
-        self.__layout.addWidget(self.__tableCombo, 2, 2)
-        self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
-        if self.__configTable is not None:
-            if self.__configTable in self.__tables:
-                self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
+        self.__layout.addWidget(self.__tableCombo, 4, 2)
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
@@ -139,6 +151,64 @@ class ShowSettingsDialog(QDialog):
         self.__layout.addWidget(self.__okButton, 100, 1)
         self.__layout.addWidget(self.__cancelButton, 100, 2)
         self.setLayout(self.__layout)
+
+        self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
+        self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
+        self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
+        if self.__importDb is not None:
+            if self.__importDb in self.__dbs:
+                self.__dbCombo.setCurrentIndex(self.__dbs.index(self.__importDb) + 1)
+
+    @staticmethod
+    def __resetCombo(combo):
+        while combo.count() > 0:
+            combo.removeItem(combo.count()-1)
+
+    def __setSchemaCombo(self, dbName):
+        db = DBConnector.setConnection(dbName, self.__iface)
+        if db:
+            self.__schemaCombo.currentIndexChanged.disconnect(self.__schemaComboChanged)
+            self.__resetCombo(self.__schemaCombo)
+            self.__schemaCombo.addItem("")
+            self.__schemas = []
+            query = db.exec_("""SELECT DISTINCT table_schema FROM information_schema.tables WHERE table_schema NOT IN
+                ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
+                (SELECT f_table_name FROM geometry_columns)""")
+            if query.lastError().isValid():
+                print query.lastError().text()
+            else:
+                while query.next():
+                    self.__schemas.append(query.value(0))
+                db.close()
+                for schema in self.__schemas:
+                    self.__schemaCombo.addItem(schema)
+                self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
+                if self.__schemaDb is not None:
+                    if self.__schemaDb in self.__schemas:
+                        self.__schemaCombo.setCurrentIndex(self.__schemas.index(self.__schemaDb) + 1)
+
+    def __setTableCombo(self, dbName, schema):
+        db = DBConnector.setConnection(dbName, self.__iface)
+        if db:
+            self.__tableCombo.currentIndexChanged.disconnect(self.__tableComboChanged)
+            self.__resetCombo(self.__tableCombo)
+            self.__tableCombo.addItem("")
+            self.__tables = []
+            query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema = '""" + schema +
+                             """' ORDER BY table_name""")
+            if query.lastError().isValid():
+                print query.lastError().text()
+            else:
+                while query.next():
+                    self.__tables.append(query.value(0))
+                db.close()
+                for table in self.__tables:
+                    if self.__tableCombo.findText(table) == -1:
+                        self.__tableCombo.addItem(table)
+                self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
+                if self.__configTable is not None:
+                    if self.__configTable in self.__tables:
+                        self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
 
     def __lineComboChanged(self):
         """
@@ -160,6 +230,19 @@ class ShowSettingsDialog(QDialog):
         """
         if self.__tableCombo.itemText(0) == "":
             self.__tableCombo.removeItem(0)
+
+    def __dbComboChanged(self):
+        if self.__dbCombo.itemText(0) == "":
+            self.__dbCombo.removeItem(0)
+        if self.importDb() is not None:
+            self.__setSchemaCombo(self.importDb())
+
+    def __schemaComboChanged(self):
+        if self.__schemaCombo.itemText(0) == "":
+            self.__schemaCombo.removeItem(0)
+        if self.schemaDb() is not None:
+            self.__setTableCombo(self.importDb(), self.schemaDb())
+
 
     def okButton(self):
         """
@@ -207,3 +290,17 @@ class ShowSettingsDialog(QDialog):
             return None
         else:
             return self.__tables[index]
+
+    def importDb(self):
+        index = self.__dbCombo.currentIndex()
+        if self.__dbCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__dbs[index]
+
+    def schemaDb(self):
+        index = self.__schemaCombo.currentIndex()
+        if self.__schemaCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__schemas[index]

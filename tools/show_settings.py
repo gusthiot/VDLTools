@@ -48,6 +48,8 @@ class ShowSettings:
         self.__text = QCoreApplication.translate("VDLTools","Settings")
         self.__showDlg = None
         self.__configTable = None
+        self.__importDb = None
+        self.__schemaDb = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
         self.__project_loaded()
@@ -60,6 +62,8 @@ class ShowSettings:
         Get saved settings on load
         """
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
+        self.__importDb = QgsProject.instance().readEntry("VDLTools", "import_db", None)[0]
+        self.__schemaDb = QgsProject.instance().readEntry("VDLTools", "schema_db", None)[0]
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
         if mpl_id != -1 or mll_id != -1:
@@ -91,7 +95,7 @@ class ShowSettings:
         To start the show settings, meaning display a Show Settings Dialog
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
-                                            self.__configTable)
+                                            self.__configTable, self.__importDb, self.__schemaDb)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -104,6 +108,8 @@ class ShowSettings:
         self.setLinesLayer(self.__showDlg.linesLayer())
         self.setPointsLayer(self.__showDlg.pointsLayer())
         self.setConfigTable(self.__showDlg.configTable())
+        self.setImportDb(self.__showDlg.importDb())
+        self.setSchemaDb(self.__showDlg.schemaDb())
 
     def __onCancel(self):
         """
@@ -145,6 +151,12 @@ class ShowSettings:
         :return: saved config table
         """
         return self.__configTable
+
+    def importDb(self):
+        return self.__importDb
+
+    def schemaDb(self):
+        return self.__schemaDb
 
     def setPointsLayer(self, pointsLayer):
         """
@@ -229,3 +241,11 @@ class ShowSettings:
         """
         self.__configTable = configTable
         QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
+
+    def setImportDb(self, importDb):
+        self.__importDb = importDb
+        QgsProject.instance().writeEntry("VDLTools", "import_db", importDb)
+
+    def setSchemaDb(self, schemaDb):
+        self.__schemaDb = schemaDb
+        QgsProject.instance().writeEntry("VDLTools", "schema_db", schemaDb)

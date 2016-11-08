@@ -22,15 +22,15 @@
 """
 
 from qgis.gui import QgsMessageBar
-from qgis.core import QgsDataSourceURI
 from ..core.db_connector import DBConnector
 from ..ui.import_jobs_dialog import ImportJobsDialog
 from PyQt4.QtCore import QCoreApplication
+from datetime import datetime
 
 
 class ImportMeasures:
     """
-    Class to import measurments data into given tables
+    Class to import measurements data into given tables
     """
 
     def __init__(self, iface):
@@ -43,6 +43,8 @@ class ImportMeasures:
         self.__text = QCoreApplication.translate("VDLTools","Import Measures")
         self.__ownSettings = None
         self.__configTable = None
+        self.__importDb = None
+        self.__schemaDb = None
         self.__db = None
         self.__jobsDlg = None
         self.__sourceTable = ""
@@ -77,37 +79,54 @@ class ImportMeasures:
                                                   QCoreApplication.translate("VDLTools","No settings given !!"),
                                                   level=QgsMessageBar.CRITICAL)
             return
+        if self.__ownSettings.importDb() is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
+                                                  QCoreApplication.translate("VDLTools","No import db given !!"),
+                                                  level=QgsMessageBar.CRITICAL)
+        if self.__ownSettings.schemaDb() is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
+                                                  QCoreApplication.translate("VDLTools","No db schema given !!"),
+                                                  level=QgsMessageBar.CRITICAL)
         if self.__ownSettings.configTable() is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No config table given !!"),
                                                   level=QgsMessageBar.CRITICAL)
             return
         self.__configTable = self.__ownSettings.configTable()
+        self.__schemaDb = self.__ownSettings.schemaDb()
+        self.__importDb = self.__ownSettings.importDb()
 
-        dataSource = QgsDataSourceURI(self.__layer.source())  # where did __layer come from...
-        self.__db = DBConnector.setConnection(dataSource.database(), self.__iface)
+        self.__db = DBConnector.setConnection(self.__importDb, self.__iface)
         if self.__db is not None:
-            query = self.__db.exec_("""SELECT DISTINCT source FROM """ + self.__configTable +
-                                    """ WHERE source NOT NULL""")
-            while query.next():
-                if self.__sourceTable == "":
-                    self.__sourceTable = query.value(0)
-                elif self.__sourceTable != query.value(0):
-                    self.__iface.messageBar().pushMessage(
-                        QCoreApplication.translate("VDLTools","Error"),
-                        QCoreApplication.translate("VDLTools","different sources in config table ?!?"),
-                        level=QgsMessageBar.WARNING)
-            query = self.__db.exec_("""SELECT DISTINCT job FROM """ + self.__sourceTable + """ WHERE
-                traitement = 'non-traité'""")
-            jobs = []
-            while query.next():
-                jobs.append(query.value(0))
+            query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
+                                    self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
+            if query.lastError().isValid():
+                print query.lastError().text()
+                self.__cancel()
+            else:
+                while query.next():
+                    if self.__sourceTable == "":
+                        self.__sourceTable = query.value(0)
+                    elif self.__sourceTable != query.value(0):
+                        self.__iface.messageBar().pushMessage(
+                            QCoreApplication.translate("VDLTools","Error"),
+                            QCoreApplication.translate("VDLTools","different sources in config table ?!?"),
+                            level=QgsMessageBar.WARNING)
+                query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
+                    usr_valid = FALSE""")
+                if query.lastError().isValid():
+                    print query.lastError().text()
+                    self.__cancel()
+                else:
+                    jobs = []
+                    while query.next():
+                        jobs.append(query.value(0))
 
-            self.__jobsDlg = ImportJobsDialog(jobs)
-            self.__jobsDlg.rejected.connect(self.__cancel)
-            self.__jobsDlg.okButton().clicked.connect(self.__onOk)
-            self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
-            self.__jobsDlg.show()
+                    self.__jobsDlg = ImportJobsDialog(jobs)
+                    self.__jobsDlg.rejected.connect(self.__cancel)
+                    self.__jobsDlg.okButton().clicked.connect(self.__onOk)
+                    self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
+                    self.__jobsDlg.show()
 
     def __onOk(self):
         """
@@ -115,9 +134,57 @@ class ImportMeasures:
         """
         job = self.__jobsDlg.job()
         self.__jobsDlg.accept()
-        query = self.__db.exec_("""SELECT 1,2,3 FROM """ + self.__sourceTable + """ WHERE job = '""" + job + """'""")
-        while query.next():
-            pass  # then traiter les records du job...
+        query = self.__db.exec_("""SELECT code,description,geometry,id FROM """ + self.__sourceTable +
+                                """ WHERE usr_session_name = '""" + job + """'""")
+        if query.lastError().isValid():
+            print query.lastError().text()
+        else:
+            while query.next():
+                code = query.value(0)
+                descr = query.value(1)
+                geom = query.value(2)
+                id_survey = query.value(3)
+                destLayer = ""
+                request = """INSERT INTO """ + self.__schemaDb + """.""" + descr
+                columns = "(id,geometry3d"
+                values = "(nextval('" + self.__schemaDb + """.""" + descr + "_id_seq'::regclass),'" + geom + "'"
+                query2 = self.__db.exec_("""SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
+                                         self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + code +
+                                         """' AND static_value IS NOT NULL""")
+                if query2.lastError().isValid():
+                    print query2.lastError().text()
+                else:
+                    while query2.next():
+                        if destLayer == "":
+                            destLayer = query2.value(0)
+                        elif destLayer != query2.value(0):
+                            self.__iface.messageBar().pushMessage(
+                                QCoreApplication.translate("VDLTools","Error"),
+                                QCoreApplication.translate("VDLTools","different destination layer in config table ?!?"),
+                                level=QgsMessageBar.WARNING)
+                        columns += "," + query2.value(1)
+                        values += ",'" + query2.value(2) + "'"
+                    columns += ")"
+                    values += ")"
+                    request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
+                    query2 = self.__db.exec_(request)
+                    if query2.lastError().isValid():
+                        print query2.lastError().text()
+                    else:
+                        id_table = None
+                        qgis_user = None
+                        query2.first()
+                        id_object = query2.value(0)
+                        query3 = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
+                                                 str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
+                                                 """', usr_fk_network_element = '""" + id_object +
+                                                 """', usr_fk_table = '""" + id_table + """', usr_import_user = '""" +
+                                                 qgis_user + """' WHERE id = '""" + id_survey + """'""")
+                        if query3.lastError().isValid():
+                            print query3.lastError().text()
+                        else:
+                            print "ok"
+        self.__cancel()
 
     def __cancel(self):
         self.__db.close()

@@ -33,6 +33,20 @@ class DBConnector:
     """
 
     @staticmethod
+    def getDatabases():
+        dbs = []
+        s = QSettings()
+        s.beginGroup("PostgreSQL/connections")
+        connections = s.childGroups()
+        s.endGroup()
+        for connection in connections:
+            s.beginGroup("PostgreSQL/connections/" + connection)
+            dbs.append(s.value("database", ""))
+            s.endGroup()
+        return dbs
+
+
+    @staticmethod
     def setConnection(dbName, iface):
         """
         To set a connection to a PstgreSQL database
