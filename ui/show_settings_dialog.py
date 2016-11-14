@@ -29,7 +29,6 @@ from PyQt4.QtGui import (QDialog,
                          QComboBox)
 from qgis.core import (QgsMapLayer,
                        QgsMapLayerRegistry,
-                       QgsDataSourceURI,
                        QGis)
 from PyQt4.QtCore import QCoreApplication
 from ..core.db_connector import DBConnector
@@ -40,7 +39,7 @@ class ShowSettingsDialog(QDialog):
     Dialog class for plugin settings
     """
 
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable, importDb, schemaDb):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable, uriDb, schemaDb):
         """
         Constructor
         :param iface: interface
@@ -53,14 +52,14 @@ class ShowSettingsDialog(QDialog):
         self.__memoryPointsLayer = memoryPointsLayer
         self.__memoryLinesLayer = memoryLinesLayer
         self.__configTable = configTable
-        self.__importDb = importDb
+        self.__uriDb = uriDb
         self.__schemaDb = schemaDb
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Settings"))
         self.__pointsLayers = []
         self.__linesLayers = []
         self.__tables = []
         self.__schemas = []
-        self.__dbs = DBConnector.getDatabases()
+        self.__dbs = DBConnector.getUsedDatabases()
 
         for layer in QgsMapLayerRegistry.instance().mapLayers().values():
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
@@ -114,7 +113,7 @@ class ShowSettingsDialog(QDialog):
         self.__dbCombo.setMinimumHeight(20)
         self.__dbCombo.setMinimumWidth(50)
         self.__dbCombo.addItem("")
-        for db in self.__dbs:
+        for db in self.__dbs.keys():
             self.__dbCombo.addItem(db)
         self.__layout.addWidget(self.__dbCombo, 2, 2)
 
@@ -155,17 +154,18 @@ class ShowSettingsDialog(QDialog):
         self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
         self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
         self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
-        if self.__importDb is not None:
-            if self.__importDb in self.__dbs:
-                self.__dbCombo.setCurrentIndex(self.__dbs.index(self.__importDb) + 1)
+        if self.__uriDb is not None:
+            if self.__uriDb.database() in self.__dbs.keys():
+                self.__dbCombo.setCurrentIndex(self.__dbs.keys().index(self.__uriDb.database()) + 1)
 
     @staticmethod
     def __resetCombo(combo):
         while combo.count() > 0:
             combo.removeItem(combo.count()-1)
 
-    def __setSchemaCombo(self, dbName):
-        db = DBConnector.setConnection(dbName, self.__iface)
+    def __setSchemaCombo(self, uriDb):
+        connector = DBConnector(uriDb, self.__iface)
+        db = connector.setConnection()
         if db:
             self.__schemaCombo.currentIndexChanged.disconnect(self.__schemaComboChanged)
             self.__resetCombo(self.__schemaCombo)
@@ -187,8 +187,9 @@ class ShowSettingsDialog(QDialog):
                     if self.__schemaDb in self.__schemas:
                         self.__schemaCombo.setCurrentIndex(self.__schemas.index(self.__schemaDb) + 1)
 
-    def __setTableCombo(self, dbName, schema):
-        db = DBConnector.setConnection(dbName, self.__iface)
+    def __setTableCombo(self, uriDb, schema):
+        connector = DBConnector(uriDb, self.__iface)
+        db = connector.setConnection()
         if db:
             self.__tableCombo.currentIndexChanged.disconnect(self.__tableComboChanged)
             self.__resetCombo(self.__tableCombo)
@@ -234,14 +235,14 @@ class ShowSettingsDialog(QDialog):
     def __dbComboChanged(self):
         if self.__dbCombo.itemText(0) == "":
             self.__dbCombo.removeItem(0)
-        if self.importDb() is not None:
-            self.__setSchemaCombo(self.importDb())
+        if self.uriDb() is not None:
+            self.__setSchemaCombo(self.uriDb())
 
     def __schemaComboChanged(self):
         if self.__schemaCombo.itemText(0) == "":
             self.__schemaCombo.removeItem(0)
         if self.schemaDb() is not None:
-            self.__setTableCombo(self.importDb(), self.schemaDb())
+            self.__setTableCombo(self.uriDb(), self.schemaDb())
 
 
     def okButton(self):
@@ -291,12 +292,12 @@ class ShowSettingsDialog(QDialog):
         else:
             return self.__tables[index]
 
-    def importDb(self):
+    def uriDb(self):
         index = self.__dbCombo.currentIndex()
         if self.__dbCombo.itemText(index) == "":
             return None
         else:
-            return self.__dbs[index]
+            return self.__dbs[self.__dbs.keys()[index]]
 
     def schemaDb(self):
         index = self.__schemaCombo.currentIndex()

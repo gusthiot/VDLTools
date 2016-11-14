@@ -31,6 +31,7 @@ from qgis.core import (QgsProject,
                        QgsField,
                        QGis,
                        QgsMapLayer)
+from ..core.db_connector import DBConnector
 
 
 class ShowSettings:
@@ -48,7 +49,7 @@ class ShowSettings:
         self.__text = QCoreApplication.translate("VDLTools","Settings")
         self.__showDlg = None
         self.__configTable = None
-        self.__importDb = None
+        self.__uriDb = None
         self.__schemaDb = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
@@ -62,7 +63,7 @@ class ShowSettings:
         Get saved settings on load
         """
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
-        self.__importDb = QgsProject.instance().readEntry("VDLTools", "import_db", None)[0]
+        dbName = QgsProject.instance().readEntry("VDLTools", "db_name", None)[0]
         self.__schemaDb = QgsProject.instance().readEntry("VDLTools", "schema_db", None)[0]
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
@@ -75,6 +76,11 @@ class ShowSettings:
                     if layer.geometryType() == QGis.Line:
                         if layer.id() == mll_id:
                             self.__memoryLinesLayer = layer
+        if dbName != "":
+            usedDbs = DBConnector.getUsedDatabases()
+            if dbName in usedDbs.keys():
+                self.__uriDb = usedDbs[dbName]
+
 
     def icon_path(self):
         """
@@ -95,7 +101,7 @@ class ShowSettings:
         To start the show settings, meaning display a Show Settings Dialog
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
-                                            self.__configTable, self.__importDb, self.__schemaDb)
+                                            self.__configTable, self.__uriDb, self.__schemaDb)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -108,7 +114,7 @@ class ShowSettings:
         self.setLinesLayer(self.__showDlg.linesLayer())
         self.setPointsLayer(self.__showDlg.pointsLayer())
         self.setConfigTable(self.__showDlg.configTable())
-        self.setImportDb(self.__showDlg.importDb())
+        self.setUriDb(self.__showDlg.uriDb())
         self.setSchemaDb(self.__showDlg.schemaDb())
 
     def __onCancel(self):
@@ -152,8 +158,8 @@ class ShowSettings:
         """
         return self.__configTable
 
-    def importDb(self):
-        return self.__importDb
+    def uriDb(self):
+        return self.__uriDb
 
     def schemaDb(self):
         return self.__schemaDb
@@ -242,9 +248,9 @@ class ShowSettings:
         self.__configTable = configTable
         QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
 
-    def setImportDb(self, importDb):
-        self.__importDb = importDb
-        QgsProject.instance().writeEntry("VDLTools", "import_db", importDb)
+    def setUriDb(self, uriDb):
+        self.__uriDb = uriDb
+        QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
 
     def setSchemaDb(self, schemaDb):
         self.__schemaDb = schemaDb

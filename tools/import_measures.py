@@ -43,7 +43,7 @@ class ImportMeasures:
         self.__text = QCoreApplication.translate("VDLTools","Import Measures")
         self.__ownSettings = None
         self.__configTable = None
-        self.__importDb = None
+        self.__uriDb = None
         self.__schemaDb = None
         self.__db = None
         self.__jobsDlg = None
@@ -79,14 +79,16 @@ class ImportMeasures:
                                                   QCoreApplication.translate("VDLTools","No settings given !!"),
                                                   level=QgsMessageBar.CRITICAL)
             return
-        if self.__ownSettings.importDb() is None:
+        if self.__ownSettings.uriDb() is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No import db given !!"),
                                                   level=QgsMessageBar.CRITICAL)
+            return
         if self.__ownSettings.schemaDb() is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No db schema given !!"),
                                                   level=QgsMessageBar.CRITICAL)
+            return
         if self.__ownSettings.configTable() is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No config table given !!"),
@@ -94,9 +96,10 @@ class ImportMeasures:
             return
         self.__configTable = self.__ownSettings.configTable()
         self.__schemaDb = self.__ownSettings.schemaDb()
-        self.__importDb = self.__ownSettings.importDb()
+        self.__uriDb = self.__ownSettings.uriDb()
 
-        self.__db = DBConnector.setConnection(self.__importDb, self.__iface)
+        self.__connector = DBConnector(self.__uriDb, self.__iface)
+        self.__db = self.__connector.setConnection()
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
                                     self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
@@ -144,46 +147,55 @@ class ImportMeasures:
                 descr = query.value(1)
                 geom = query.value(2)
                 id_survey = query.value(3)
-                destLayer = ""
-                request = """INSERT INTO """ + self.__schemaDb + """.""" + descr
-                columns = "(id,geometry3d"
-                values = "(nextval('" + self.__schemaDb + """.""" + descr + "_id_seq'::regclass),'" + geom + "'"
-                query2 = self.__db.exec_("""SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
-                                         self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + code +
-                                         """' AND static_value IS NOT NULL""")
+                query2 = self.__db.exec_(
+                    """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + descr + """'""")
                 if query2.lastError().isValid():
                     print query2.lastError().text()
                 else:
-                    while query2.next():
-                        if destLayer == "":
-                            destLayer = query2.value(0)
-                        elif destLayer != query2.value(0):
-                            self.__iface.messageBar().pushMessage(
-                                QCoreApplication.translate("VDLTools","Error"),
-                                QCoreApplication.translate("VDLTools","different destination layer in config table ?!?"),
-                                level=QgsMessageBar.WARNING)
-                        columns += "," + query2.value(1)
-                        values += ",'" + query2.value(2) + "'"
-                    columns += ")"
-                    values += ")"
-                    request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
-                    query2 = self.__db.exec_(request)
+                    query2.next()
+                    id_table = query2.value(0)
+                    schema_table = query2.value(1)
+                    destLayer = ""
+                    request = """INSERT INTO """ + schema_table + """.""" + descr
+                    columns = "(id,geometry3d"
+                    values = "(nextval('" + schema_table + """.""" + descr + "_id_seq'::regclass),'" + geom + "'"
+                    query2 = self.__db.exec_(
+                        """SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
+                        self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + code +
+                        """' AND static_value IS NOT NULL""")
                     if query2.lastError().isValid():
                         print query2.lastError().text()
                     else:
-                        id_table = None
-                        qgis_user = None
-                        query2.first()
-                        id_object = query2.value(0)
-                        query3 = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
-                                                 str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
-                                                 """', usr_fk_network_element = '""" + id_object +
-                                                 """', usr_fk_table = '""" + id_table + """', usr_import_user = '""" +
-                                                 qgis_user + """' WHERE id = '""" + id_survey + """'""")
-                        if query3.lastError().isValid():
-                            print query3.lastError().text()
+                        while query2.next():
+                            if destLayer == "":
+                                destLayer = query2.value(0)
+                            elif destLayer != query2.value(0):
+                                self.__iface.messageBar().pushMessage(
+                                    QCoreApplication.translate("VDLTools","Error"),
+                                    QCoreApplication.translate("VDLTools",
+                                                               "different destination layer in config table ?!?"),
+                                    level=QgsMessageBar.WARNING)
+                            columns += "," + query2.value(1)
+                            values += ",'" + query2.value(2) + "'"
+                        columns += ")"
+                        values += ")"
+                        request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
+                        query2 = self.__db.exec_(request)
+                        if query2.lastError().isValid():
+                            print query2.lastError().text()
                         else:
-                            print "ok"
+                            query2.first()
+                            id_object = query2.value(0)
+                            query3 = self.__db.exec_(
+                                """UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
+                                str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
+                                """', usr_fk_network_element = '""" + id_object + """', usr_fk_table = '""" +
+                                id_table + """', usr_import_user = '""" + self.__db.userName() + """' WHERE id = '""" +
+                                id_survey + """'""")
+                            if query3.lastError().isValid():
+                                print query3.lastError().text()
+                            else:
+                                print "ok"
         self.__cancel()
 
     def __cancel(self):
