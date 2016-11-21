@@ -266,8 +266,7 @@ class ImportMeasures:
                             """' WHERE id = """ + str(data['id_survey']))
                         if query3.lastError().isValid():
                             print query3.lastError().text()
-                        else:
-                            print "ok"
+        print "ok"
         self.__cancel()
 
     def __cancel(self):
