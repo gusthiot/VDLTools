@@ -274,7 +274,6 @@ class ProfileTool(QgsMapTool):
         self.__confirmLine()
 
     def __checkZeros(self):
-        print("check zeros")
         alts = []
         for i in xrange(len(self.__points)):
             zz = self.__points[i]['z']
@@ -459,7 +458,6 @@ class ProfileTool(QgsMapTool):
         for i in xrange(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
-            # self.__lineLayer.updateExtents()
         self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
@@ -481,18 +479,32 @@ class ProfileTool(QgsMapTool):
         num_lines = len(self.__selectedIds)
         for s in situations:
             layer = self.__layers[s['layer']-1]
-            point = self.__features[s['point']][s['layer']-1]
-            point_v2 = GeometryV2.asPointV2(point.geometry())
-            newZ = point_v2.z()
+            feat = self.__features[s['point']][s['layer']-1]
+            newZ = 0
             for i in xrange(num_lines):
                 if self.__points[s['point']]['z'][i] is not None:
                     newZ = self.__points[s['point']]['z'][i]
                     break
-            point_v2.setZ(newZ)
+            if layer.geometryType() == QGis.Polygon:
+                closest = feat.geometry().closestVertex(
+                    QgsPoint(self.__points[s['point']]['x'], self.__points[s['point']]['y']))
+                feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry())
+                position = GeometryV2.polygonVertexId(feat_v2, closest[1])
+                vertex = feat_v2.vertexAt(position)
+                feat_v2.deleteVertex(position)
+                vertex.setZ(newZ)
+                feat_v2.insertVertex(position, vertex)
+            elif layer.geometryType() == QGis.Line:
+                closest = feat.geometry().closestVertex(
+                    QgsPoint(self.__points[s['point']]['x'], self.__points[s['point']]['y']))
+                feat_v2, curved = GeometryV2.asLineV2(feat.geometry())
+                feat_v2.setZAt(closest[1], newZ)
+            else:
+                feat_v2 = GeometryV2.asPointV2(feat.geometry())
+                feat_v2.setZ(newZ)
             if not layer.isEditable():
                 layer.startEditing()
-            layer.changeGeometry(point.id(), QgsGeometry(point_v2))
-            # layer.updateExtents()
+            layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
         self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
