@@ -25,6 +25,7 @@ from qgis.gui import QgsMessageBar
 from ..core.db_connector import DBConnector
 from ..ui.import_jobs_dialog import ImportJobsDialog
 from PyQt4.QtCore import QCoreApplication
+from ..ui.import_confirm_dialog import ImportConfirmDialog
 from datetime import datetime
 
 
@@ -47,6 +48,9 @@ class ImportMeasures:
         self.__schemaDb = None
         self.__db = None
         self.__jobsDlg = None
+        self.__confDlg = None
+        self.__data = None
+        self.__iter = 0
         self.__sourceTable = ""
 
     def icon_path(self):
@@ -115,6 +119,7 @@ class ImportMeasures:
                             QCoreApplication.translate("VDLTools","Error"),
                             QCoreApplication.translate("VDLTools","different sources in config table ?!?"),
                             level=QgsMessageBar.WARNING)
+                #  select jobs
                 query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
                     usr_valid = FALSE""")
                 if query.lastError().isValid():
@@ -137,68 +142,137 @@ class ImportMeasures:
         """
         job = self.__jobsDlg.job()
         self.__jobsDlg.accept()
+        #  select geodata for insertion
         query = self.__db.exec_("""SELECT code,description,geometry,id FROM """ + self.__sourceTable +
                                 """ WHERE usr_session_name = '""" + job + """'""")
         if query.lastError().isValid():
             print query.lastError().text()
         else:
+            self.__data = []
             while query.next():
-                code = query.value(0)
-                descr = query.value(1)
-                geom = query.value(2)
-                id_survey = query.value(3)
+                data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
+                        'id_survey': query.value(3)}
+                # select schema and id for insertion table
                 query2 = self.__db.exec_(
-                    """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + descr + """'""")
+                    """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
                 if query2.lastError().isValid():
                     print query2.lastError().text()
                 else:
                     query2.next()
-                    id_table = query2.value(0)
-                    schema_table = query2.value(1)
-                    destLayer = ""
-                    request = """INSERT INTO """ + schema_table + """.""" + descr
-                    columns = "(id,geometry3d"
-                    values = "(nextval('" + schema_table + """.""" + descr + "_id_seq'::regclass),'" + geom + "'"
-                    query2 = self.__db.exec_(
-                        """SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
-                        self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + code +
-                        """' AND static_value IS NOT NULL""")
+                    data['id_table'] = query2.value(0)
+                    data['schema_table'] = query2.value(1)
+                self.__data.append(data)
+        self.__checkIfExist()
+
+    def __checkIfExist(self):
+        if self.__iter < len(self.__data):
+            data = self.__data[self.__iter]
+
+            # check if already in table
+            query = self.__db.exec_(
+                """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['descr'] +
+                """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
+            if query.lastError().isValid():
+                print query.lastError().text()
+            else:
+                in_base = False
+                point = None
+                while query.next():
+                    point = query.value(0)
+                    in_base = True
+                if in_base:
+                    self.__confDlg = ImportConfirmDialog()
+                    self.__confDlg.setMessage(
+                        QCoreApplication.translate("VDLTools","There is already a " + point +
+                                                   " in table " + data['schema_table'] + """.""" +
+                                                   data['descr'] + ".\n Would you like to add it anyway ? "))
+                    self.__confDlg.rejected.connect(self.__cancelAndNext)
+                    self.__confDlg.accepted.connect(self.__confirmAndNext)
+                    self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
+                    self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
+                    self.__confDlg.show()
+                else:
+                    self.__confirmAndNext()
+        else:
+            self.__insert()
+
+    def __onConfirmCancel(self):
+        """
+        When the Cancel button in Import Confirm Dialog is pushed
+        """
+        self.__confDlg.reject()
+
+    def __onConfirmOk(self):
+        """
+        When the Ok button in Import Confirm Dialog is pushed
+        """
+        self.__confDlg.accept()
+
+    def __cancelAndNext(self):
+        self.__data[self.__iter]['add'] = False
+        self.__nextCheck()
+
+    def __confirmAndNext(self):
+        self.__data[self.__iter]['add'] = True
+        self.__nextCheck()
+
+    def __nextCheck(self):
+        self.__iter += 1
+        self.__checkIfExist()
+
+    def __insert(self):
+        for data in self.__data:
+            if data['add']:
+                destLayer = ""
+                request = """INSERT INTO """ + data['schema_table'] + """.""" + data['descr']
+                columns = "(id,geometry3d"
+                values = "(nextval('" + data['schema_table'] + """.""" + data['descr'] + "_id_seq'::regclass),'" + \
+                         data['geom'] + "'"
+
+                #  select import data for insertion
+                query = self.__db.exec_(
+                    """SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
+                    self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + data['code'] +
+                    """' AND static_value IS NOT NULL""")
+                if query.lastError().isValid():
+                    print query.lastError().text()
+                else:
+                    while query.next():
+                        if destLayer == "":
+                            destLayer = query.value(0)
+                        elif destLayer != query.value(0):
+                            self.__iface.messageBar().pushMessage(
+                                QCoreApplication.translate("VDLTools","Error"),
+                                QCoreApplication.translate("VDLTools",
+                                                           "different destination layer in config table ?!?"),
+                                level=QgsMessageBar.WARNING)
+                        columns += "," + query.value(1)
+                        values += ",'" + query.value(2) + "'"
+                    columns += ")"
+                    values += ")"
+                    request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
+                    #  insert data
+                    query2 = self.__db.exec_(request)
                     if query2.lastError().isValid():
                         print query2.lastError().text()
                     else:
-                        while query2.next():
-                            if destLayer == "":
-                                destLayer = query2.value(0)
-                            elif destLayer != query2.value(0):
-                                self.__iface.messageBar().pushMessage(
-                                    QCoreApplication.translate("VDLTools","Error"),
-                                    QCoreApplication.translate("VDLTools",
-                                                               "different destination layer in config table ?!?"),
-                                    level=QgsMessageBar.WARNING)
-                            columns += "," + query2.value(1)
-                            values += ",'" + query2.value(2) + "'"
-                        columns += ")"
-                        values += ")"
-                        request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
-                        query2 = self.__db.exec_(request)
-                        if query2.lastError().isValid():
-                            print query2.lastError().text()
+                        query2.first()
+                        id_object = query2.value(0)
+                        # update source table
+                        query3 = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
+                            str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
+                            """, usr_fk_network_element = """ + str(id_object) + """, usr_fk_table = """ +
+                            str(data['id_table']) + """, usr_import_user = '""" + self.__db.userName() +
+                            """' WHERE id = """ + str(data['id_survey']))
+                        if query3.lastError().isValid():
+                            print query3.lastError().text()
                         else:
-                            query2.first()
-                            id_object = query2.value(0)
-                            query3 = self.__db.exec_(
-                                """UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
-                                str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
-                                """', usr_fk_network_element = '""" + id_object + """', usr_fk_table = '""" +
-                                id_table + """', usr_import_user = '""" + self.__db.userName() + """' WHERE id = '""" +
-                                id_survey + """'""")
-                            if query3.lastError().isValid():
-                                print query3.lastError().text()
-                            else:
-                                print "ok"
+                            print "ok"
         self.__cancel()
 
     def __cancel(self):
+        self.__confDlg = None
+        self.__jobsDlg = None
         self.__db.close()
 
     def __onCancel(self):

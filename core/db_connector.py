@@ -96,5 +96,4 @@ class DBConnector:
                 uri = QgsDataSourceURI(layer.source())
                 if uri.database() not in dbs:
                     dbs[uri.database()] = uri
-        print dbs.keys()
         return dbs
