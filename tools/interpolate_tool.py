@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from qgis.gui import (QgsMapTool,
+from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsMessageBar,
                       QgsRubberBand)
 from qgis.core import (QGis,
@@ -42,7 +42,7 @@ from ..core.geometry_v2 import GeometryV2
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 
 
-class InterpolateTool(QgsMapTool):
+class InterpolateTool(QgsMapToolAdvancedDigitizing):
     """
     Map tool class to interpolate an elevation in the middle of a segment
     """
@@ -52,7 +52,7 @@ class InterpolateTool(QgsMapTool):
         Constructor
         :param iface: interface
         """
-        QgsMapTool.__init__(self, iface.mapCanvas())
+        QgsMapToolAdvancedDigitizing.__init__(self, iface.mapCanvas(), iface.cadDockWidget())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/interpolate_icon.png'
@@ -102,7 +102,7 @@ class InterpolateTool(QgsMapTool):
         """
         When the action is selected
         """
-        QgsMapTool.activate(self)
+        QgsMapToolAdvancedDigitizing.activate(self)
         self.__updateList()
         self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
         color = QColor("red")
@@ -121,7 +121,7 @@ class InterpolateTool(QgsMapTool):
         self.__rubber = None
         self.__canvas.layersChanged.disconnect(self.__updateList)
         self.__canvas.scaleChanged.disconnect(self.__updateList)
-        QgsMapTool.deactivate(self)
+        QgsMapToolAdvancedDigitizing.deactivate(self)
 
     def startEditing(self):
         """
@@ -208,7 +208,7 @@ class InterpolateTool(QgsMapTool):
         if event.key() == Qt.Key_Escape:
             self.__cancel()
 
-    def canvasMoveEvent(self, event):
+    def cadCanvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
@@ -252,7 +252,7 @@ class InterpolateTool(QgsMapTool):
                         self.__rubber.setIcon(3)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
 
-    def canvasReleaseEvent(self, event):
+    def cadCanvasReleaseEvent(self, event):
         """
         When the mouse is clicked
         :param event: mouse event

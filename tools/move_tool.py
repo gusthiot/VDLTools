@@ -37,7 +37,7 @@ from qgis.core import (QgsPointV2,
                        QGis,
                        QgsGeometry,
                        QgsVectorLayer)
-from qgis.gui import (QgsMapTool,
+from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsRubberBand,
                       QgsMessageBar)
 from ..ui.move_confirm_dialog import MoveConfirmDialog
@@ -45,7 +45,7 @@ from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 
 
-class MoveTool(QgsMapTool):
+class MoveTool(QgsMapToolAdvancedDigitizing):
     """
     Map tool class to move or copy an object
     """
@@ -55,7 +55,7 @@ class MoveTool(QgsMapTool):
         Constructor
         :param iface: interface
         """
-        QgsMapTool.__init__(self, iface.mapCanvas())
+        QgsMapToolAdvancedDigitizing.__init__(self,  iface.mapCanvas(), iface.cadDockWidget())
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/move_icon.png'
@@ -73,12 +73,20 @@ class MoveTool(QgsMapTool):
         self.__newFeature = None
         self.__selectedVertex = None
 
+    def activate(self):
+        """
+        When the action is selected
+        """
+        QgsMapToolAdvancedDigitizing.activate(self)
+
+
     def deactivate(self):
         """
         When the action is deselected
         """
         self.__cancel()
-        QgsMapTool.deactivate(self)
+        QgsMapToolAdvancedDigitizing.deactivate(self)
+
 
     def icon_path(self):
         """
@@ -311,7 +319,7 @@ class MoveTool(QgsMapTool):
         if event.key() == Qt.Key_Escape:
             self.__cancel()
 
-    def canvasMoveEvent(self, event):
+    def cadCanvasMoveEvent(self, event):
         """
         When the mouse is moved
         :param event: mouse event
@@ -382,7 +390,7 @@ class MoveTool(QgsMapTool):
                     self.__rubberSnap.setIcon(3)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
 
-    def canvasReleaseEvent(self, event):
+    def cadCanvasReleaseEvent(self, event):
         """
         When the mouse is clicked
         :param event: mouse event
