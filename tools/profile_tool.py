@@ -275,14 +275,18 @@ class ProfileTool(QgsMapTool):
 
     def __checkZeros(self):
         alts = []
+        nb_not_none = []
         for i in xrange(len(self.__points)):
             zz = self.__points[i]['z']
             alt = 0
+            nb = 0
             for z in zz:
                 if z is not None:
+                    nb += 1
                     if z > alt:
                         alt = z
             alts.append(alt)
+            nb_not_none.append(nb)
 
         zeros = []
         for i in xrange(len(self.__points)):
@@ -307,7 +311,7 @@ class ProfileTool(QgsMapTool):
                             break
                         j += 1
                     if ap is None or app is None:
-                        zeros.append([i, None])
+                        zeros.append([i, None, None])
                     else:
                         big_d = Finder.sqrDistForCoords(self.__points[ap]['x'], self.__points[app]['x'],
                                                         self.__points[ap]['y'], self.__points[app]['y'])
@@ -316,9 +320,9 @@ class ProfileTool(QgsMapTool):
                         print(big_d, small_d)
                         if small_d < (big_d/4):
                             zextra = alts[app] + (1 + small_d / big_d) * (alts[ap] - alts[app])
-                            zeros.append([i, zextra])
+                            zeros.append([i, zextra, nb_not_none[i]])
                         else:
-                            zeros.append([i, None])
+                            zeros.append([i, None, None])
                 elif i == len(self.__points)-1:
                     av = None
                     avv = None
@@ -339,7 +343,7 @@ class ProfileTool(QgsMapTool):
                             break
                         j += 1
                     if av is None or avv is None:
-                        zeros.append([i, None])
+                        zeros.append([i, None, None])
                     else:
                         big_d = Finder.sqrDistForCoords(self.__points[i-av]['x'], self.__points[i-avv]['x'],
                                                         self.__points[i-av]['y'], self.__points[i-avv]['y'])
@@ -349,9 +353,9 @@ class ProfileTool(QgsMapTool):
                         if small_d < (big_d/4):
                             print(alts[i-av], alts[i-avv])
                             zextra = alts[i-avv] + (1 + small_d / big_d) * (alts[i-av] - alts[i-avv])
-                            zeros.append([i, zextra])
+                            zeros.append([i, zextra, nb_not_none[i]])
                         else:
-                            zeros.append([i, None])
+                            zeros.append([i, None, None])
                 else:
                     av = None
                     j = 1
@@ -372,14 +376,14 @@ class ProfileTool(QgsMapTool):
                             break
                         j += 1
                     if av is None or ap is None:
-                        zeros.append([i, None])
+                        zeros.append([i, None, None])
                     else:
                         d0 = Finder.sqrDistForCoords(
                             self.__points[i-av]['x'], self.__points[i]['x'], self.__points[i-av]['y'], self.__points[i]['y'])
                         d1 = Finder.sqrDistForCoords(
                             self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'], self.__points[i]['y'])
                         zinter = (d0*alts[i+ap] + d1*alts[i-av])/(d0 + d1)
-                        zeros.append([i, zinter])
+                        zeros.append([i, zinter, nb_not_none[i]])
         if len(zeros) > 0:
             self.__zeroDlg = ProfileZerosDialog(zeros)
             self.__zeroDlg.rejected.connect(self.__cancel)
@@ -411,6 +415,13 @@ class ProfileTool(QgsMapTool):
                     if not self.__selectedDirections[i]:
                         index = lines[i].numPoints()-1-index
                     lines[i].setZAt(index, z[1])
+            if z[2] > 1:
+                zz = self.__points[z[0]]['z']
+                for p in xrange(len(zz)-num_lines):
+                    if zz[num_lines+p] is not None:
+                        feat = self.__features[z[0]][p]
+                        layer = self.__layers[p]
+                        self.__changePoint(layer, z[0], feat, z[1])
         if not self.__lineLayer.isEditable():
             self.__lineLayer.startEditing()
         for i in xrange(len(lines)):
@@ -485,30 +496,33 @@ class ProfileTool(QgsMapTool):
                 if self.__points[s['point']]['z'][i] is not None:
                     newZ = self.__points[s['point']]['z'][i]
                     break
-            if layer.geometryType() == QGis.Polygon:
-                closest = feat.geometry().closestVertex(
-                    QgsPoint(self.__points[s['point']]['x'], self.__points[s['point']]['y']))
-                feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry())
-                position = GeometryV2.polygonVertexId(feat_v2, closest[1])
-                vertex = feat_v2.vertexAt(position)
-                feat_v2.deleteVertex(position)
-                vertex.setZ(newZ)
-                feat_v2.insertVertex(position, vertex)
-            elif layer.geometryType() == QGis.Line:
-                closest = feat.geometry().closestVertex(
-                    QgsPoint(self.__points[s['point']]['x'], self.__points[s['point']]['y']))
-                feat_v2, curved = GeometryV2.asLineV2(feat.geometry())
-                feat_v2.setZAt(closest[1], newZ)
-            else:
-                feat_v2 = GeometryV2.asPointV2(feat.geometry())
-                feat_v2.setZ(newZ)
-            if not layer.isEditable():
-                layer.startEditing()
-            layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
+            self.__changePoint(layer, s['point'], feat, newZ)
         self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
         self.__checkZeros()
+
+    def __changePoint(self, layer, pos, feat, newZ):
+        if layer.geometryType() == QGis.Polygon:
+            closest = feat.geometry().closestVertex(
+                QgsPoint(self.__points[pos]['x'], self.__points[pos]['y']))
+            feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry())
+            position = GeometryV2.polygonVertexId(feat_v2, closest[1])
+            vertex = feat_v2.vertexAt(position)
+            feat_v2.deleteVertex(position)
+            vertex.setZ(newZ)
+            feat_v2.insertVertex(position, vertex)
+        elif layer.geometryType() == QGis.Line:
+            closest = feat.geometry().closestVertex(
+                QgsPoint(self.__points[pos]['x'], self.__points[pos]['y']))
+            feat_v2, curved = GeometryV2.asLineV2(feat.geometry())
+            feat_v2.setZAt(closest[1], newZ)
+        else:
+            feat_v2 = GeometryV2.asPointV2(feat.geometry())
+            feat_v2.setZ(newZ)
+        if not layer.isEditable():
+            layer.startEditing()
+        layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
 
     def __onLayCancel(self):
         """

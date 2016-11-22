@@ -54,6 +54,8 @@ class ProfileZerosDialog(QDialog):
             if self.__zeros[i][1] is not None:
                 msg += QCoreApplication.translate("VDLTools","interpolated elevation : ")
                 msg += str(self.__zeros[i][1]) + "m"
+                if self.__zeros[i][2] > 1:
+                    msg += QCoreApplication.translate("VDLTools"," (and apply to point)")
                 msgCheck = QCheckBox()
                 msgCheck.setChecked(True)
                 self.__zeroChecks.append(msgCheck)
@@ -80,18 +82,6 @@ class ProfileZerosDialog(QDialog):
         if displayButton:
             self.__layout.addWidget(self.__applyButton, pos, 1)
 
-        # self.__onPointsButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply line elevations to points"))
-        # self.__onPointsButton.setMinimumHeight(20)
-        # self.__onPointsButton.setMinimumWidth(200)
-        #
-        # self.__onLineButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply points elevations to line"))
-        # self.__onLineButton.setMinimumHeight(20)
-        # self.__onLineButton.setMinimumWidth(200)
-
-        # if len(self.__situations) > 0:
-        #     self.__layout.addWidget(self.__onLineButton, pos, 1)
-        #     self.__layout.addWidget(self.__onPointsButton, pos, 2)
-
         self.setLayout(self.__layout)
 
     def getZeros(self):
@@ -116,17 +106,3 @@ class ProfileZerosDialog(QDialog):
         :return: apply button instance
         """
         return self.__applyButton
-
-    # def onPointsButton(self):
-    #     """
-    #     To get the on points button instance
-    #     :return: on points button instance
-    #     """
-    #     return self.__onPointsButton
-    #
-    # def onLineButton(self):
-    #     """
-    #     To get the on line button instance
-    #     :return: on line button instance
-    #     """
-    #     return self.__onLineButton
