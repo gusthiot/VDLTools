@@ -53,6 +53,7 @@ class ShowSettings:
         self.__schemaDb = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
+        self.__mntUrl = None
         self.__project_loaded()
         QgsProject.instance().readProject.connect(self.__project_loaded)
         self.__linesLayer = None
@@ -62,6 +63,7 @@ class ShowSettings:
         """
         Get saved settings on load
         """
+        self.__mntUrl = QgsProject.instance().readEntry("VDLTools", "mnt_url", "None")[0]
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
         dbName = QgsProject.instance().readEntry("VDLTools", "db_name", None)[0]
         self.__schemaDb = QgsProject.instance().readEntry("VDLTools", "schema_db", None)[0]
@@ -101,7 +103,7 @@ class ShowSettings:
         To start the show settings, meaning display a Show Settings Dialog
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
-                                            self.__configTable, self.__uriDb, self.__schemaDb)
+                                            self.__configTable, self.__uriDb, self.__schemaDb, self.__mntUrl)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -116,6 +118,7 @@ class ShowSettings:
         self.setConfigTable(self.__showDlg.configTable())
         self.setUriDb(self.__showDlg.uriDb())
         self.setSchemaDb(self.__showDlg.schemaDb())
+        self.setMntUrl(self.__showDlg.mntUrl())
 
     def __onCancel(self):
         """
@@ -157,6 +160,9 @@ class ShowSettings:
         :return: saved config table
         """
         return self.__configTable
+
+    def mntUrl(self):
+        return self.__mntUrl
 
     def uriDb(self):
         return self.__uriDb
@@ -246,12 +252,20 @@ class ShowSettings:
         :param configTable: config table to save
         """
         self.__configTable = configTable
-        QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
+        if configTable is not None:
+            QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
+
+    def setMntUrl(self, mntUrl):
+        self.__mntUrl = mntUrl
+        if mntUrl is not None:
+            QgsProject.instance().writeEntry("VDLTools", "mnt_url", mntUrl)
 
     def setUriDb(self, uriDb):
         self.__uriDb = uriDb
-        QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
+        if uriDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
 
     def setSchemaDb(self, schemaDb):
         self.__schemaDb = schemaDb
-        QgsProject.instance().writeEntry("VDLTools", "schema_db", schemaDb)
+        if schemaDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "schema_db", schemaDb)

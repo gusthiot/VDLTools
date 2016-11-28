@@ -67,7 +67,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         self.__confDlg = None
         self.__mapPoint = None
         self.__rubber = None
-        self.__ownSettings = None
         self.__selectedFeature = None
         self.__findVertex = False
 
@@ -90,13 +89,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         To set the current tool as this one
         """
         self.__canvas.setMapTool(self)
-
-    def setOwnSettings(self, settings):
-        """
-        To set the settings
-        :param settings: income settings
-        """
-        self.__ownSettings = settings
 
     def activate(self):
         """

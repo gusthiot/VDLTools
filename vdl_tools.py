@@ -149,8 +149,8 @@ class VDLTools:
         self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
 
         self.intersectTool.setOwnSettings(self.showSettings)
-        self.interpolateTool.setOwnSettings(self.showSettings)
         self.importMeasures.setOwnSettings(self.showSettings)
+        self.profileTool.setOwnSettings(self.showSettings)
 
     def unload(self):
         """

@@ -23,6 +23,7 @@
 
 
 from PyQt4.QtGui import (QDialog,
+                         QLineEdit,
                          QGridLayout,
                          QPushButton,
                          QLabel,
@@ -39,7 +40,7 @@ class ShowSettingsDialog(QDialog):
     Dialog class for plugin settings
     """
 
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable, uriDb, schemaDb):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable, uriDb, schemaDb, mntUrl):
         """
         Constructor
         :param iface: interface
@@ -54,6 +55,7 @@ class ShowSettingsDialog(QDialog):
         self.__configTable = configTable
         self.__uriDb = uriDb
         self.__schemaDb = schemaDb
+        self.__mntUrl = mntUrl
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Settings"))
         self.__pointsLayers = []
         self.__linesLayers = []
@@ -67,7 +69,7 @@ class ShowSettingsDialog(QDialog):
                     self.__pointsLayers.append(layer)
                 if layer.geometryType() == QGis.Line:
                     self.__linesLayers.append(layer)
-        self.resize(400, 200)
+        self.resize(450, 200)
         self.__layout = QGridLayout()
 
         pointLabel = QLabel(QCoreApplication.translate("VDLTools","Working points layer : "))
@@ -138,6 +140,21 @@ class ShowSettingsDialog(QDialog):
         self.__tableCombo.setMinimumWidth(50)
         self.__tableCombo.addItem("")
         self.__layout.addWidget(self.__tableCombo, 4, 2)
+
+        mntLabel = QLabel(QCoreApplication.translate("VDLTools","Url for MNT : "))
+        schemaLabel.setMinimumHeight(20)
+        schemaLabel.setMinimumWidth(50)
+        self.__layout.addWidget(mntLabel, 5, 1)
+
+        self.__mntText = QLineEdit()
+        if self.__mntUrl is None or self.__mntUrl == "None":
+            self.__mntText.insert('http://map.lausanne.ch/main/wsgi/profile.json')
+        else:
+            self.__mntText.insert(self.__mntUrl)
+        self.__mntText.setMinimumHeight(20)
+        self.__mntText.setMinimumWidth(100)
+        self.__layout.addWidget(self.__mntText, 5, 2)
+
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
@@ -305,3 +322,6 @@ class ShowSettingsDialog(QDialog):
             return None
         else:
             return self.__schemas[index]
+
+    def mntUrl(self):
+        return self.__mntText.text()

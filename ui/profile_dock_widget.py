@@ -53,11 +53,13 @@ from PyQt4.Qwt5.Qwt import (QwtPlot,
                         QwtPlotItem,
                         QwtPlotGrid,
                         QwtPlotMarker,
-                        QwtSymbol,
                         QwtPlotCurve)
 import itertools
 import traceback
 import sys
+import os
+import json
+from urllib2 import urlopen, URLError, HTTPError
 from math import sqrt
 from matplotlib import rc
 from matplotlib.figure import Figure, SubplotParams
@@ -90,6 +92,7 @@ class ProfileDockWidget(QDockWidget):
 
         self.__profiles = None
         self.__numLines = None
+        self.__mntPoints = None
 
         self.__marker = None
         self.__tabmouseevent = None
@@ -240,7 +243,60 @@ class ProfileDockWidget(QDockWidget):
             profileLen += sqrt(((x2-x1)*(x2-x1)) + ((y2-y1)*(y2-y1)))
             self.__profiles[i+1]['l'] = profileLen
 
-    def attachCurves(self, names):
+    def __getMnt(self, settings):
+        if settings is None or settings.mntUrl() is None or settings.mntUrl() == "None":
+            url = 'http://map.lausanne.ch/main/wsgi/profile.json'
+        elif settings.mntUrl() == "":
+            return
+        else:
+            url = settings.mntUrl()
+        names = ['mnt', 'mns', 'toit_rocher']
+        url += '?layers='
+        pos = 0
+        for name in names:
+            if pos > 0:
+                url += ','
+            pos += 1
+            url += name
+        url += '&geom={"type":"LineString","coordinates":['
+        pos = 0
+        for i in range(len(self.__profiles)):
+            if pos > 0:
+                url += ','
+            pos += 1
+            url += '[' + str(self.__profiles[i]['x']) + ',' + str(self.__profiles[i]['y']) + ']'
+        url = url + ']}&nbPoints=' + str(int(self.__profiles[len(self.__profiles)-1]['l']))
+        try:
+            response = urlopen(url)
+            j = response.read()
+            j_obj = json.loads(j)
+            profile = j_obj['profile']
+            self.__mntPoints = []
+            self.__mntPoints.append(names)
+            mnt_l = []
+            mnt_z = []
+            for p in xrange(len(names)):
+                z = []
+                mnt_z.append(z)
+            for pt in profile:
+                mnt_l.append(float(pt['dist']))
+                values = pt['values']
+                for p in xrange(len(names)):
+                    mnt_z[p].append(float(values[names[p]]))
+            self.__mntPoints.append(mnt_l)
+            self.__mntPoints.append(mnt_z)
+            print mnt_z
+        except HTTPError as e:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "HTTP Error"),
+                QCoreApplication.translate("VDLTools", "status error [" + str(e.code) + "] : " + e.reason),
+                level=QgsMessageBar.CRITICAL)
+        except URLError as e:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "URL Error"),
+                e.reason, level=QgsMessageBar.CRITICAL)
+
+    def attachCurves(self, names, settings):
         """
         To attach the curves for the layers to the profile
         :param names: layers names
@@ -249,6 +305,30 @@ class ProfileDockWidget(QDockWidget):
             return
 
         self.__getLinearPoints()
+        self.__getMnt(settings)
+
+        if self.__mntPoints is not None:
+            if self.__lib == 'Qwt5':
+
+                xx = [list(g) for k, g in itertools.groupby(self.__mntPoints[1], lambda x: x is None) if not k]
+                for p in xrange(len(self.__mntPoints[0])):
+                    if p == 0:
+                        dot = '___'
+                    elif p == 1:
+                        dot = '---'
+                    else:
+                        dot = '...'
+                    legend = QLabel("<font color='" + QColor(Qt.black).name() + "'>" + self.__mntPoints[0][p]
+                                    + " (" + dot + ")</font>")
+                    self.__legendLayout.addWidget(legend)
+
+                    yy = [list(g) for k, g in itertools.groupby(self.__mntPoints[2][p], lambda x: x is None) if not k]
+
+                    for j in range(len(xx)):
+                        curve = QwtPlotCurve(self.__mntPoints[0][p])
+                        curve.setData(xx[j], yy[j])
+                        curve.setPen(QPen(Qt.black, 3, p+1))
+                        curve.attach(self.__plotWdg)
 
         colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
         for i in xrange(len(self.__profiles[0]['z'])):
@@ -359,6 +439,14 @@ class ProfileDockWidget(QDockWidget):
                 maxi = self.__maxTab(self.__profiles[i]['z'])
                 if int(maxi) > maximumValue:
                     maximumValue = int(maxi) + 1
+                if self.__mntPoints is not None:
+                    for pts in self.__mntPoints[2]:
+                        miniMnt = self.__minTab(pts)
+                        if int(miniMnt) < minimumValue:
+                            minimumValue = int(miniMnt) - 1
+                        maxiMnt = self.__maxTab(pts)
+                        if int(maxiMnt) > maximumValue:
+                            maximumValue = int(maxiMnt) + 1
         self.__maxSpin.setValue(maximumValue)
         self.__minSpin.setValue(minimumValue)
         self.__maxSpin.setEnabled(True)
