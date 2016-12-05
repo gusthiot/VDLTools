@@ -78,7 +78,10 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         When the action is selected
         """
         QgsMapToolAdvancedDigitizing.activate(self)
-
+        if self.__layer.geometryType() == QGis.Point:
+            self.setMode(self.CaptureLine)
+        else:
+            self.setMode(self.CaptureNone)
 
     def deactivate(self):
         """
@@ -151,6 +154,10 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         self.__newFeature = None
         self.__selectedVertex = None
         self.__layer.removeSelection()
+        if self.__layer.geometryType() == QGis.Point:
+            self.setMode(self.CaptureLine)
+        else:
+            self.setMode(self.CaptureNone)
 
     def __removeLayer(self):
         """
@@ -179,6 +186,12 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                 else:
                     self.__layer.editingStarted.disconnect(self.startEditing)
             self.__layer = layer
+
+            if self.__layer.geometryType() == QGis.Point:
+                self.setMode(self.CaptureLine)
+            else:
+                self.setMode(self.CaptureNone)
+
             if self.__layer.isEditable():
                 self.action().setEnabled(True)
                 self.__layer.editingStopped.connect(self.stopEditing)
@@ -409,11 +422,14 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                                                    "Select vertex for moving (ESC to undo)"),
                         level=QgsMessageBar.INFO, duration=3)
                     self.__findVertex = True
+                    self.setMode(self.CaptureLine)
                     self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
                 else:
+                    self.setMode(self.CaptureNone)
                     self.__onMove = True
         elif self.__findVertex:
             self.__findVertex = False
+            self.setMode(self.CaptureNone)
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
             self.__selectedVertex = closest[1]
             self.__onMove = True

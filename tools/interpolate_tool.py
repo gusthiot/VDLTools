@@ -104,6 +104,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         self.__rubber.setIconSize(20)
         self.__canvas.layersChanged.connect(self.__updateList)
         self.__canvas.scaleChanged.connect(self.__updateList)
+        self.setMode(self.CaptureLine)
 
     def deactivate(self):
         """
@@ -262,6 +263,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     QCoreApplication.translate("VDLTools",
                                                "Select the position for interpolation (ESC to undo)"),
                     level=QgsMessageBar.INFO, duration=3)
+                self.setMode(self.CaptureNone)
                 self.__findVertex = True
         elif self.__findVertex:
             self.__rubber.reset()
