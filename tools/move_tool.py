@@ -300,7 +300,6 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                 QCoreApplication.translate("VDLTools","Error"),
                 QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
-        # self.__layer.updateExtents()
         self.__confDlg.accept()
         self.__cancel()
 
@@ -324,7 +323,6 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             self.__iface.openFeatureForm(self.__layer, feature)
         else:
             self.__layer.addFeature(feature)
-        # self.__layer.updateExtents()
         self.__confDlg.accept()
         self.__cancel()
 
@@ -351,8 +349,6 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             if self.__rubberBand is not None:
                 self.__rubberBand.reset()
             closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
-            # tolerance = Finder.calcCanvasTolerance(event.mapPoint(), self.__layer, self, 20)
-            # if closest[4] < tolerance:
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
