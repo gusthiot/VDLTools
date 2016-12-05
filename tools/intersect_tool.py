@@ -60,6 +60,7 @@ class IntersectTool(QgsMapTool):
         self.__rubber = None
         self.__ownSettings = None
         self.__isEditing = False
+        self.__distance = 0
 
     def icon_path(self):
         """
@@ -93,6 +94,7 @@ class IntersectTool(QgsMapTool):
         self.__rubber.setIcon(4)
         self.__rubber.setIconSize(20)
         self.__rubber.setWidth(2)
+        self.__distance = 6.0
 
     def deactivate(self):
         """
@@ -122,7 +124,7 @@ class IntersectTool(QgsMapTool):
         self.__dstDlg.rejected.connect(self.__cancel)
         self.__dstDlg.okButton().clicked.connect(self.__onDstOk)
         self.__dstDlg.cancelButton().clicked.connect(self.__onDstCancel)
-        self.__dstDlg.observation().setValue(6.0)
+        self.__dstDlg.observation().setValue(self.__distance)
         self.__dstDlg.observation().selectAll()
         self.__dstDlg.show()
 
@@ -130,11 +132,11 @@ class IntersectTool(QgsMapTool):
         """
         When the Ok button in Intersect Distance Dialog is pushed
         """
-        observation = float(self.__dstDlg.observation().text())
+        self.__distance = float(self.__dstDlg.observation().text())
         circle = QgsCircularStringV2()
         x = self.__dstDlg.mapPoint().x()
         y = self.__dstDlg.mapPoint().y()
-        circle.setPoints([QgsPointV2(x + observation * cos(pi / 180 * a), y + observation * sin(pi / 180 * a))
+        circle.setPoints([QgsPointV2(x + self.__distance * cos(pi / 180 * a), y + self.__distance * sin(pi / 180 * a))
                           for a in range(0, 361, 90)])
         lineLayer = self.__lineLayer()
         lineLayer.startEditing()
@@ -144,7 +146,7 @@ class IntersectTool(QgsMapTool):
         feature.setFields(fields)
         fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
         if "distance" in fieldsNames:
-            feature.setAttribute("distance", observation)
+            feature.setAttribute("distance", self.__distance)
         if "x" in fieldsNames:
             feature.setAttribute("x", self.__dstDlg.mapPoint().x())
         if "y" in fieldsNames:
