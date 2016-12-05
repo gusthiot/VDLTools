@@ -407,7 +407,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
             found_features = self.__layer.selectedFeatures()
             if len(found_features) > 0:
-                if len(found_features) < 1:
+                if len(found_features) > 1:
                     self.__iface.messageBar().pushMessage(
                         QCoreApplication.translate("VDLTools","One feature at a time"), level=QgsMessageBar.INFO)
                     return

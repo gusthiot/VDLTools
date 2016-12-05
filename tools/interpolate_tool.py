@@ -110,6 +110,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         """
         When the action is deselected
         """
+        self.__done()
         self.__cancel()
         self.__rubber = None
         self.__canvas.layersChanged.disconnect(self.__updateList)
@@ -134,17 +135,19 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if self.__canvas.mapTool() == self:
             self.__iface.actionPan().trigger()
 
+    def __done(self):
+        self.__isEditing = False
+        self.__confDlg = None
+        self.__mapPoint = None
+
     def __cancel(self):
+        self.__findVertex = False
         if self.__lastLayer is not None:
             self.__lastLayer.removeSelection()
             self.__lastLayer = None
         self.__rubber.reset()
         self.__lastFeatureId = None
         self.__selectedFeature = None
-        self.__isEditing = False
-        self.__confDlg = None
-        self.__mapPoint = None
-        self.__findVertex = False
 
     def __removeLayer(self):
         """
@@ -199,6 +202,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
 
     def keyReleaseEvent(self, event):
         if event.key() == Qt.Key_Escape:
+            self.__done()
             self.__cancel()
 
     def cadCanvasMoveEvent(self, event):
@@ -253,7 +257,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if self.__lastLayer is not None and not self.__findVertex:
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
-                if len(found_features) < 1:
+                if len(found_features) > 1:
                     self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","One feature at a time"),
                                                           level=QgsMessageBar.INFO)
                     return
@@ -269,30 +273,25 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             self.__rubber.reset()
             snap_layers = Finder.getLayersSettings(self.__canvas, [QGis.Line, QGis.Polygon], QgsPointLocator.All)
             match = Finder.snap(event.mapPoint(), self.__canvas, snap_layers, QgsSnappingUtils.SnapAdvanced)
-            print(match.hasVertex(), match.hasEdge(), match.featureId())
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 ok = False
                 if match.hasVertex():
                     if match.layer() is not None and self.__selectedFeature.id() == match.featureId():
-                        print "vertex"
                         ok = True
                     else:
                         intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                       self.__selectedFeature.id())
                         if intersection is not None:
                             point = intersection
-                            print "inter v"
                             ok = True
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self,
                                                                   self.__selectedFeature.id())
                     if intersection is not None:
                         point = intersection
-                        print "inter e"
                         ok = True
                     elif self.__selectedFeature.id() == match.featureId():
-                        print "edge"
                         ok = True
                 if ok:
                     self.__isEditing = True
@@ -304,12 +303,15 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                             self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
                             self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
                             self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
-                        self.__confDlg.rejected.connect(self.__cancel)
+                        self.__confDlg.rejected.connect(self.__done)
                         self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
                         self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
                         self.__confDlg.show()
                     else:
                         self.__ok(False, True)
+            else:
+                self.__done()
+                self.__cancel()
 
     def __onConfirmCancel(self):
         """
@@ -370,4 +372,5 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
 
-        self.__cancel()
+        self.__done()
+        self.__findVertex = True
