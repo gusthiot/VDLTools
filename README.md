@@ -15,6 +15,8 @@ L'outil "Duplicate" permet de copier un objet dans une direction à une distance
 
 ![Duplicate Gif](./gifs/duplicate.gif)
 
+---
+
 - Move
 
 L'outil "Move" permet de déplacer ou copier un objet.
@@ -27,7 +29,9 @@ L'outil "Move" permet de déplacer ou copier un objet.
     - choisir entre déplacer et copier
     - pour une copie, compléter les attributs du formulaire s'il est affiché
 
-![Move Gif](./gifs/move.gif)
+![Move Gif](./gifs/copy.gif)
+
+---
 
 - Intersect
 
@@ -42,6 +46,8 @@ L'outil "Intersect" permet de créer un cercle de construction d'un rayon donné
         si aucune couche n'est séléctionnée, de nouvelles couches sont créées au moment de la création des premiers éléments
 
 ![Intersect Gif](./gifs/intersect.gif)
+
+---
 
 - Profile
 
@@ -61,6 +67,8 @@ L'outil "Profile" permet d'afficher le profil d'une ligne 3D en parallèle de co
 
 ![Profile Gif](./gifs/profile.gif)
 
+---
+
 - Interpolate
 
 L'outil "Interpolate" permet d'interpoler une altitude au milieu d'un segment de ligne, et d'y créer un nouveau vertex et/ou un nouveau point.
@@ -74,6 +82,8 @@ L'outil "Interpolate" permet d'interpoler une altitude au milieu d'un segment de
 
 ![Interpolate Gif](./gifs/interpolate.gif)
 
+---
+
 - Extrapolate
 
 L'outil "Extrapolate" permet d'extrapoler une altitude en bout de ligne.
@@ -84,6 +94,7 @@ L'outil "Extrapolate" permet d'extrapoler une altitude en bout de ligne.
  
 ![Extrapolate Gif](./gifs/extrapolate.gif)   
 
+---
 
 - Import
 
