@@ -330,7 +330,6 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         if event.key() == Qt.Key_Escape:
             self.__cancel()
 
-
     def cadCanvasMoveEvent(self, event):
         """
         When the mouse is moved
