@@ -98,7 +98,11 @@ L'outil "Extrapolate" permet d'extrapoler une altitude en bout de ligne.
 
 - Import
 
-L'outil "Import" permettra d'importer des données venant du terrain dans les différentes tables.
+L'outil "Import" permet d'importer des données venant du terrain dans les différentes tables.
+
+    - dans les paramètres, choisir une base de données, un schéma et une table de configuration
+    - sélectionner l'outil
+    - sélectionner un job non-traité
 
 
 
