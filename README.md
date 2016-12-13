@@ -66,6 +66,7 @@ L'outil "Profile" permet d'afficher le profil d'une ligne 3D en parallèle de co
         appliquer l'altitude du vertex au point, appliquer l'altitude du point au vertex, ne rien faire
     - les altitudes nulles de la ligne qui n'ont aucun point de référence sont interpolées ou extrapolées, dans la mesure du possible.
         L'altitude des points présents sous lesdits vertices, si elles sont nulles, sont également modifiées.
+    - il est également possible d'afficher le profil mnt si un service mapfish est disponible, qu'il faut mettre dans les paramètres
 
 ![Profile Gif](./gifs/profile.gif)
 
