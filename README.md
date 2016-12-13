@@ -61,9 +61,11 @@ L'outil "Profile" permet d'afficher le profil d'une ligne 3D en parallèle de co
     - sélectionner une première ligne (celle-ci déterminera le sens du profil) avec le bouton gauche
     - sélectionner autant de lignes contiguës que nécessaire avec le bouton gauche
     - cliquer sur le bouton droit pour lancer le profil
-    - choisir les couches de points à afficher
-    - si des altitudes ne correspondent pas entre les vertex de la lignes et les points, il est proposer de fair à choix : 
+    - choisir les couches de points à afficher (points, ou vertices de lignes ou de polygones)
+    - si des altitudes ne correspondent pas entre les vertex de la lignes et les points, il est proposé de faire à choix : 
         appliquer l'altitude du vertex au point, appliquer l'altitude du point au vertex, ne rien faire
+    - les altitudes nulles de la ligne qui n'ont aucun point de référence sont interpolées ou extrapolées, dans la mesure du possible.
+        L'altitude des points présents sous lesdits vertices, si elles sont nulles, sont également modifiées.
 
 ![Profile Gif](./gifs/profile.gif)
 
@@ -79,6 +81,7 @@ L'outil "Interpolate" permet d'interpoler une altitude au milieu d'un segment de
     - sélectionner une position (utilisation possible des options d'accrochage de la couche)
     - choisir si l'on veut créer un point, un vertex, ou les deux (si la position contient déjà un vertex : pas de choix, seul le point sera construit)
     - compléter les attributs du formulaire s'il est affiché    
+    - cliquer à côté de la ligne pour la dé-sélectionner, ou sélectionner une nouvelle position sur cette ligne
 
 ![Interpolate Gif](./gifs/interpolate.gif)
 
