@@ -36,7 +36,7 @@ from qgis.core import (QGis,
                        QgsVertexId)
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
-from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QColor, QMoveEvent
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
@@ -210,8 +210,14 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         When the mouse is moved
         :param event: mouse event
         """
+
+        if type(event) == QMoveEvent:
+            map_point = self.toMapCoordinates(event.pos())
+        else:
+            map_point = event.mapPoint()
+
         if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, self.__layerList)
+            f_l = Finder.findClosestFeatureAt(map_point, self.__canvas, self.__layerList)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
@@ -226,7 +232,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         elif self.__findVertex:
             self.__rubber.reset()
             snap_layers = Finder.getLayersSettings(self.__canvas, [QGis.Line, QGis.Polygon], QgsPointLocator.All)
-            match = Finder.snap(event.mapPoint(), self.__canvas, snap_layers, QgsSnappingUtils.SnapAdvanced)
+            match = Finder.snap(map_point, self.__canvas, snap_layers, QgsSnappingUtils.SnapAdvanced)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():

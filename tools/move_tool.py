@@ -22,7 +22,7 @@
 """
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
-from PyQt4.QtGui import QColor
+from PyQt4.QtGui import QColor, QMoveEvent
 from qgis.core import (QgsPointV2,
                        QgsEditFormConfig,
                        QgsSnappingUtils,
@@ -39,6 +39,7 @@ from qgis.core import (QgsPointV2,
                        QgsVectorLayer)
 from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsRubberBand,
+                      QgsMapMouseEvent,
                       QgsMessageBar)
 from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
@@ -335,10 +336,16 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         When the mouse is moved
         :param event: mouse event
         """
+
+        if type(event) == QMoveEvent:
+            map_point = self.toMapCoordinates(event.pos())
+        else:
+            map_point = event.mapPoint()
+
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+            f_l = Finder.findClosestFeatureAt(map_point, self.__canvas, [laySettings])
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
@@ -348,7 +355,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         elif self.__findVertex:
             if self.__rubberBand is not None:
                 self.__rubberBand.reset()
-            closest = self.__selectedFeature.geometry().closestVertex(event.mapPoint())
+            closest = self.__selectedFeature.geometry().closestVertex(map_point)
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
@@ -359,11 +366,11 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             if self.__rubberBand is not None:
                 self.__rubberBand.reset()
             if self.__layer.geometryType() == QGis.Polygon:
-                self.__polygonPreview(event.mapPoint())
+                self.__polygonPreview(map_point)
             elif self.__layer.geometryType() == QGis.Line:
-                self.__linePreview(event.mapPoint())
+                self.__linePreview(map_point)
             else:
-                self.__pointPreview(event.mapPoint())
+                self.__pointPreview(map_point)
             color = QColor("red")
             color.setAlphaF(0.78)
             self.__rubberBand.setColor(color)
@@ -380,7 +387,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             self.__rubberSnap.setColor(color)
             self.__rubberSnap.setWidth(2)
             self.__rubberSnap.setIconSize(20)
-            match = Finder.snap(event.mapPoint(), self.__canvas)
+            match = Finder.snap(map_point, self.__canvas)
             if match.hasVertex():
                 if match.layer() is not None:
                     self.__rubberSnap.setIcon(4)
