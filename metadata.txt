@@ -14,7 +14,14 @@ version=0.2
 author=Christophe Gusthiot
 email=christophe.gusthiot@lausanne.ch
 
-about=This will contains tools needed by the Ville de Lausanne for water system.
+about=This plugin contains tools needed by the Ville de Lausanne for water system.
+    - a tool to duplicate a feature at a given distance (geometry not kept)
+    - a tool to move/copy a feature, driven by a vertex (geometry kept)
+    - a tool to make an elevation profile of a 3d line
+    - a tool to create temporary circles from snapped points
+    - a tool to interpolate elevation on a 3d edge by adding a 3d point
+    - a tool to extrapolate elevation at the end of a 3d line
+    - a tool to import values from field in database tables (more specific parameters)
 
 tracker=https://github.com/gusthiot/VDLTools/issues
 repository=https://github.com/gusthiot/VDLTools
@@ -28,11 +35,11 @@ repository=https://github.com/gusthiot/VDLTools
 # Tags are comma separated with spaces allowed
 tags=
 
-homepage=
+homepage=https://github.com/gusthiot/VDLTools
 category=Plugins
 icon=icon.png
 # experimental flag
-experimental=False
+experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
 deprecated=False
