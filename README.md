@@ -72,6 +72,12 @@ L'outil "Profile" permet d'afficher le profil d'une ligne 3D en parallèle de co
 
 ---
 
+- Subprofile
+
+L'outil "Subprofile" permet d'afficher le profil mnt, si un service mapfish est disponible, le long d'une polyline construite
+
+---
+
 - Interpolate
 
 L'outil "Interpolate" permet d'interpoler une altitude au milieu d'un segment de ligne, et d'y créer un nouveau vertex et/ou un nouveau point.

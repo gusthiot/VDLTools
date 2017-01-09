@@ -18,6 +18,7 @@ about=This plugin contains tools needed by the Ville de Lausanne for water syste
     - a tool to duplicate a feature at a given distance (geometry not kept)
     - a tool to move/copy a feature, driven by a vertex (geometry kept)
     - a tool to make an elevation profile of a 3d line
+    - a tool to make a MNT profile along a polyline
     - a tool to create temporary circles from snapped points
     - a tool to interpolate elevation on a 3d edge by adding a 3d point
     - a tool to extrapolate elevation at the end of a 3d line
