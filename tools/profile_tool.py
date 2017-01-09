@@ -100,7 +100,6 @@ class ProfileTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        # self.__oldTool = self.__canvas.mapTool()
         self.__canvas.setMapTool(self)
 
     def activate(self):

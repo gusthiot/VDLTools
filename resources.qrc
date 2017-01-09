@@ -23,4 +23,7 @@
     <qresource prefix="/plugins/VDLTools" >
         <file>icons/settings_icon.png</file>
     </qresource>
+    <qresource prefix="/plugins/VDLTools" >
+        <file>icons/profile_2_icon.png</file>
+    </qresource>
 </RCC>

@@ -285,7 +285,6 @@ class ProfileDockWidget(QDockWidget):
                     mnt_z[p].append(float(values[names[p]]))
             self.__mntPoints.append(mnt_l)
             self.__mntPoints.append(mnt_z)
-            print mnt_z
         except HTTPError as e:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "HTTP Error"),
@@ -330,65 +329,66 @@ class ProfileDockWidget(QDockWidget):
                         curve.setPen(QPen(Qt.black, 3, p+1))
                         curve.attach(self.__plotWdg)
 
-        colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
-        for i in xrange(len(self.__profiles[0]['z'])):
-            if i < self.__numLines:
-                v = 0
-            else:
-                v = i - self.__numLines + 1
-            name = names[v]
-            xx = []
-            yy = []
-            for prof in self.__profiles:
-                xx.append(prof['l'])
-                yy.append(prof['z'][i])
-
-            for j in range(len(yy)):
-                if yy[j] is None:
-                    xx[j] = None
-
-            if v < len(colors):
-                color = colors[v]
-            else:
-                d = v / len(colors)
-                color = colors[v - int(d * len(colors))]
-
-            if i == 0 or i > (self.__numLines-1):
-                legend = QLabel("<font color='" + QColor(color).name() + "'>" + name + "</font>")
-                self.__legendLayout.addWidget(legend)
-
-            if self.__lib == 'Qwt5':
-
-                # Split xx and yy into single lines at None values
-                xx = [list(g) for k, g in itertools.groupby(xx, lambda x: x is None) if not k]
-                yy = [list(g) for k, g in itertools.groupby(yy, lambda x: x is None) if not k]
-
-                # Create & attach one QwtPlotCurve per one single line
-                for j in range(len(xx)):
-                    curve = QwtPlotCurve(name)
-                    curve.setData(xx[j], yy[j])
-                    curve.setPen(QPen(color, 3))
-                    if i > (self.__numLines-1):
-                        curve.setStyle(QwtPlotCurve.Dots)
-                        pen = QPen(color, 8)
-                        pen.setCapStyle(Qt.RoundCap)
-                        curve.setPen(pen)
-                    curve.attach(self.__plotWdg)
-
-            elif self.__lib == 'Matplotlib':
-                qcol = QColor(color)
+        if 'z' in self.__profiles[0]:
+            colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
+            for i in xrange(len(self.__profiles[0]['z'])):
                 if i < self.__numLines:
-                    self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=3)
+                    v = 0
                 else:
-                    self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=5, marker='o',
-                                                             linestyle='None')
-                tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
-                for t in range(len(tmp)):
-                    if name == tmp[t].get_gid():
-                        tmp[i].set_color((qcol.red() / 255.0, qcol.green() / 255.0, qcol.blue() / 255.0,
-                                          qcol.alpha() / 255.0))
-                        self.__plotWdg.draw()
-                        break
+                    v = i - self.__numLines + 1
+                name = names[v]
+                xx = []
+                yy = []
+                for prof in self.__profiles:
+                    xx.append(prof['l'])
+                    yy.append(prof['z'][i])
+
+                for j in range(len(yy)):
+                    if yy[j] is None:
+                        xx[j] = None
+
+                if v < len(colors):
+                    color = colors[v]
+                else:
+                    d = v / len(colors)
+                    color = colors[v - int(d * len(colors))]
+
+                if i == 0 or i > (self.__numLines-1):
+                    legend = QLabel("<font color='" + QColor(color).name() + "'>" + name + "</font>")
+                    self.__legendLayout.addWidget(legend)
+
+                if self.__lib == 'Qwt5':
+
+                    # Split xx and yy into single lines at None values
+                    xx = [list(g) for k, g in itertools.groupby(xx, lambda x: x is None) if not k]
+                    yy = [list(g) for k, g in itertools.groupby(yy, lambda x: x is None) if not k]
+
+                    # Create & attach one QwtPlotCurve per one single line
+                    for j in range(len(xx)):
+                        curve = QwtPlotCurve(name)
+                        curve.setData(xx[j], yy[j])
+                        curve.setPen(QPen(color, 3))
+                        if i > (self.__numLines-1):
+                            curve.setStyle(QwtPlotCurve.Dots)
+                            pen = QPen(color, 8)
+                            pen.setCapStyle(Qt.RoundCap)
+                            curve.setPen(pen)
+                        curve.attach(self.__plotWdg)
+
+                elif self.__lib == 'Matplotlib':
+                    qcol = QColor(color)
+                    if i < self.__numLines:
+                        self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=3)
+                    else:
+                        self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=5, marker='o',
+                                                                 linestyle='None')
+                    tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
+                    for t in range(len(tmp)):
+                        if name == tmp[t].get_gid():
+                            tmp[i].set_color((qcol.red() / 255.0, qcol.green() / 255.0, qcol.blue() / 255.0,
+                                              qcol.alpha() / 255.0))
+                            self.__plotWdg.draw()
+                            break
 
         # scaling this
         try:
@@ -433,12 +433,13 @@ class ProfileDockWidget(QDockWidget):
             minimumValue = 1000000000
             maximumValue = -1000000000
             for i in range(len(self.__profiles)):
-                mini = self.__minTab(self.__profiles[i]['z'])
-                if int(mini) < minimumValue:
-                    minimumValue = int(mini) - 1
-                maxi = self.__maxTab(self.__profiles[i]['z'])
-                if int(maxi) > maximumValue:
-                    maximumValue = int(maxi) + 1
+                if 'z' in self.__profiles[i]:
+                    mini = self.__minTab(self.__profiles[i]['z'])
+                    if int(mini) < minimumValue:
+                        minimumValue = int(mini) - 1
+                    maxi = self.__maxTab(self.__profiles[i]['z'])
+                    if int(maxi) > maximumValue:
+                        maximumValue = int(maxi) + 1
                 if self.__mntPoints is not None:
                     for pts in self.__mntPoints[2]:
                         miniMnt = self.__minTab(pts)
