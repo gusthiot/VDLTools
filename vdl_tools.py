@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import absolute_import
+from builtins import object
 from PyQt4.QtCore import (QSettings,
                           QTranslator,
                           qVersion,
@@ -27,23 +29,23 @@ from PyQt4.QtCore import (QSettings,
 from PyQt4.QtGui import (QAction,
                          QIcon)
 
-from tools.duplicate_tool import DuplicateTool
-from tools.intersect_tool import IntersectTool
-from tools.profile_tool import ProfileTool
-from tools.interpolate_tool import InterpolateTool
-from tools.extrapolate_tool import ExtrapolateTool
-from tools.move_tool import MoveTool
-from tools.show_settings import ShowSettings
-from tools.import_measures import ImportMeasures
-from tools.subprofile_tool import SubProfileTool
+from .tools.duplicate_tool import DuplicateTool
+from .tools.intersect_tool import IntersectTool
+from .tools.profile_tool import ProfileTool
+from .tools.interpolate_tool import InterpolateTool
+from .tools.extrapolate_tool import ExtrapolateTool
+from .tools.move_tool import MoveTool
+from .tools.show_settings import ShowSettings
+from .tools.import_measures import ImportMeasures
+from .tools.subprofile_tool import SubProfileTool
 
 # Initialize Qt resources from file resources.py
-import resources
+from . import resources
 
 import os.path
 
 
-class VDLTools:
+class VDLTools(object):
     """
     Main plugin class
     """

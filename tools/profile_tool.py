@@ -20,6 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import division
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from qgis.core import (QgsMapLayer,
                        QgsPointLocator,
                        QgsSnappingUtils,
@@ -283,7 +288,7 @@ class ProfileTool(QgsMapTool):
     def __checkZeros(self):
         alts = []
         nb_not_none = []
-        for i in xrange(len(self.__points)):
+        for i in range(len(self.__points)):
             zz = self.__points[i]['z']
             alt = 0
             nb = 0
@@ -296,7 +301,7 @@ class ProfileTool(QgsMapTool):
             nb_not_none.append(nb)
 
         zeros = []
-        for i in xrange(len(self.__points)):
+        for i in range(len(self.__points)):
             if alts[i] == 0:
                 if i == 0:
                     ap = None
@@ -324,9 +329,9 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[ap]['y'], self.__points[app]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
                                                           self.__points[i]['y'], self.__points[ap]['y'])
-                        print(big_d, small_d)
-                        if small_d < (big_d/4):
-                            zextra = alts[app] + (1 + small_d / big_d) * (alts[ap] - alts[app])
+                        print((big_d, small_d))
+                        if small_d < (old_div(big_d,4)):
+                            zextra = alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app])
                             zeros.append([i, zextra, nb_not_none[i]])
                         else:
                             zeros.append([i, None, None])
@@ -356,10 +361,10 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[i-av]['y'], self.__points[i-avv]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
                                                           self.__points[i]['y'], self.__points[i-av]['y'])
-                        print(big_d, small_d)
-                        if small_d < (big_d/4):
-                            print(alts[i-av], alts[i-avv])
-                            zextra = alts[i-avv] + (1 + small_d / big_d) * (alts[i-av] - alts[i-avv])
+                        print((big_d, small_d))
+                        if small_d < (old_div(big_d,4)):
+                            print((alts[i-av], alts[i-avv]))
+                            zextra = alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv])
                             zeros.append([i, zextra, nb_not_none[i]])
                         else:
                             zeros.append([i, None, None])
@@ -389,7 +394,7 @@ class ProfileTool(QgsMapTool):
                             self.__points[i-av]['x'], self.__points[i]['x'], self.__points[i-av]['y'], self.__points[i]['y'])
                         d1 = Finder.sqrDistForCoords(
                             self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'], self.__points[i]['y'])
-                        zinter = (d0*alts[i+ap] + d1*alts[i-av])/(d0 + d1)
+                        zinter = old_div((d0*alts[i+ap] + d1*alts[i-av]),(d0 + d1))
                         zeros.append([i, zinter, nb_not_none[i]])
         if len(zeros) > 0:
             self.__zeroDlg = ProfileZerosDialog(zeros)
@@ -416,7 +421,7 @@ class ProfileTool(QgsMapTool):
                     lines.append(line)
                     break
         for z in zeros:
-            for i in xrange(num_lines):
+            for i in range(num_lines):
                 if self.__points[z[0]]['z'][i] is not None:
                     index = z[0]-self.__selectedStarts[i]
                     if not self.__selectedDirections[i]:
@@ -424,14 +429,14 @@ class ProfileTool(QgsMapTool):
                     lines[i].setZAt(index, z[1])
             if z[2] > 1:
                 zz = self.__points[z[0]]['z']
-                for p in xrange(len(zz)-num_lines):
+                for p in range(len(zz)-num_lines):
                     if zz[num_lines+p] is not None:
                         feat = self.__features[z[0]][p]
                         layer = self.__layers[p]
                         self.__changePoint(layer, z[0], feat, z[1])
         if not self.__lineLayer.isEditable():
             self.__lineLayer.startEditing()
-        for i in xrange(len(lines)):
+        for i in range(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
             # self.__lineLayer.updateExtents()
@@ -465,7 +470,7 @@ class ProfileTool(QgsMapTool):
                     break
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']+num_lines-1]
-            for i in xrange(num_lines):
+            for i in range(num_lines):
                 if self.__points[s['point']]['z'][i] is not None:
                     index = s['point']-self.__selectedStarts[i]
                     if not self.__selectedDirections[i]:
@@ -473,7 +478,7 @@ class ProfileTool(QgsMapTool):
                     lines[i].setZAt(index, z)
         if not self.__lineLayer.isEditable():
             self.__lineLayer.startEditing()
-        for i in xrange(len(lines)):
+        for i in range(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
         self.__dockWdg.clearData()
@@ -499,7 +504,7 @@ class ProfileTool(QgsMapTool):
             layer = self.__layers[s['layer']-1]
             feat = self.__features[s['point']][s['layer']-1]
             newZ = 0
-            for i in xrange(num_lines):
+            for i in range(num_lines):
                 if self.__points[s['point']]['z'][i] is not None:
                     newZ = self.__points[s['point']]['z'][i]
                     break
@@ -561,9 +566,9 @@ class ProfileTool(QgsMapTool):
                 continue
             line_v2, curved = GeometryV2.asLineV2(selected.geometry())
             if direction:
-                rg = xrange(line_v2.numPoints())
+                rg = range(line_v2.numPoints())
             else:
-                rg = xrange(line_v2.numPoints()-1, -1, -1)
+                rg = range(line_v2.numPoints()-1, -1, -1)
             for i in rg:
                 pt_v2 = line_v2.pointN(i)
                 x = pt_v2.x()
@@ -576,7 +581,7 @@ class ProfileTool(QgsMapTool):
                         break
                 if not doublon:
                     z = []
-                    for j in xrange(num_lines):
+                    for j in range(num_lines):
                         if j == num:
                             if pt_v2.z() == pt_v2.z():
                                 z.append(pt_v2.z())
@@ -643,10 +648,10 @@ class ProfileTool(QgsMapTool):
                 else:
                     if f_l[1].geometryType() == QGis.Polygon:
                         closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
-                        print closest
+                        print(closest)
                         polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry())
                         zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
-                        print zp
+                        print(zp)
                         feat.append(f_l[0])
                         if zp is None or zp != zp:
                             z.append(0)
@@ -821,11 +826,11 @@ class ProfileTool(QgsMapTool):
 
         situations = []
         differences = []
-        for p in xrange(len(self.__points)):
+        for p in range(len(self.__points)):
             pt = self.__points[p]
             num_lines = len(self.__selectedIds)
             zz = []
-            for i in xrange(num_lines):
+            for i in range(num_lines):
                 if pt['z'][i] is not None:
                     zz.append(i)
             if len(zz) == 0:
@@ -835,7 +840,7 @@ class ProfileTool(QgsMapTool):
             elif len(zz) == 1:
                 z0 = pt['z'][zz[0]]
                 tol = 0.01 * z0
-                for i in xrange(num_lines, len(pt['z'])):
+                for i in range(num_lines, len(pt['z'])):
                     if pt['z'][i] is None:
                         continue
                     if abs(pt['z'][i]-z0) > tol:
@@ -846,7 +851,7 @@ class ProfileTool(QgsMapTool):
                 if abs(pt['z'][zz[1]] - z0) > tol:
                     differences.append({'point': p, 'v1': z0, 'v2': pt['z'][zz[1]]})
                 else:
-                    for i in xrange(num_lines, len(pt['z'])):
+                    for i in range(num_lines, len(pt['z'])):
                         if pt['z'][i] is None:
                             continue
                         if abs(pt['z'][i]-z0) > tol:

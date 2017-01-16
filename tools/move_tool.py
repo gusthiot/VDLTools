@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from builtins import range
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor, QMoveEvent
@@ -231,7 +233,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         dy = vertex.y() - point.y()
         if isinstance(curved, (list, tuple)):
             self.__newFeature = QgsCompoundCurveV2()
-            for pos in xrange(line_v2.nCurves()):
+            for pos in range(line_v2.nCurves()):
                 curve_v2 = self.__newCurve(curved[pos], line_v2.curveAt(pos), dx, dy)
                 self.__newFeature.addCurve(curve_v2)
                 if pos == 0:
@@ -257,7 +259,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         else:
             newCurve = QgsLineStringV2()
         points = []
-        for pos in xrange(line_v2.numPoints()):
+        for pos in range(line_v2.numPoints()):
             x = line_v2.pointN(pos).x() - dx
             y = line_v2.pointN(pos).y() - dy
             pt = QgsPointV2(x, y)
@@ -280,7 +282,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         line_v2 = self.__newCurve(curved[0], polygon_v2.exteriorRing(), dx, dy)
         self.__newFeature.setExteriorRing(line_v2)
         self.__rubberBand.setToGeometry(QgsGeometry(line_v2.curveToLine()), None)
-        for num in xrange(polygon_v2.numInteriorRings()):
+        for num in range(polygon_v2.numInteriorRings()):
             line_v2 = self.__newCurve(curved[num+1], polygon_v2.interiorRing(num), dx, dy)
             self.__newFeature.addInteriorRing(line_v2)
             self.__rubberBand.addGeometry(QgsGeometry(line_v2.curveToLine()), None)
@@ -450,7 +452,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
                     if intersection is not None:
-                        print "release intersect"
+                        print("release intersect")
                         mapPoint = intersection
             self.__isEditing = True
             if self.__rubberBand is not None:

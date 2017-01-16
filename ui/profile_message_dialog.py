@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import str
+from builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -56,7 +58,7 @@ class ProfileMessageDialog(QDialog):
         self.__msgChecks = []
         self.__difLabels = []
 
-        for i in xrange(len(self.__situations)):
+        for i in range(len(self.__situations)):
             line = self.__situations[i]
             ptz = self.__points[line['point']]['z']
             msg = "- point " + str(line['point']) + QCoreApplication.translate("VDLTools"," in layer '") + \
@@ -71,7 +73,7 @@ class ProfileMessageDialog(QDialog):
             self.__msgChecks.append(msgCheck)
             self.__layout.addWidget(self.__msgChecks[i], i+1, 2)
 
-        for i in xrange(len(self.__differences)):
+        for i in range(len(self.__differences)):
             line = self.__differences[i]
             msg = "- point " + str(line['point']) + \
                   QCoreApplication.translate("VDLTools"," in layer : different elevations on same position ") + "(" +\
@@ -107,7 +109,7 @@ class ProfileMessageDialog(QDialog):
         :return: checked situations
         """
         situations = []
-        for i in xrange(len(self.__situations)):
+        for i in range(len(self.__situations)):
             if self.__msgChecks[i].isChecked():
                 situations.append(self.__situations[i])
         return situations

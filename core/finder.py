@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
+from builtins import object
 
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
@@ -37,7 +39,7 @@ from math import (sqrt,
                   pow)
 
 
-class Finder:
+class Finder(object):
     """
     Class for snapping methods
     """
@@ -219,8 +221,8 @@ class Finder:
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         if len(features) > 1:
             if len(features) > 2:
-                for i in xrange(len(features)):
-                    for j in xrange(i, len(features)):
+                for i in range(len(features)):
+                    for j in range(i, len(features)):
                         feat1 = features[i]
                         feat2 = features[j]
                         if featureId is None or feat1.id() == featureId or feat2.id() == featureId:

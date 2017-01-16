@@ -20,6 +20,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import division
+from builtins import range
+from past.utils import old_div
 from math import (pi,
                   cos,
                   sin)
@@ -244,7 +247,7 @@ class DuplicateTool(QgsMapTool):
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         if isinstance(curved, (list, tuple)):
             self.__newFeature = QgsCompoundCurveV2()
-            for pos in xrange(line_v2.nCurves()):
+            for pos in range(line_v2.nCurves()):
                 if curved[pos]:
                     curve_v2 = self.__newArc(line_v2.curveAt(pos), distance)
                 else:
@@ -286,18 +289,18 @@ class DuplicateTool(QgsMapTool):
         """
         curve_v2 = QgsLineStringV2()
         points = []
-        for pos in xrange(line_v2.numPoints()):
+        for pos in range(line_v2.numPoints()):
             if pos == 0:
-                angle = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1)) + pi / 2
+                angle = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1)) + old_div(pi, 2)
                 dist = distance
             elif pos == (line_v2.numPoints() - 1):
-                angle = Circle.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos)) + pi / 2
+                angle = Circle.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos)) + old_div(pi, 2)
                 dist = distance
             else:
                 angle1 = Circle.angle(line_v2.pointN(pos - 1), line_v2.pointN(pos))
                 angle2 = Circle.angle(line_v2.pointN(pos), line_v2.pointN(pos + 1))
-                angle = float(pi + angle1 + angle2) / 2
-                dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
+                angle = old_div(float(pi + angle1 + angle2), 2)
+                dist = old_div(float(distance), sin(old_div(float(pi + angle1 - angle2), 2)))
             points.append(self.__newPoint(angle, line_v2.pointN(pos), dist))
         curve_v2.setPoints(points)
         return curve_v2
@@ -313,7 +316,7 @@ class DuplicateTool(QgsMapTool):
         line_v2 = self.__newPolygonCurve(polygon_v2.exteriorRing(), distance, curved[0])
         self.__newFeature.setExteriorRing(line_v2)
         self.__rubberBand.setToGeometry(QgsGeometry(line_v2.curveToLine()), None)
-        for num in xrange(polygon_v2.numInteriorRings()):
+        for num in range(polygon_v2.numInteriorRings()):
             if self.__dstDlg.isInverted():
                 distance = -distance
             line_v2 = self.__newPolygonCurve(polygon_v2.interiorRing(num), distance, curved[num+1])
@@ -334,7 +337,7 @@ class DuplicateTool(QgsMapTool):
             new_line_v2 = QgsLineStringV2()
         points = []
 
-        for pos in xrange(curve_v2.numPoints()):
+        for pos in range(curve_v2.numPoints()):
             if pos == 0:
                 pos1 = curve_v2.numPoints() - 2
             else:
@@ -346,8 +349,8 @@ class DuplicateTool(QgsMapTool):
                 pos3 = pos + 1
             angle1 = Circle.angle(curve_v2.pointN(pos1), curve_v2.pointN(pos2))
             angle2 = Circle.angle(curve_v2.pointN(pos), curve_v2.pointN(pos3))
-            angle = float(pi + angle1 + angle2) / 2
-            dist = float(distance) / sin(float(pi + angle1 - angle2) / 2)
+            angle = old_div(float(pi + angle1 + angle2), 2)
+            dist = old_div(float(distance), sin(old_div(float(pi + angle1 - angle2), 2)))
             points.append(self.__newPoint(angle, curve_v2.pointN(pos), dist))
         new_line_v2.setPoints(points)
         return new_line_v2

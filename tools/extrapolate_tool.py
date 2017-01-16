@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import division
+from past.utils import old_div
 
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
@@ -224,10 +226,10 @@ class ExtrapolateTool(QgsMapTool):
                     pt1 = line_v2.pointN(num_p-2)
                 big_d = Finder.sqrDistForPoints(pt0, pt1)
                 small_d = Finder.sqrDistForPoints(pt1, pt)
-                if small_d < (big_d/4):
+                if small_d < (old_div(big_d,4)):
                     self.__isEditing = True
                     self.__selectedFeature = found_features[0]
-                    self.__elevation = pt0.z() + (1 + small_d/big_d) * (pt1.z() - pt0.z())
+                    self.__elevation = pt0.z() + (1 + old_div(small_d,big_d)) * (pt1.z() - pt0.z())
                     if pt.z() is not None and pt.z() != 0:
                         self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
                         self.__confDlg.rejected.connect(self.__cancel)

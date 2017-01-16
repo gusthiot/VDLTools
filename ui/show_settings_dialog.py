@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from builtins import next
 
 
 from PyQt4.QtGui import (QDialog,
@@ -63,7 +65,7 @@ class ShowSettingsDialog(QDialog):
         self.__schemas = []
         self.__dbs = DBConnector.getUsedDatabases()
 
-        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
                 if layer.geometryType() == QGis.Point:
                     self.__pointsLayers.append(layer)
@@ -115,7 +117,7 @@ class ShowSettingsDialog(QDialog):
         self.__dbCombo.setMinimumHeight(20)
         self.__dbCombo.setMinimumWidth(50)
         self.__dbCombo.addItem("")
-        for db in self.__dbs.keys():
+        for db in list(self.__dbs.keys()):
             self.__dbCombo.addItem(db)
         self.__layout.addWidget(self.__dbCombo, 2, 2)
 
@@ -172,8 +174,8 @@ class ShowSettingsDialog(QDialog):
         self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
         self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
         if self.__uriDb is not None:
-            if self.__uriDb.database() in self.__dbs.keys():
-                self.__dbCombo.setCurrentIndex(self.__dbs.keys().index(self.__uriDb.database()) + 1)
+            if self.__uriDb.database() in list(self.__dbs.keys()):
+                self.__dbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__uriDb.database()) + 1)
 
     @staticmethod
     def __resetCombo(combo):
@@ -192,9 +194,9 @@ class ShowSettingsDialog(QDialog):
                 ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
                 (SELECT f_table_name FROM geometry_columns)""")
             if query.lastError().isValid():
-                print query.lastError().text()
+                print(query.lastError().text())
             else:
-                while query.next():
+                while next(query):
                     self.__schemas.append(query.value(0))
                 db.close()
                 for schema in self.__schemas:
@@ -215,9 +217,9 @@ class ShowSettingsDialog(QDialog):
             query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema = '""" + schema +
                              """' ORDER BY table_name""")
             if query.lastError().isValid():
-                print query.lastError().text()
+                print(query.lastError().text())
             else:
-                while query.next():
+                while next(query):
                     self.__tables.append(query.value(0))
                 db.close()
                 for table in self.__tables:
@@ -314,7 +316,7 @@ class ShowSettingsDialog(QDialog):
         if self.__dbCombo.itemText(index) == "":
             return None
         else:
-            return self.__dbs[self.__dbs.keys()[index]]
+            return self.__dbs[list(self.__dbs.keys())[index]]
 
     def schemaDb(self):
         index = self.__schemaCombo.currentIndex()

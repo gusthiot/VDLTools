@@ -20,6 +20,9 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from builtins import range
+from builtins import object
 
 from qgis.core import (QgsPointV2,
                        QgsVertexId,
@@ -29,7 +32,7 @@ from qgis.core import (QgsPointV2,
                        QgsCircularStringV2)
 
 
-class GeometryV2:
+class GeometryV2(object):
     """
     Class to replace QgsFeature geometry().geometry() that is crashing
     """
@@ -52,12 +55,12 @@ class GeometryV2:
         elif wktPolygon.startswith('CurvePolygon'):
             polygon = wktPolygon.replace('CurvePolygon', '')
         else:
-            print "This geometry is not yet implemented"
+            print("This geometry is not yet implemented")
             return None
         polygon = polygon.strip()[1:-1]
         lines = polygon.split('),')
         polygonV2 = QgsCurvePolygonV2()
-        for i in xrange(0, len(lines)):
+        for i in range(0, len(lines)):
             line = lines[i]
             if line.startswith('CircularStringZ'):
                 curved.append(True)
@@ -102,13 +105,13 @@ class GeometryV2:
             elif wktLine.startswith('CompoundCurve'):
                 compound = wktLine.replace('CompoundCurve', '')
             else:
-                print "This geometry is not yet implemented"
+                print("This geometry is not yet implemented")
                 return None
             compound = compound.strip()[1:-1]
             lines = compound.split('),')
             compoundV2 = QgsCompoundCurveV2()
             curved = []
-            for i in xrange(0, len(lines)):
+            for i in range(0, len(lines)):
                 line = lines[i]
                 if line.startswith('CircularStringZ'):
                     curved.append(True)
@@ -162,7 +165,7 @@ class GeometryV2:
         elif wktPoint.startswith('Point'):
             point = wktPoint.replace('Point', '')
         else:
-            print "This geometry is not yet implemented"
+            print("This geometry is not yet implemented")
             return None
         point = point.strip()[1:-1]
         pt_tab = point.strip().split()
@@ -195,7 +198,7 @@ class GeometryV2:
             return QgsVertexId(0, 0, vertex_id, 1)
         else:
             sel = vertex_id - eR.numPoints()
-            for num in xrange(polygon_v2.numInteriorRings()):
+            for num in range(polygon_v2.numInteriorRings()):
                 iR = polygon_v2.interiorRing(num)
                 if sel < iR.numPoints():
                     return QgsVertexId(0, num + 1, sel, 1)

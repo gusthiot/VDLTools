@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import str
+from builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -48,7 +50,7 @@ class ProfileZerosDialog(QDialog):
 
         displayButton = False
 
-        for i in xrange(len(self.__zeros)):
+        for i in range(len(self.__zeros)):
             msg = "- vertex " + str(self.__zeros[i][0])
             msg += QCoreApplication.translate("VDLTools",", elevation : '0', ")
             if self.__zeros[i][1] is not None:
@@ -88,7 +90,7 @@ class ProfileZerosDialog(QDialog):
         """
         """
         zeros = []
-        for i in xrange(len(self.__zeros)):
+        for i in range(len(self.__zeros)):
             if self.__zeroChecks[i] is not None and self.__zeroChecks[i].isChecked():
                 zeros.append(self.__zeros[i])
         return zeros

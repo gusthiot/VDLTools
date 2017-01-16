@@ -20,6 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
+from builtins import object
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
 from ..ui.fields_settings_dialog import FieldsSettingsDialog
@@ -34,7 +36,7 @@ from qgis.core import (QgsProject,
 from ..core.db_connector import DBConnector
 
 
-class ShowSettings:
+class ShowSettings(object):
     """
     Class to manage plugin settings
     """
@@ -70,7 +72,7 @@ class ShowSettings:
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
         if mpl_id != -1 or mll_id != -1:
-            for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+            for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
                 if layer and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
                     if layer.geometryType() == QGis.Point:
                         if layer.id() == mpl_id:
@@ -80,7 +82,7 @@ class ShowSettings:
                             self.__memoryLinesLayer = layer
         if dbName != "":
             usedDbs = DBConnector.getUsedDatabases()
-            if dbName in usedDbs.keys():
+            if dbName in list(usedDbs.keys()):
                 self.__uriDb = usedDbs[dbName]
 
 

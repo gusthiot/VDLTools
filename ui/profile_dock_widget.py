@@ -20,6 +20,13 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
+from past.utils import old_div
 from qgis.core import QgsPoint
 from qgis.gui import (QgsVertexMarker,
                       QgsMessageBar)
@@ -57,9 +64,10 @@ from PyQt4.Qwt5.Qwt import (QwtPlot,
 import itertools
 import traceback
 import sys
-import os
 import json
-from urllib2 import urlopen, URLError, HTTPError
+from urllib2 import (urlopen,
+                     URLError,
+                     HTTPError)
 from math import sqrt
 from matplotlib import rc
 from matplotlib.figure import Figure, SubplotParams
@@ -275,13 +283,13 @@ class ProfileDockWidget(QDockWidget):
             self.__mntPoints.append(names)
             mnt_l = []
             mnt_z = []
-            for p in xrange(len(names)):
+            for p in range(len(names)):
                 z = []
                 mnt_z.append(z)
             for pt in profile:
                 mnt_l.append(float(pt['dist']))
                 values = pt['values']
-                for p in xrange(len(names)):
+                for p in range(len(names)):
                     mnt_z[p].append(float(values[names[p]]))
             self.__mntPoints.append(mnt_l)
             self.__mntPoints.append(mnt_z)
@@ -315,7 +323,7 @@ class ProfileDockWidget(QDockWidget):
                     colors = [Qt.red, Qt.green, Qt.blue]
 
                 xx = [list(g) for k, g in itertools.groupby(self.__mntPoints[1], lambda x: x is None) if not k]
-                for p in xrange(len(self.__mntPoints[0])):
+                for p in range(len(self.__mntPoints[0])):
                     if p == 0:
                         dot = '___'
                     elif p == 1:
@@ -336,7 +344,7 @@ class ProfileDockWidget(QDockWidget):
 
         if 'z' in self.__profiles[0]:
             colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
-            for i in xrange(len(self.__profiles[0]['z'])):
+            for i in range(len(self.__profiles[0]['z'])):
                 if i < self.__numLines:
                     v = 0
                 else:
@@ -355,7 +363,7 @@ class ProfileDockWidget(QDockWidget):
                 if v < len(colors):
                     color = colors[v]
                 else:
-                    d = v / len(colors)
+                    d = old_div(v, len(colors))
                     color = colors[v - int(d * len(colors))]
 
                 if i == 0 or i > (self.__numLines-1):
@@ -390,8 +398,8 @@ class ProfileDockWidget(QDockWidget):
                     tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                     for t in range(len(tmp)):
                         if name == tmp[t].get_gid():
-                            tmp[i].set_color((qcol.red() / 255.0, qcol.green() / 255.0, qcol.blue() / 255.0,
-                                              qcol.alpha() / 255.0))
+                            tmp[i].set_color((old_div(qcol.red(), 255.0), old_div(qcol.green(), 255.0), old_div(qcol.blue(), 255.0),
+                                              old_div(qcol.alpha(), 255.0)))
                             self.__plotWdg.draw()
                             break
 
@@ -403,8 +411,8 @@ class ProfileDockWidget(QDockWidget):
                 QCoreApplication.translate("VDLTools","Error"),
                 QCoreApplication.translate("VDLTools","rescale problem... (trace printed)"),
                 level=QgsMessageBar.CRITICAL)
-            print(
-                QCoreApplication.translate("VDLTools","rescale problem : "), sys.exc_info()[0], traceback.format_exc())
+            print((
+                QCoreApplication.translate("VDLTools","rescale problem : "), sys.exc_info()[0], traceback.format_exc()))
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
@@ -463,9 +471,9 @@ class ProfileDockWidget(QDockWidget):
             self.__zoomer.setZoomBase(rect)
 
         # to draw vertical lines
-        for i in xrange(len(self.__profiles)):
+        for i in range(len(self.__profiles)):
             zz = []
-            for j in xrange(self.__numLines):
+            for j in range(self.__numLines):
                 if self.__profiles[i]['z'][j] is not None:
                     zz.append(j)
             color = None
@@ -682,7 +690,7 @@ class ProfileDockWidget(QDockWidget):
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
-            except Exception, e:
+            except Exception as e:
                 print("Tracking exception : " + str(e))
 
     def __mouseevent_mpl(self, event):
@@ -694,7 +702,7 @@ class ProfileDockWidget(QDockWidget):
             try:
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
-            except Exception, e:
+            except Exception as e:
                 print("Mouse event exception : " +str(e))
             xdata = float(event.xdata)
             self.__vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')

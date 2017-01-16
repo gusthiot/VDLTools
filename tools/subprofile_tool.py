@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
                        QgsGeometry,
@@ -166,7 +167,7 @@ class SubProfileTool(QgsMapTool):
         if self.__line.numPoints() == 0:
             return
         points = []
-        for i in xrange(self.__line.numPoints()):
+        for i in range(self.__line.numPoints()):
             points.append({'x': self.__line.pointN(i).x(), 'y': self.__line.pointN(i).y()})
         self.__dockWdg.setProfiles(points, 0)
         self.__dockWdg.attachCurves(None, self.__ownSettings)

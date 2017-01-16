@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import object
 
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
@@ -30,7 +31,7 @@ from qgis.core import (QgsMapLayer,
                        QgsMapLayerRegistry,
                        QgsDataSourceURI)
 
-class DBConnector:
+class DBConnector(object):
     """
     Class to manage database connection
     """
@@ -91,7 +92,7 @@ class DBConnector:
     @staticmethod
     def getUsedDatabases():
         dbs = {}
-        for layer in QgsMapLayerRegistry.instance().mapLayers().values():
+        for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "postgres":
                 uri = QgsDataSourceURI(layer.source())
                 if uri.database() not in dbs:

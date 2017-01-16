@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
 from math import (cos,
                   sin,
                   pi)
@@ -53,7 +54,7 @@ class IntersectTool(QgsMapTool):
         self.__iface = iface
         self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","From intersection")
+        self.__text = QCoreApplication.translate("VDLTools", "From intersection")
         self.setCursor(Qt.ArrowCursor)
         self.__lineLayerID = None
         self.__pointLayerID = None

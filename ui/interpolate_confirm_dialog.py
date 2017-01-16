@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QButtonGroup,
@@ -58,7 +59,7 @@ class InterpolateConfirmDialog(QDialog):
 
         self.__radios[0].setChecked(True)
         self.__radio_button_group = QButtonGroup()
-        for i in xrange(len(self.__radios)):
+        for i in range(len(self.__radios)):
             self.__layout.addWidget(self.__radios[i], i+1, 0, 1, 2)
             self.__radio_button_group.addButton(self.__radios[i], i)
 

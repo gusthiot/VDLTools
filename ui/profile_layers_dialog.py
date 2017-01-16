@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -61,7 +62,7 @@ class ProfileLayersDialog(QDialog):
         self.__layLabels = []
         self.__layChecks = []
 
-        for i in xrange(len(self.__pointLayers)):
+        for i in range(len(self.__pointLayers)):
             label = QLabel(self.__pointLayers[i].name() + " :")
             label.setMinimumHeight(20)
             label.setMinimumWidth(50)
@@ -83,7 +84,7 @@ class ProfileLayersDialog(QDialog):
         :return: selected points layers
         """
         layers = []
-        for i in xrange(len(self.__pointLayers)):
+        for i in range(len(self.__pointLayers)):
             if self.__layChecks[i].isChecked():
                 layers.append(self.__pointLayers[i])
         return layers

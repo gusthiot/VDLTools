@@ -20,6 +20,10 @@
  *                                                                         *
  ***************************************************************************/
 """
+from __future__ import print_function
+from builtins import next
+from builtins import str
+from builtins import object
 
 from qgis.gui import QgsMessageBar
 from ..core.db_connector import DBConnector
@@ -29,7 +33,7 @@ from ..ui.import_confirm_dialog import ImportConfirmDialog
 from datetime import datetime
 
 
-class ImportMeasures:
+class ImportMeasures(object):
     """
     Class to import measurements data into given tables
     """
@@ -108,10 +112,10 @@ class ImportMeasures:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
                                     self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
             if query.lastError().isValid():
-                print query.lastError().text()
+                print(query.lastError().text())
                 self.__cancel()
             else:
-                while query.next():
+                while next(query):
                     if self.__sourceTable == "":
                         self.__sourceTable = query.value(0)
                     elif self.__sourceTable != query.value(0):
@@ -123,11 +127,11 @@ class ImportMeasures:
                 query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
                     usr_valid = FALSE""")
                 if query.lastError().isValid():
-                    print query.lastError().text()
+                    print(query.lastError().text())
                     self.__cancel()
                 else:
                     jobs = []
-                    while query.next():
+                    while next(query):
                         jobs.append(query.value(0))
 
                     self.__jobsDlg = ImportJobsDialog(jobs)
@@ -146,19 +150,19 @@ class ImportMeasures:
         query = self.__db.exec_("""SELECT code,description,geometry,id FROM """ + self.__sourceTable +
                                 """ WHERE usr_session_name = '""" + job + """'""")
         if query.lastError().isValid():
-            print query.lastError().text()
+            print(query.lastError().text())
         else:
             self.__data = []
-            while query.next():
+            while next(query):
                 data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
                         'id_survey': query.value(3)}
                 # select schema and id for insertion table
                 query2 = self.__db.exec_(
                     """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
                 if query2.lastError().isValid():
-                    print query2.lastError().text()
+                    print(query2.lastError().text())
                 else:
-                    query2.next()
+                    next(query2)
                     data['id_table'] = query2.value(0)
                     data['schema_table'] = query2.value(1)
                 self.__data.append(data)
@@ -173,11 +177,11 @@ class ImportMeasures:
                 """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['descr'] +
                 """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
             if query.lastError().isValid():
-                print query.lastError().text()
+                print(query.lastError().text())
             else:
                 in_base = False
                 point = None
-                while query.next():
+                while next(query):
                     point = query.value(0)
                     in_base = True
                 if in_base:
@@ -235,9 +239,9 @@ class ImportMeasures:
                     self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + data['code'] +
                     """' AND static_value IS NOT NULL""")
                 if query.lastError().isValid():
-                    print query.lastError().text()
+                    print(query.lastError().text())
                 else:
-                    while query.next():
+                    while next(query):
                         if destLayer == "":
                             destLayer = query.value(0)
                         elif destLayer != query.value(0):
@@ -254,7 +258,7 @@ class ImportMeasures:
                     #  insert data
                     query2 = self.__db.exec_(request)
                     if query2.lastError().isValid():
-                        print query2.lastError().text()
+                        print(query2.lastError().text())
                     else:
                         query2.first()
                         id_object = query2.value(0)
@@ -265,8 +269,8 @@ class ImportMeasures:
                             str(data['id_table']) + """, usr_import_user = '""" + self.__db.userName() +
                             """' WHERE id = """ + str(data['id_survey']))
                         if query3.lastError().isValid():
-                            print query3.lastError().text()
-        print "ok"
+                            print(query3.lastError().text())
+        print("ok")
         self.__cancel()
 
     def __cancel(self):

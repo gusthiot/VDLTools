@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+from builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -85,7 +86,7 @@ class DuplicateDistanceDialog(QDialog):
                                  QRadioButton(QCoreApplication.translate("VDLTools","opposite"))]
             self.__directions[0].setChecked(True)
             self.__direction_button_group = QButtonGroup()
-            for i in xrange(len(self.__directions)):
+            for i in range(len(self.__directions)):
                 self.__layout.addWidget(self.__directions[i], 2, i+1)
                 self.__direction_button_group.addButton(self.__directions[i], i)
 
