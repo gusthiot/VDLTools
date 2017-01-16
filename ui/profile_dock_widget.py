@@ -57,9 +57,9 @@ import itertools
 import traceback
 import sys
 import json
-from urllib2 import (urlopen,
-                     URLError,
-                     HTTPError)
+from future.moves.urllib.request import urlopen
+from future.moves.urllib.error import (HTTPError,
+                                       URLError)
 from math import sqrt
 from matplotlib import rc
 
