@@ -53,14 +53,6 @@ from PyQt4.QtCore import (QSize,
                           Qt,
                           pyqtSignal)
 from PyQt4.QtSvg import QSvgGenerator
-from PyQt4.Qwt5.Qwt import (QwtPlot,
-                        QwtText,
-                        QwtPlotZoomer,
-                        QwtPicker,
-                        QwtPlotItem,
-                        QwtPlotGrid,
-                        QwtPlotMarker,
-                        QwtPlotCurve)
 import itertools
 import traceback
 import sys
@@ -70,8 +62,25 @@ from urllib2 import (urlopen,
                      HTTPError)
 from math import sqrt
 from matplotlib import rc
-from matplotlib.figure import Figure, SubplotParams
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg  # , NavigationToolbar2QTAgg
+
+try:
+    from PyQt4.Qwt5.Qwt import (QwtPlot,
+                                QwtText,
+                                QwtPlotZoomer,
+                                QwtPicker,
+                                QwtPlotItem,
+                                QwtPlotGrid,
+                                QwtPlotMarker,
+                                QwtPlotCurve)
+    Qwt5_loaded = True
+except ImportError:
+    Qwt5_loaded = False
+try:
+    from matplotlib.figure import Figure, SubplotParams
+    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
+    matplotlib_loaded = True
+except ImportError:
+    matplotlib_loaded = False
 
 
 class ProfileDockWidget(QDockWidget):
@@ -92,8 +101,21 @@ class ProfileDockWidget(QDockWidget):
         self.__iface = iface
         self.__canvas = self.__iface.mapCanvas()
         self.__types = ['PDF', 'PNG', 'SVG', 'PS']
-        self.__libs = ['Qwt5', 'Matplotlib']
-        self.__lib = self.__libs[0]
+        self.__libs = []
+        if Qwt5_loaded:
+            self.__lib = 'Qwt5'
+            self.__libs.append('Qwt5')
+            if matplotlib_loaded:
+                self.__libs.append('Matplotlib')
+        elif matplotlib_loaded:
+            self.__lib = 'Matplotlib'
+            self.__libs.append('Matplotlib')
+        else:
+            self.__lib = None
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "Graph Error"),
+                QCoreApplication.translate("VDLTools", "No graph lib available (qwt5 or matplotlib)"),
+                level=QgsMessageBar.CRITICAL)
 
         self.__doTracking = False
         self.__vline = None

@@ -176,6 +176,9 @@ class ImportMeasures(object):
             query = self.__db.exec_(
                 """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['descr'] +
                 """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
+            print("query : " + """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" +
+                  data['descr'] + """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
+            print("error : " + query.lastError())
             if query.lastError().isValid():
                 print(query.lastError().text())
             else:
