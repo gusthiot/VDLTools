@@ -309,6 +309,11 @@ class ProfileDockWidget(QDockWidget):
         if self.__mntPoints is not None:
             if self.__lib == 'Qwt5':
 
+                if 'z' in self.__profiles[0]:
+                    colors = [Qt.black, Qt.black, Qt.black]
+                else:
+                    colors = [Qt.red, Qt.green, Qt.blue]
+
                 xx = [list(g) for k, g in itertools.groupby(self.__mntPoints[1], lambda x: x is None) if not k]
                 for p in xrange(len(self.__mntPoints[0])):
                     if p == 0:
@@ -317,7 +322,7 @@ class ProfileDockWidget(QDockWidget):
                         dot = '---'
                     else:
                         dot = '...'
-                    legend = QLabel("<font color='" + QColor(Qt.black).name() + "'>" + self.__mntPoints[0][p]
+                    legend = QLabel("<font color='" + QColor(colors[p]).name() + "'>" + self.__mntPoints[0][p]
                                     + " (" + dot + ")</font>")
                     self.__legendLayout.addWidget(legend)
 
@@ -326,7 +331,7 @@ class ProfileDockWidget(QDockWidget):
                     for j in range(len(xx)):
                         curve = QwtPlotCurve(self.__mntPoints[0][p])
                         curve.setData(xx[j], yy[j])
-                        curve.setPen(QPen(Qt.black, 3, p+1))
+                        curve.setPen(QPen(colors[p], 3, p+1))
                         curve.attach(self.__plotWdg)
 
         if 'z' in self.__profiles[0]:
