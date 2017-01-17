@@ -31,6 +31,7 @@ from ..ui.import_jobs_dialog import ImportJobsDialog
 from PyQt4.QtCore import QCoreApplication
 from ..ui.import_confirm_dialog import ImportConfirmDialog
 from datetime import datetime
+from ..ui.import_measures_dialog import ImportMeasuresDialog
 
 
 class ImportMeasures(object):
@@ -53,8 +54,11 @@ class ImportMeasures(object):
         self.__db = None
         self.__jobsDlg = None
         self.__confDlg = None
+        self.__measDlg = None
         self.__data = None
         self.__iter = 0
+        self.__num = 0
+        self.__job = None
         self.__sourceTable = ""
 
     def icon_path(self):
@@ -144,11 +148,11 @@ class ImportMeasures(object):
         """
         When the Ok button in Import Jobs Dialog is pushed
         """
-        job = self.__jobsDlg.job()
+        self.__job = self.__jobsDlg.job()
         self.__jobsDlg.accept()
         #  select geodata for insertion
         query = self.__db.exec_("""SELECT code,description,geometry,id FROM """ + self.__sourceTable +
-                                """ WHERE usr_session_name = '""" + job + """'""")
+                                """ WHERE usr_session_name = '""" + self.__job + """' AND usr_valid = FALSE""")
         if query.lastError().isValid():
             print(query.lastError().text())
         else:
@@ -185,6 +189,7 @@ class ImportMeasures(object):
                     point = query.value(0)
                     in_base = True
                 if in_base:
+                    self.__data[self.__iter]['point'] = point
                     self.__confDlg = ImportConfirmDialog()
                     self.__confDlg.setMessage(
                         QCoreApplication.translate("VDLTools","There is already a " + point +
@@ -225,8 +230,10 @@ class ImportMeasures(object):
         self.__checkIfExist()
 
     def __insert(self):
+        not_added = []
         for data in self.__data:
             if data['add']:
+                self.__num += 1
                 destLayer = ""
                 request = """INSERT INTO """ + data['schema_table'] + """.""" + data['descr']
                 columns = "(id,geometry3d"
@@ -251,7 +258,7 @@ class ImportMeasures(object):
                                                            "different destination layer in config table ?!?"),
                                 level=QgsMessageBar.WARNING)
                         columns += "," + query.value(1)
-                        values += ",'" + query.value(2) + "'"
+                        values += "," + query.value(2)
                     columns += ")"
                     values += ")"
                     request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
@@ -270,12 +277,71 @@ class ImportMeasures(object):
                             """' WHERE id = """ + str(data['id_survey']))
                         if query3.lastError().isValid():
                             print(query3.lastError().text())
-        print("ok")
+            else:
+                not_added.append(data)
+        if len(not_added) > 0:
+            self.__measDlg = ImportMeasuresDialog(not_added, self.__job)
+            self.__measDlg.rejected.connect(self.__validAndNext)
+            self.__measDlg.accepted.connect(self.__deleteAndNext)
+            self.__measDlg.okButton().clicked.connect(self.__onDeleteOk)
+            self.__measDlg.cancelButton().clicked.connect(self.__onDeleteCancel)
+            self.__measDlg.show()
+        else:
+            self.__conclude()
+
+    def __conclude(self):
+        if self.__num > 0:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "Success"),
+                QCoreApplication.translate("VDLTools", str(self.__num) + " points inserted !"),level=QgsMessageBar.INFO)
         self.__cancel()
+
+    def __onDeleteCancel(self):
+        """
+        When the Cancel button in Import Measures Dialog is pushed
+        """
+        self.__measDlg.reject()
+
+    def __onDeleteOk(self):
+        """
+        When the Ok button in Import Measures Dialog is pushed
+        """
+        self.__measDlg.accept()
+
+    def __ids(self):
+        pos = 0
+        ids = ""
+        for data in self.__measDlg.data():
+            if pos == 0:
+                pos += 1
+            else:
+                ids += ","
+            ids += str(data['id_survey'])
+        return ids
+
+    def __validAndNext(self):
+        query = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
+                                str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
+                                """, usr_import_user = '""" + self.__db.userName() +
+                                """' WHERE id IN (""" + self.__ids() + """)""")
+        if query.lastError().isValid():
+            print(query.lastError().text())
+        self.__conclude()
+
+    def __deleteAndNext(self):
+        query = self.__db.exec_("""DELETE FROM """ + self.__sourceTable +
+                                """ WHERE id IN (""" + self.__ids() + """)""")
+        if query.lastError().isValid():
+            print(query.lastError().text())
+        self.__conclude()
 
     def __cancel(self):
         self.__confDlg = None
         self.__jobsDlg = None
+        self.__measDlg = None
+        self.__data = None
+        self.__iter = 0
+        self.__num = 0
         self.__db.close()
 
     def __onCancel(self):
