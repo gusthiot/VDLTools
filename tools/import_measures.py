@@ -114,7 +114,7 @@ class ImportMeasures(object):
         self.__db = self.__connector.setConnection()
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
-                                    self.__configTable + """ WHERE WHERE sourcelayer_name IS NOT NULL""")
+                                    self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
             print(query.lastError().text())
             if query.lastError().isValid():
                 print(query.lastError().text())
