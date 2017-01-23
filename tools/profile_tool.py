@@ -86,6 +86,7 @@ class ProfileTool(QgsMapTool):
         self.__rubberSit = None
         self.__rubberDif = None
         self.__ownSettings = None
+        self.__usedMnts = None
 
     def icon_path(self):
         """
@@ -185,15 +186,19 @@ class ProfileTool(QgsMapTool):
         To create a Profile Layers Dialog
         """
         otherLayers = self.__lineVertices(True)
-        if len(otherLayers) > 0:
-            self.__layDlg = ProfileLayersDialog(otherLayers)
+        with_mnt = True
+        if self.__ownSettings is None or self.__ownSettings.mntUrl() is None \
+                or self.__ownSettings.mntUrl() == "":
+            with_mnt = False
+        if not with_mnt and len(otherLayers) == 0:
+            self.__layers = []
+            self.__layOk()
+        else:
+            self.__layDlg = ProfileLayersDialog(otherLayers, with_mnt)
             self.__layDlg.rejected.connect(self.__cancel)
             self.__layDlg.okButton().clicked.connect(self.__onLayOk)
             self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
             self.__layDlg.show()
-        else:
-            self.__layers = []
-            self.__layOk()
 
     def __setMessageDialog(self, situations, differences, names):
         """
@@ -621,6 +626,7 @@ class ProfileTool(QgsMapTool):
         """
         self.__layDlg.accept()
         self.__layers = self.__layDlg.getLayers()
+        self.__usedMnts = self.__layDlg.getUsedMnts()
         self.__layOk()
 
     def __layOk(self):
@@ -693,7 +699,10 @@ class ProfileTool(QgsMapTool):
 
         names = [self.__lineLayer.name()]
         for layer in self.__layers:
-            names.append(layer.name())
+            if layer.name() == self.__lineLayer.name():
+                names.append(layer.name() + QCoreApplication.translate("VDLTools", " connected"))
+            else:
+                names.append(layer.name())
         self.__calculateProfile(names)
 
     @staticmethod
@@ -822,7 +831,7 @@ class ProfileTool(QgsMapTool):
         if len(self.__points) == 0:
             return
         self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
-        self.__dockWdg.attachCurves(names, self.__ownSettings)
+        self.__dockWdg.attachCurves(names, self.__ownSettings, self.__usedMnts)
 
         situations = []
         differences = []

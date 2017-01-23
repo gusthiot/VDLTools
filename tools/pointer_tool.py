@@ -26,8 +26,7 @@ from qgis.core import (QgsWKBTypes,
                        QgsTolerance,
                        QgsPointLocator,
                        QGis)
-from qgis.gui import (QgsMapTool,
-                      QgsRubberBand)
+from qgis.gui import QgsMapTool
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QMessageBox

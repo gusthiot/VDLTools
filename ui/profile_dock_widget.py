@@ -325,7 +325,7 @@ class ProfileDockWidget(QDockWidget):
                 QCoreApplication.translate("VDLTools", "URL Error"),
                 e.reason, level=QgsMessageBar.CRITICAL)
 
-    def attachCurves(self, names, settings):
+    def attachCurves(self, names, settings, usedMnts):
         """
         To attach the curves for the layers to the profile
         :param names: layers names
@@ -334,39 +334,40 @@ class ProfileDockWidget(QDockWidget):
             return
 
         self.__getLinearPoints()
-        self.__getMnt(settings)
+        if usedMnts is not None and (usedMnts[0] or usedMnts[1] or usedMnts[2]):
+            self.__getMnt(settings)
+
+        colors = QColor.colorNames()
+        c = 0
+        max_rgb = 150
 
         if self.__mntPoints is not None:
             if self.__lib == 'Qwt5':
-
-                if 'z' in self.__profiles[0]:
-                    colors = [Qt.black, Qt.black, Qt.black]
-                else:
-                    colors = [Qt.red, Qt.green, Qt.blue]
-
                 xx = [list(g) for k, g in itertools.groupby(self.__mntPoints[1], lambda x: x is None) if not k]
                 for p in range(len(self.__mntPoints[0])):
-                    if p == 0:
-                        dot = '___'
-                    elif p == 1:
-                        dot = '---'
-                    else:
-                        dot = '...'
-                    legend = QLabel("<font color='" + QColor(colors[p]).name() + "'>" + self.__mntPoints[0][p]
-                                    + " (" + dot + ")</font>")
-                    self.__legendLayout.addWidget(legend)
+                    while QColor(colors[c]).red() > max_rgb and QColor(colors[c]).green() > max_rgb \
+                            and QColor(colors[c]).blue() > max_rgb:
+                        c += 1
+                    if usedMnts[p]:
+                        legend = QLabel("<font color='" + colors[c] + "'>" + self.__mntPoints[0][p]
+                                        + "</font>")
+                        self.__legendLayout.addWidget(legend)
 
-                    yy = [list(g) for k, g in itertools.groupby(self.__mntPoints[2][p], lambda x: x is None) if not k]
+                        yy = [list(g) for k, g in itertools.groupby(self.__mntPoints[2][p], lambda x: x is None)
+                              if not k]
 
-                    for j in range(len(xx)):
-                        curve = QwtPlotCurve(self.__mntPoints[0][p])
-                        curve.setData(xx[j], yy[j])
-                        curve.setPen(QPen(colors[p], 3, p+1))
-                        curve.attach(self.__plotWdg)
+                        for j in range(len(xx)):
+                            curve = QwtPlotCurve(self.__mntPoints[0][p])
+                            curve.setData(xx[j], yy[j])
+                            curve.setPen(QPen(QColor(colors[c]), 3))
+                            curve.attach(self.__plotWdg)
+                        c += 1
 
         if 'z' in self.__profiles[0]:
-            colors = [Qt.red, Qt.green, Qt.blue, Qt.cyan, Qt.magenta, Qt.yellow]
             for i in range(len(self.__profiles[0]['z'])):
+                while QColor(colors[c]).red() > max_rgb and QColor(colors[c]).green() > max_rgb \
+                        and QColor(colors[c]).blue() > max_rgb:
+                    c += 1
                 if i < self.__numLines:
                     v = 0
                 else:
@@ -382,14 +383,8 @@ class ProfileDockWidget(QDockWidget):
                     if yy[j] is None:
                         xx[j] = None
 
-                if v < len(colors):
-                    color = colors[v]
-                else:
-                    d = old_div(v, len(colors))
-                    color = colors[v - int(d * len(colors))]
-
                 if i == 0 or i > (self.__numLines-1):
-                    legend = QLabel("<font color='" + QColor(color).name() + "'>" + name + "</font>")
+                    legend = QLabel("<font color='" + colors[c] + "'>" + name + "</font>")
                     self.__legendLayout.addWidget(legend)
 
                 if self.__lib == 'Qwt5':
@@ -402,16 +397,16 @@ class ProfileDockWidget(QDockWidget):
                     for j in range(len(xx)):
                         curve = QwtPlotCurve(name)
                         curve.setData(xx[j], yy[j])
-                        curve.setPen(QPen(color, 3))
+                        curve.setPen(QPen(QColor(colors[c]), 3))
                         if i > (self.__numLines-1):
                             curve.setStyle(QwtPlotCurve.Dots)
-                            pen = QPen(color, 8)
+                            pen = QPen(QColor(colors[c]), 8)
                             pen.setCapStyle(Qt.RoundCap)
                             curve.setPen(pen)
                         curve.attach(self.__plotWdg)
 
                 elif self.__lib == 'Matplotlib':
-                    qcol = QColor(color)
+                    qcol = QColor(colors[c])
                     if i < self.__numLines:
                         self.__plotWdg.figure.get_axes()[0].plot(xx, yy, gid=name, linewidth=3)
                     else:
@@ -424,6 +419,7 @@ class ProfileDockWidget(QDockWidget):
                                               old_div(qcol.alpha(), 255.0)))
                             self.__plotWdg.draw()
                             break
+                c += 1
 
         # scaling this
         try:
@@ -522,8 +518,6 @@ class ProfileDockWidget(QDockWidget):
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.get_axes()[0].vlines(self.__profiles[i]['l'], minimumValue, maximumValue,
                                                            linewidth=width)
-                self.__axes.text(self.__profiles[i]['l'], 375, i)
-                self.__plotWdg.figure.get_axes()[0].annotate('ann' + str(i), xy=(self.__profiles[i]['l'], 200))
 
         if minimumValue < maximumValue:
             if self.__lib == 'Qwt5':

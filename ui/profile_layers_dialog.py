@@ -35,13 +35,14 @@ class ProfileLayersDialog(QDialog):
     Dialog class to add points layers to the profile
     """
 
-    def __init__(self, pointLayers):
+    def __init__(self, pointLayers, with_mnt):
         """
         Constructor
         :param pointLayers: available points layers
         """
         QDialog.__init__(self)
         self.__pointLayers = pointLayers
+        self.__with_mnt = with_mnt
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Add Points Layers Profiles"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
@@ -73,10 +74,36 @@ class ProfileLayersDialog(QDialog):
             self.__layChecks.append(check)
             self.__layout.addWidget(self.__layChecks[i], i+1, 2)
 
+        self.__mntLabels = []
+        self.__mntChecks = []
+        self.__mntTitles = ["MNT", "MNS", "Rocher"]
+
+        if with_mnt:
+            k = len(self.__pointLayers)
+            for i in range(len(self.__mntTitles)):
+                label = QLabel(self.__mntTitles[i] + " :")
+                label.setMinimumHeight(20)
+                label.setMinimumWidth(50)
+                self.__mntLabels.append(label)
+                self.__layout.addWidget(self.__mntLabels[i], i+k+1, 1)
+                check = QCheckBox()
+                check.setChecked(False)
+                self.__mntChecks.append(check)
+                self.__layout.addWidget(self.__mntChecks[i], i+k+1, 2)
+
         self.__layout.addWidget(self.__okButton, 100, 1)
         self.__layout.addWidget(self.__cancelButton, 100, 2)
 
         self.setLayout(self.__layout)
+
+    def getUsedMnts(self):
+        if self.__with_mnt:
+            used = []
+            for i in range(len(self.__mntChecks)):
+                used.append(self.__mntChecks[i].isChecked())
+            return used
+        else:
+            return None
 
     def getLayers(self):
         """
