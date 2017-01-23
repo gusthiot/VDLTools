@@ -114,7 +114,8 @@ class ImportMeasures(object):
         self.__db = self.__connector.setConnection()
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
-                                    self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
+                                    self.__configTable + """ WHERE WHERE sourcelayer_name IS NOT NULL""")
+            print(query.lastError().text())
             if query.lastError().isValid():
                 print(query.lastError().text())
                 self.__cancel()
@@ -233,7 +234,6 @@ class ImportMeasures(object):
         not_added = []
         for data in self.__data:
             if data['add']:
-                self.__num += 1
                 destLayer = ""
                 request = """INSERT INTO """ + data['schema_table'] + """.""" + data['descr']
                 columns = "(id,geometry3d"
@@ -267,6 +267,7 @@ class ImportMeasures(object):
                     if query2.lastError().isValid():
                         print(query2.lastError().text())
                     else:
+                        self.__num += 1
                         query2.first()
                         id_object = query2.value(0)
                         # update source table
