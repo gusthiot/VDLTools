@@ -113,6 +113,12 @@ L'outil "Import" permet d'importer des données venant du terrain dans les diff�
     - dans les paramètres, choisir une base de données, un schéma et une table de configuration
     - sélectionner l'outil
     - sélectionner un job non-traité
+    
+---
+
+- Pointer 
+
+L'outil "Pointer" permet d'obtenir l'altitude de différents éléments en un point donné.
 
 
 

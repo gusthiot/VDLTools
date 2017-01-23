@@ -111,7 +111,10 @@ class SubProfileTool(QgsMapTool):
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
-        pass
+        self.__isSelected = False
+        self.__rubberDots = None
+        self.__line = None
+        self.__startVertex = None
 
     def setOwnSettings(self, settings):
         """
@@ -135,8 +138,6 @@ class SubProfileTool(QgsMapTool):
             dots.addVertex(QgsPointV2(event.mapPoint()))
             self.__rubberDots.reset()
             self.__rubberDots.setToGeometry(QgsGeometry(dots.clone()), None)
-        else:
-            pass
 
     def canvasReleaseEvent(self, event):
         """

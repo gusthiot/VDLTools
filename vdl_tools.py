@@ -38,6 +38,7 @@ from .tools.move_tool import MoveTool
 from .tools.show_settings import ShowSettings
 from .tools.import_measures import ImportMeasures
 from .tools.subprofile_tool import SubProfileTool
+from .tools.pointer_tool import PointerTool
 
 # Initialize Qt resources from file resources.py
 from . import resources
@@ -64,6 +65,7 @@ class VDLTools(object):
         self.intersectTool = None
         self.profileTool = None
         self.subProfileTool = None
+        self.pointerTool = None
         self.moveTool = None
         self.showSettings = None
         self.importMeasures = None
@@ -134,6 +136,8 @@ class VDLTools(object):
         self.add_action(self.profileTool, self.iface.mainWindow(), False)
         self.subProfileTool = SubProfileTool(self.iface)
         self.add_action(self.subProfileTool, self.iface.mainWindow())
+        self.pointerTool = PointerTool(self.iface)
+        self.add_action(self.pointerTool, self.iface.mainWindow())
         self.interpolateTool = InterpolateTool(self.iface)
         self.add_action(self.interpolateTool, self.iface.mainWindow(), False)
         self.extrapolateTool = ExtrapolateTool(self.iface)

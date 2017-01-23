@@ -22,6 +22,7 @@ about=This plugin contains tools needed by the Ville de Lausanne for water syste
     - a tool to create temporary circles from snapped points
     - a tool to interpolate elevation on a 3d edge by adding a 3d point
     - a tool to extrapolate elevation at the end of a 3d line
+    - a tool to pick the elevation of diffrent layers at a position
     - a tool to import values from field in database tables (more specific parameters)
 
 tracker=https://github.com/gusthiot/VDLTools/issues
