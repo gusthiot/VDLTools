@@ -129,9 +129,9 @@ class ImportMeasures(object):
                             level=QgsMessageBar.WARNING)
                 #  select jobs
                 query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
-                    usr_valid = FALSE WHERE usr_session_name IS NOT NULL""")
+                    usr_valid = FALSE AND usr_session_name IS NOT NULL""")
                 if query.lastError().isValid():
-                    print(str(query.lastError().text()))
+                    print(query.lastError().text())
                     self.__cancel()
                 else:
                     jobs = []
