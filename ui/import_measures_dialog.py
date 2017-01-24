@@ -33,13 +33,12 @@ class ImportMeasuresDialog(QDialog):
     Dialog class to confirm the import
     """
 
-    def __init__(self, data, job):
+    def __init__(self, data):
         """
         Constructor
         """
         QDialog.__init__(self)
         self.__data = data
-        self.__job = job
         self.setWindowTitle(QCoreApplication.translate("VDLTools","Delete Measures"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
@@ -51,7 +50,7 @@ class ImportMeasuresDialog(QDialog):
         pos = 1
 
         for data in self.__data:
-            lineLabel = QLabel("id : " + str(data['id_survey']) + " - type : " + data['descr'] + " - position : " + data['point'] + " - job : " + self.__job)
+            lineLabel = QLabel("id : " + str(data['id_survey']) + " - type : " + data['descr'] + " - position : " + data['point'] + " - job : " + data['job'])
             self.__layout.addWidget(lineLabel, pos, 0, 1, 2)
             pos += 1
 

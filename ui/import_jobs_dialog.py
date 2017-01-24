@@ -25,7 +25,9 @@ from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
                          QLabel,
-                         QComboBox)
+                         QRadioButton,
+                         QButtonGroup,
+                         QCheckBox)
 from PyQt4.QtCore import QCoreApplication
 
 
@@ -34,14 +36,15 @@ class ImportJobsDialog(QDialog):
     Dialog class to choose the imported job
     """
 
-    def __init__(self, jobs):
+    def __init__(self, jobs, selected):
         """
         Constructor
         :param jobs: all the jobs available for import
         """
         QDialog.__init__(self)
         self.__jobs = jobs
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Choose job"))
+        self.__selected = selected
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","What to process (radio button does nothing for now)"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
@@ -55,28 +58,31 @@ class ImportJobsDialog(QDialog):
         self.__layout.addWidget(self.__okButton, 100, 1)
         self.__layout.addWidget(self.__cancelButton, 100, 2)
 
-        label = QLabel(QCoreApplication.translate("VDLTools","Job : "))
-        label.setMinimumHeight(20)
-        label.setMinimumWidth(50)
-        self.__layout.addWidget(label, 0, 1)
+        self.__group = QButtonGroup()
 
-        self.__jobCombo = QComboBox()
-        self.__jobCombo.setMinimumHeight(20)
-        self.__jobCombo.setMinimumWidth(50)
-        self.__jobCombo.addItem("")
-        for job in self.__jobs:
-            self.__jobCombo.addItem(job)
-        self.__layout.addWidget(self.__jobCombo, 0, 2)
-        self.__jobCombo.currentIndexChanged.connect(self.__jobComboChanged)
+        jobButton = QRadioButton(QCoreApplication.translate("VDLTools","Job(s)"))
+        self.__layout.addWidget(jobButton, 0, 1)
+        self.__group.addButton(jobButton)
+
+        self.__jobsLabels = []
+        self.__jobsChecks = []
+
+        for i in range(len(self.__jobs)):
+            label = QLabel(jobs[i])
+            label.setMinimumHeight(20)
+            label.setMinimumWidth(50)
+            self.__jobsLabels.append(label)
+            self.__layout.addWidget(self.__jobsLabels[i], i+1, 1)
+            check = QCheckBox()
+            check.setChecked(False)
+            self.__jobsChecks.append(check)
+            self.__layout.addWidget(self.__jobsChecks[i], i+1, 2)
+
+        pointsButton = QRadioButton(QCoreApplication.translate("VDLTools","Selected Point(s)"))
+        self.__layout.addWidget(pointsButton, len(self.__jobs)+2, 1)
+        self.__group.addButton(pointsButton)
 
         self.setLayout(self.__layout)
-
-    def __jobComboChanged(self):
-        """
-        When the selected job has changed
-        """
-        if self.__jobCombo.itemText(0) == "":
-            self.__jobCombo.removeItem(0)
 
     def okButton(self):
         """
@@ -92,13 +98,13 @@ class ImportJobsDialog(QDialog):
         """
         return self.__cancelButton
 
-    def job(self):
+    def jobs(self):
         """
-        To get the selected job
-        :return: selected job
+        To get the selected jobs
+        :return: selected jobs
         """
-        index = self.__jobCombo.currentIndex()
-        if self.__jobCombo.itemText(index) == "":
-            return None
-        else:
-            return self.__jobs[index]
+        jobs = []
+        for i in range(len(self.__jobs)):
+            if self.__jobsChecks[i].isChecked():
+                jobs.append(self.__jobs[i])
+        return jobs

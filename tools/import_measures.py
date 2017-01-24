@@ -26,6 +26,7 @@ from builtins import str
 from builtins import object
 
 from qgis.gui import QgsMessageBar
+from qgis.core import QgsMapLayer,QgsDataSourceURI
 from ..core.db_connector import DBConnector
 from ..ui.import_jobs_dialog import ImportJobsDialog
 from PyQt4.QtCore import QCoreApplication
@@ -58,8 +59,9 @@ class ImportMeasures(object):
         self.__data = None
         self.__iter = 0
         self.__num = 0
-        self.__job = None
+        self.__jobs = None
         self.__sourceTable = ""
+        self.__selectedFeatures = None
 
     def icon_path(self):
         """
@@ -125,9 +127,19 @@ class ImportMeasures(object):
                         self.__sourceTable = query.value(0)
                     elif self.__sourceTable != query.value(0):
                         self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools","Error"),
-                            QCoreApplication.translate("VDLTools","different sources in config table ?!?"),
+                            QCoreApplication.translate("VDLTools", "Error"),
+                            QCoreApplication.translate("VDLTools", "different sources in config table ?!?"),
                             level=QgsMessageBar.WARNING)
+                for layer in self.__iface.mapCanvas().layers():
+                    if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
+                                    layer.providerType() == "postgres":
+                        uri = QgsDataSourceURI(layer.source())
+                        if self.__sourceTable == uri.schema() + "." + uri.table():
+                            self.__selectedFeatures = []
+                            for f in layer.selectedFeatures():
+                                self.__selectedFeatures.append(f.attribute("ID"))
+                            break
+
                 #  select jobs
                 query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
                     usr_valid = FALSE AND usr_session_name IS NOT NULL""")
@@ -138,40 +150,56 @@ class ImportMeasures(object):
                     jobs = []
                     while next(query):
                         jobs.append(query.value(0))
-
-                    self.__jobsDlg = ImportJobsDialog(jobs)
-                    self.__jobsDlg.rejected.connect(self.__cancel)
-                    self.__jobsDlg.okButton().clicked.connect(self.__onOk)
-                    self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
-                    self.__jobsDlg.show()
+                    if len(jobs) == 0 and (self.__selectedFeatures is None or len(self.__selectedFeatures) == 0):
+                        self.__cancel()
+                    else:
+                        selected = True
+                        if self.__selectedFeatures is None or len(self.__selectedFeatures) == 0:
+                            selected = False
+                        self.__jobsDlg = ImportJobsDialog(jobs, selected)
+                        self.__jobsDlg.rejected.connect(self.__cancel)
+                        self.__jobsDlg.okButton().clicked.connect(self.__onOk)
+                        self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
+                        self.__jobsDlg.show()
 
     def __onOk(self):
         """
         When the Ok button in Import Jobs Dialog is pushed
         """
-        self.__job = self.__jobsDlg.job()
+        self.__jobs = self.__jobsDlg.jobs()
         self.__jobsDlg.accept()
-        #  select geodata for insertion
-        query = self.__db.exec_("""SELECT code,description,geometry,id FROM """ + self.__sourceTable +
-                                """ WHERE usr_session_name = '""" + self.__job + """' AND usr_valid = FALSE""")
-        if query.lastError().isValid():
-            print(query.lastError().text())
+        if len(self.__jobs) == 0:
+            self.__cancel()
         else:
-            self.__data = []
-            while next(query):
-                data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
-                        'id_survey': query.value(3)}
-                # select schema and id for insertion table
-                query2 = self.__db.exec_(
-                    """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
-                if query2.lastError().isValid():
-                    print(query2.lastError().text())
+            #  select geodata for insertion
+            jobs = ""
+            i = 0
+            for job in self.__jobs:
+                if i == 0:
+                    i += 1
                 else:
-                    next(query2)
-                    data['id_table'] = query2.value(0)
-                    data['schema_table'] = query2.value(1)
-                self.__data.append(data)
-        self.__checkIfExist()
+                    jobs += ","
+                jobs += "'" + job + "'"
+            query = self.__db.exec_("""SELECT code,description,geometry,id,usr_session_name FROM """ + self.__sourceTable +
+                                    """ WHERE usr_session_name IN (""" + jobs + """) AND usr_valid = FALSE""")
+            if query.lastError().isValid():
+                print(query.lastError().text())
+            else:
+                self.__data = []
+                while next(query):
+                    data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
+                            'id_survey': query.value(3), 'job': query.value(4)}
+                    # select schema and id for insertion table
+                    query2 = self.__db.exec_(
+                        """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
+                    if query2.lastError().isValid():
+                        print(query2.lastError().text())
+                    else:
+                        next(query2)
+                        data['id_table'] = query2.value(0)
+                        data['schema_table'] = query2.value(1)
+                    self.__data.append(data)
+                self.__checkIfExist()
 
     def __checkIfExist(self):
         if self.__iter < len(self.__data):
@@ -281,7 +309,7 @@ class ImportMeasures(object):
             else:
                 not_added.append(data)
         if len(not_added) > 0:
-            self.__measDlg = ImportMeasuresDialog(not_added, self.__job)
+            self.__measDlg = ImportMeasuresDialog(not_added)
             self.__measDlg.rejected.connect(self.__validAndNext)
             self.__measDlg.accepted.connect(self.__deleteAndNext)
             self.__measDlg.okButton().clicked.connect(self.__onDeleteOk)

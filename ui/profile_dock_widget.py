@@ -31,7 +31,7 @@ from qgis.core import QgsPoint
 from qgis.gui import (QgsVertexMarker,
                       QgsMessageBar)
 from PyQt4.QtGui import (QDockWidget,
-                         QVBoxLayout,QMessageBox,
+                         QVBoxLayout,
                          QFrame,
                          QHBoxLayout,
                          QSpinBox,
@@ -44,7 +44,6 @@ from PyQt4.QtGui import (QDockWidget,
                          QFont,
                          QPixmap,
                          QFileDialog,
-                         QPrintDialog,
                          QSizePolicy,
                          QPrinter)
 from PyQt4.QtCore import (QSize,
@@ -52,11 +51,9 @@ from PyQt4.QtCore import (QSize,
                           QCoreApplication,
                           Qt,
                           pyqtSignal)
-from PyQt4.QtSvg import QSvgGenerator
 import itertools
 import traceback
 import sys
-import operator
 import json
 from future.moves.urllib.request import urlopen
 from future.moves.urllib.error import (HTTPError,
