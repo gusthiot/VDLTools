@@ -20,7 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from __future__ import division
 from builtins import str
 from builtins import range
@@ -334,7 +333,6 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[ap]['y'], self.__points[app]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
                                                           self.__points[i]['y'], self.__points[ap]['y'])
-                        print((big_d, small_d))
                         if small_d < (old_div(big_d,4)):
                             zextra = alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app])
                             zeros.append([i, zextra, nb_not_none[i]])
@@ -366,9 +364,7 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[i-av]['y'], self.__points[i-avv]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
                                                           self.__points[i]['y'], self.__points[i-av]['y'])
-                        print((big_d, small_d))
                         if small_d < (old_div(big_d,4)):
-                            print((alts[i-av], alts[i-avv]))
                             zextra = alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv])
                             zeros.append([i, zextra, nb_not_none[i]])
                         else:
@@ -654,10 +650,8 @@ class ProfileTool(QgsMapTool):
                 else:
                     if f_l[1].geometryType() == QGis.Polygon:
                         closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
-                        print(closest)
                         polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry())
                         zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
-                        print(zp)
                         feat.append(f_l[0])
                         if zp is None or zp != zp:
                             z.append(0)

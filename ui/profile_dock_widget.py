@@ -101,7 +101,7 @@ class ProfileDockWidget(QDockWidget):
         self.resize(1024, 400)
         self.__iface = iface
         self.__canvas = self.__iface.mapCanvas()
-        self.__types = ['PDF', 'PNG', 'SVG', 'PS']
+        self.__types = ['PDF', 'PNG']  # ], 'SVG', 'PS']
         self.__libs = []
         if Qwt5_loaded:
             self.__lib = 'Qwt5'
@@ -138,15 +138,21 @@ class ProfileDockWidget(QDockWidget):
         self.__frameLayout = QHBoxLayout()
         self.__plotFrame.setLayout(self.__frameLayout)
 
+        self.__printLayout = QHBoxLayout()
+        self.__printLayout.addWidget(self.__plotFrame)
+
+        self.__legendLayout = QVBoxLayout()
+        self.__printLayout.addLayout(self.__legendLayout)
+
+        self.__printWdg = QWidget()
+        self.__printWdg.setLayout(self.__printLayout)
+
         self.__plotWdg = None
         self.__changePlotWidget()
 
         size = QSize(150, 20)
 
-        self.__boxLayout.addWidget(self.__plotFrame)
-
-        self.__legendLayout = QVBoxLayout()
-        self.__boxLayout.addLayout(self.__legendLayout)
+        self.__boxLayout.addWidget(self.__printWdg)
 
         self.__vertLayout = QVBoxLayout()
 
@@ -248,6 +254,8 @@ class ProfileDockWidget(QDockWidget):
             self.__axes = fig.add_axes((0.05, 0.15, 0.92, 0.82))
             self.__axes.set_xbound(0, 1000)
             self.__axes.set_ybound(0, 1000)
+            self.__axes.set_xlabel(QCoreApplication.translate("VDLTools","Distance [m]"))
+            self.__axes.set_ylabel(QCoreApplication.translate("VDLTools","Elevation [m]"))
             self.__manageMatplotlibAxe(self.__axes)
             self.__plotWdg = FigureCanvasQTAgg(fig)
             sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -374,7 +382,7 @@ class ProfileDockWidget(QDockWidget):
                             tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                             for t in range(len(tmp)):
                                 if self.__mntPoints[0][p] == tmp[t].get_gid():
-                                    tmp[p].set_color((old_div(qcol.red(), 255.0), old_div(qcol.green(), 255.0),
+                                    tmp[c].set_color((old_div(qcol.red(), 255.0), old_div(qcol.green(), 255.0),
                                                       old_div(qcol.blue(), 255.0), old_div(qcol.alpha(), 255.0)))
                                     self.__plotWdg.draw()
                                     break
@@ -586,36 +594,11 @@ class ProfileDockWidget(QDockWidget):
             self.__outPDF()
         elif idx == 1:
             self.__outPNG()
-        elif idx == 2:
-            self.__outSVG()
-        elif idx == 3:
-            self.__outPrint()
         else:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools","Error"),
                 QCoreApplication.translate("VDLTools","Invalid index ") + str(idx),
                 level=QgsMessageBar.CRITICAL)
-
-    def __outPrint(self): # Postscript file rendering doesn't work properly yet.
-        """
-        To save the profile as ps file
-        """
-        fileName = QFileDialog.getSaveFileName(
-            self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
-            QCoreApplication.translate("VDLTools", "Profile of curve.ps"),"PostScript Format (*.ps)")
-        if fileName is not None:
-            if self.__lib == 'Qwt5':
-                printer = QPrinter()
-                printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
-                printer.setDocName(QCoreApplication.translate("VDLTools","QGIS Profile"))
-                printer.setOutputFileName(fileName)
-                printer.setColorMode(QPrinter.Color)
-                printer.setOrientation(QPrinter.Portrait)
-                dialog = QPrintDialog(printer)
-                if dialog.exec_():
-                    self.__plotWdg.print_(printer)
-            elif self.__lib == 'Matplotlib':
-                self.__plotWdg.figure.savefig(str(fileName))
 
     def __outPDF(self):
         """
@@ -623,33 +606,14 @@ class ProfileDockWidget(QDockWidget):
         """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
-            QCoreApplication.translate("VDLTools","Profile of curve.pdf"),"Portable Document Format (*.pdf)")
+            QCoreApplication.translate("VDLTools","Profile.pdf"),"Portable Document Format (*.pdf)")
         if fileName is not None:
-            if self.__lib == 'Qwt5':
-                printer = QPrinter()
-                printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
-                printer.setOutputFileName(fileName)
-                printer.setOutputFormat(QPrinter.PdfFormat)
-                printer.setOrientation(QPrinter.Landscape)
-                self.__plotWdg.print_(printer)
-            elif self.__lib == 'Matplotlib':
-                self.__plotWdg.figure.savefig(str(fileName))
-
-    def __outSVG(self):
-        """
-        To save the profile as svg file
-        """
-        fileName = QFileDialog.getSaveFileName(
-            self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
-            QCoreApplication.translate("VDLTools","Profile of curve.svg"), "Scalable Vector Graphics (*.svg)")
-        if fileName is not None:
-            if self.__lib == 'Qwt5':
-                printer = QSvgGenerator()
-                printer.setFileName(fileName)
-                printer.setSize(QSize(800, 400))
-                self.__plotWdg.print_(printer)
-            elif self.__lib == 'Matplotlib':
-                self.__plotWdg.figure.savefig(str(fileName))
+            printer = QPrinter()
+            printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
+            printer.setOutputFileName(fileName)
+            printer.setOutputFormat(QPrinter.PdfFormat)
+            printer.setOrientation(QPrinter.Landscape)
+            self.__printWdg.render(printer)
 
     def __outPNG(self):
         """
@@ -657,12 +621,9 @@ class ProfileDockWidget(QDockWidget):
         """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
-            QCoreApplication.translate("VDLTools","Profile of curve.png"),"Portable Network Graphics (*.png)")
+            QCoreApplication.translate("VDLTools","Profile.png"),"Portable Network Graphics (*.png)")
         if fileName is not None:
-            if self.__lib == 'Qwt5':
-                QPixmap.grabWidget(self.__plotWdg).save(fileName, "PNG")
-            elif self.__lib == 'Matplotlib':
-                self.__plotWdg.figure.savefig(str(fileName))
+            QPixmap.grabWidget(self.__printWdg).save(fileName, "PNG")
 
     def clearData(self):
         """
