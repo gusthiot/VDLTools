@@ -117,7 +117,6 @@ class ImportMeasures(object):
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
                                     self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
-            print(query.lastError().text())
             if query.lastError().isValid():
                 print(query.lastError().text())
                 self.__cancel()
@@ -157,20 +156,26 @@ class ImportMeasures(object):
                         if self.__selectedFeatures is None or len(self.__selectedFeatures) == 0:
                             selected = False
                         self.__jobsDlg = ImportJobsDialog(jobs, selected)
+                        self.__jobsDlg.jobsRadio().clicked.connect(self.__onJobsRadio)
+                        self.__jobsDlg.pointsRadio().clicked.connect(self.__onPointsRadio)
                         self.__jobsDlg.rejected.connect(self.__cancel)
                         self.__jobsDlg.okButton().clicked.connect(self.__onOk)
                         self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
                         self.__jobsDlg.show()
 
+    def __onPointsRadio(self):
+        self.__jobsDlg.enableJobs(False)
+
+    def __onJobsRadio(self):
+        self.__jobsDlg.enableJobs(True)
+
     def __onOk(self):
         """
         When the Ok button in Import Jobs Dialog is pushed
         """
-        self.__jobs = self.__jobsDlg.jobs()
         self.__jobsDlg.accept()
-        if len(self.__jobs) == 0:
-            self.__cancel()
-        else:
+        if self.__jobsDlg.jobsRadio().isChecked():
+            self.__jobs = self.__jobsDlg.jobs()
             #  select geodata for insertion
             jobs = ""
             i = 0
@@ -180,26 +185,37 @@ class ImportMeasures(object):
                 else:
                     jobs += ","
                 jobs += "'" + job + "'"
-            query = self.__db.exec_("""SELECT code,description,geometry,id,usr_session_name FROM """ + self.__sourceTable +
-                                    """ WHERE usr_session_name IN (""" + jobs + """) AND usr_valid = FALSE""")
-            if query.lastError().isValid():
-                print(query.lastError().text())
-            else:
-                self.__data = []
-                while next(query):
-                    data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
-                            'id_survey': query.value(3), 'job': query.value(4)}
-                    # select schema and id for insertion table
-                    query2 = self.__db.exec_(
-                        """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
-                    if query2.lastError().isValid():
-                        print(query2.lastError().text())
-                    else:
-                        next(query2)
-                        data['id_table'] = query2.value(0)
-                        data['schema_table'] = query2.value(1)
-                    self.__data.append(data)
-                self.__checkIfExist()
+            condition = """usr_session_name IN (""" + jobs + """)"""
+        else:
+            ids = ""
+            i = 0
+            for selected in self.__selectedFeatures:
+                if i == 0:
+                    i += 1
+                else:
+                    ids += ","
+                ids += "'" + str(selected) + "'"
+            condition = """id IN (""" + ids + """)"""
+        query = self.__db.exec_("""SELECT code,description,geometry,id,usr_session_name FROM """ + self.__sourceTable +
+                                """ WHERE """ + condition + """ AND usr_valid = FALSE""")
+        if query.lastError().isValid():
+            print(query.lastError().text())
+        else:
+            self.__data = []
+            while next(query):
+                data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
+                        'id_survey': query.value(3), 'job': query.value(4)}
+                # select schema and id for insertion table
+                query2 = self.__db.exec_(
+                    """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
+                if query2.lastError().isValid():
+                    print(query2.lastError().text())
+                else:
+                    next(query2)
+                    data['id_table'] = query2.value(0)
+                    data['schema_table'] = query2.value(1)
+                self.__data.append(data)
+            self.__checkIfExist()
 
     def __checkIfExist(self):
         if self.__iter < len(self.__data):
