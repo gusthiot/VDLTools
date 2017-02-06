@@ -44,8 +44,6 @@ class PointerTool(QgsMapTool):
         :param iface: interface
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
-        self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/pointer_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Elevation pointer")
         self.setCursor(Qt.ArrowCursor)
@@ -68,7 +66,7 @@ class PointerTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def canvasReleaseEvent(self, event):
         """
@@ -78,7 +76,7 @@ class PointerTool(QgsMapTool):
         types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
                  QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
         display = ""
-        for layer in self.__iface.mapCanvas().layers():
+        for layer in self.canvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
                 layerConfig = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 10, QgsTolerance.Pixels)
                 features = Finder.findFeaturesAt(event.mapPoint(), layerConfig, self)

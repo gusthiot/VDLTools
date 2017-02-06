@@ -60,7 +60,6 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         """
         QgsMapToolAdvancedDigitizing.__init__(self,  iface.mapCanvas(), iface.cadDockWidget())
         self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/move_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Move/Copy a feature")
         self.setCursor(Qt.ArrowCursor)
@@ -130,22 +129,22 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool() == self:
+        if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
 
     def setTool(self):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def __cancel(self):
         if self.__rubberBand is not None:
-            self.__canvas.scene().removeItem(self.__rubberBand)
+            self.canvas().scene().removeItem(self.__rubberBand)
             self.__rubberBand.reset()
             self.__rubberBand = None
         if self.__rubberSnap is not None:
-            self.__canvas.scene().removeItem(self.__rubberSnap)
+            self.canvas().scene().removeItem(self.__rubberSnap)
             self.__rubberSnap.reset()
             self.__rubberSnap = None
         self.__isEditing = False
@@ -201,11 +200,11 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool() == self:
+                if self.canvas().mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
         self.action().setEnabled(False)
-        if self.__canvas.mapTool() == self:
+        if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
         self.__removeLayer()
 
@@ -217,7 +216,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         point_v2 = GeometryV2.asPointV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsPointV2(point.x(), point.y())
         self.__newFeature.addZValue(point_v2.z())
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
+        self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Point)
         self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __linePreview(self, point):
@@ -228,7 +227,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         vertex = QgsPointV2()
         line_v2.pointAt(self.__selectedVertex, vertex)
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
+        self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
         if isinstance(curved, (list, tuple)):
@@ -278,7 +277,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
         self.__newFeature = QgsCurvePolygonV2()
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
+        self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
         line_v2 = self.__newCurve(curved[0], polygon_v2.exteriorRing(), dx, dy)
         self.__newFeature.setExteriorRing(line_v2)
         self.__rubberBand.setToGeometry(QgsGeometry(line_v2.curveToLine()), None)
@@ -347,7 +346,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(map_point, self.__canvas, [laySettings])
+            f_l = Finder.findClosestFeatureAt(map_point, self.canvas(), [laySettings])
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])
@@ -385,22 +384,22 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             if self.__rubberSnap is not None:
                 self.__rubberSnap.reset()
             else:
-                self.__rubberSnap = QgsRubberBand(self.__canvas, QGis.Point)
+                self.__rubberSnap = QgsRubberBand(self.canvas(), QGis.Point)
             self.__rubberSnap.setColor(color)
             self.__rubberSnap.setWidth(2)
             self.__rubberSnap.setIconSize(20)
-            match = Finder.snap(map_point, self.__canvas)
+            match = Finder.snap(map_point, self.canvas())
             if match.hasVertex():
                 if match.layer() is not None:
                     self.__rubberSnap.setIcon(4)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
                 else:
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
                     if intersection is not None:
                         self.__rubberSnap.setIcon(1)
                         self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
             if match.hasEdge():
-                intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
                 if intersection is not None:
                     self.__rubberSnap.setIcon(1)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
@@ -428,7 +427,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                         level=QgsMessageBar.INFO, duration=3)
                     self.__findVertex = True
                     self.setMode(self.CaptureLine)
-                    self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Point)
+                    self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Point)
                 else:
                     self.setMode(self.CaptureNone)
                     self.__onMove = True
@@ -441,16 +440,16 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         elif self.__onMove:
             self.__onMove = False
             mapPoint = event.mapPoint()
-            match = Finder.snap(event.mapPoint(), self.__canvas)
+            match = Finder.snap(event.mapPoint(), self.canvas())
             if match.hasVertex() or match.hasEdge():
                 mapPoint = match.point()
                 if match.hasVertex():
                     if match.layer() is None:
-                        intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                        intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
                         if intersection is not None:
                             mapPoint = intersection
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
                     if intersection is not None:
                         print("release intersect")
                         mapPoint = intersection

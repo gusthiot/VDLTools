@@ -53,7 +53,6 @@ class ExtrapolateTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/extrapolate_icon.png'
         self.__text = QCoreApplication.translate("VDLTools",
                                                  "Extrapolate the elevation of a vertex and a "
@@ -86,14 +85,14 @@ class ExtrapolateTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def activate(self):
         """
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
+        self.__rubber = QgsRubberBand(self.canvas(), QGis.Point)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubber.setColor(color)
@@ -123,7 +122,7 @@ class ExtrapolateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool() == self:
+        if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
 
     def __cancel(self):
@@ -170,7 +169,7 @@ class ExtrapolateTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool() == self:
+                if self.canvas().mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
         self.action().setEnabled(False)
@@ -184,7 +183,7 @@ class ExtrapolateTool(QgsMapTool):
         if not self.__isEditing:
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
             if f_l is not None:
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])

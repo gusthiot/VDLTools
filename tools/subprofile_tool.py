@@ -45,7 +45,6 @@ class SubProfileTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/profile_2_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Line for MNT profile")
         self.setCursor(Qt.ArrowCursor)
@@ -75,7 +74,7 @@ class SubProfileTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def activate(self):
         """
@@ -85,11 +84,11 @@ class SubProfileTool(QgsMapTool):
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
-        self.__rubberLine = QgsRubberBand(self.__canvas, QGis.Line)
+        self.__rubberLine = QgsRubberBand(self.canvas(), QGis.Line)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubberLine.setColor(color)
-        self.__rubberDots = QgsRubberBand(self.__canvas, QGis.Line)
+        self.__rubberDots = QgsRubberBand(self.canvas(), QGis.Line)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubberDots.setColor(color)
@@ -104,7 +103,7 @@ class SubProfileTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__canvas.scene().removeItem(self.__rubberLine)
+        self.canvas().scene().removeItem(self.__rubberLine)
         self.__rubberLine = None
         if self.__dockWdg is not None:
             self.__dockWdg.close()

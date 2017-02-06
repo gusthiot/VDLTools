@@ -64,7 +64,6 @@ class DuplicateTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/duplicate_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Duplicate a feature")
         self.setCursor(Qt.ArrowCursor)
@@ -119,19 +118,19 @@ class DuplicateTool(QgsMapTool):
         self.action().setEnabled(False)
         self.__layer.editingStopped.disconnect(self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
-        if self.__canvas.mapTool() == self:
+        if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
 
     def setTool(self):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def __cancel(self):
         self.__isEditing = False
         if self.__rubberBand is not None:
-            self.__canvas.scene().removeItem(self.__rubberBand)
+            self.canvas().scene().removeItem(self.__rubberBand)
             self.__rubberBand.reset()
             self.__rubberBand = None
         self.__dstDlg = None
@@ -174,11 +173,11 @@ class DuplicateTool(QgsMapTool):
             else:
                 self.action().setEnabled(False)
                 self.__layer.editingStarted.connect(self.startEditing)
-                if self.__canvas.mapTool() == self:
+                if self.canvas().mapTool() == self:
                     self.__iface.actionPan().trigger()
             return
 
-        if self.__canvas.mapTool() == self:
+        if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
         self.action().setEnabled(False)
         self.__removeLayer()
@@ -221,7 +220,7 @@ class DuplicateTool(QgsMapTool):
         When the Preview button in Duplicate Distance Dialog is pushed
         """
         if self.__rubberBand is not None:
-            self.__canvas.scene().removeItem(self.__rubberBand)
+            self.canvas().scene().removeItem(self.__rubberBand)
             self.__rubberBand = None
         if self.__dstDlg.distanceEdit().text() is not None:
             distance = float(self.__dstDlg.distanceEdit().text())
@@ -243,7 +242,7 @@ class DuplicateTool(QgsMapTool):
         To create the preview (rubberBand) of the duplicate line at a certain distance
         :param distance: the given distance
         """
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
+        self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
         line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
         if isinstance(curved, (list, tuple)):
             self.__newFeature = QgsCompoundCurveV2()
@@ -310,7 +309,7 @@ class DuplicateTool(QgsMapTool):
         To create the preview (rubberBand) of the duplicate polygon at a certain distance
         :param distance: the given distance
         """
-        self.__rubberBand = QgsRubberBand(self.__canvas, QGis.Line)
+        self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
         polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
         self.__newFeature = QgsCurvePolygonV2()
         line_v2 = self.__newPolygonCurve(polygon_v2.exteriorRing(), distance, curved[0])
@@ -388,7 +387,7 @@ class DuplicateTool(QgsMapTool):
         if not self.__isEditing:
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
                 self.__layer.setSelectedFeatures([f_l[0].id()])

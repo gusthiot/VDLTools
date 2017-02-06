@@ -39,7 +39,7 @@ from .tools.show_settings import ShowSettings
 from .tools.import_measures import ImportMeasures
 from .tools.subprofile_tool import SubProfileTool
 from .tools.pointer_tool import PointerTool
-from .tools.multiselect_tool import MultiselectTool
+from .tools.multi_attributes_tool import MultiAttributesTool
 
 # Initialize Qt resources from file resources.py
 from . import resources
@@ -68,7 +68,7 @@ class VDLTools(object):
         self.subProfileTool = None
         self.pointerTool = None
         self.moveTool = None
-        self.multiselectTool = None
+        self.multiAttributesTool = None
         self.showSettings = None
         self.importMeasures = None
 
@@ -134,8 +134,8 @@ class VDLTools(object):
         self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
         self.intersectTool = IntersectTool(self.iface)
         self.add_action(self.intersectTool, self.iface.mainWindow())
-        self.multiselectTool = MultiselectTool(self.iface)
-        self.add_action(self.multiselectTool, self.iface.mainWindow())
+        self.multiAttributesTool = MultiAttributesTool(self.iface)
+        self.add_action(self.multiAttributesTool, self.iface.mainWindow())
         self.profileTool = ProfileTool(self.iface)
         self.add_action(self.profileTool, self.iface.mainWindow(), False)
         self.subProfileTool = SubProfileTool(self.iface)

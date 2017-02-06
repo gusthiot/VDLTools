@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from __future__ import division
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import pyqtSignal
 from PyQt4.QtGui import QColor
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand)
@@ -40,28 +40,28 @@ class MultiselectTool(QgsMapTool):
     Map tool class to duplicate an object
     """
 
+    selectedSignal = pyqtSignal()
+
     def __init__(self, iface):
         """
         Constructor
         :param iface: interface
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
-        self.__iface = iface
-        self.__canvas = iface.mapCanvas()
-        self.__icon_path = ':/plugins/VDLTools/icons/select_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Select features on multiple layers")
         self.__selecting = False
         self.__first = None
         self.__last = None
         self.__temp = None
         self.__rubber = None
+        self.types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ,
+                        QgsWKBTypes.CompoundCurveZ, QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
 
     def activate(self):
         """
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.__canvas, QGis.Polygon)
+        self.__rubber = QgsRubberBand(self.canvas(), QGis.Polygon)
         color = QColor("red")
         color.setAlphaF(0.6)
         self.__rubber.setBorderColor(color)
@@ -74,34 +74,11 @@ class MultiselectTool(QgsMapTool):
         When the action is deselected
         """
         self.__rubber = None
+        self.__selecting = False
+        self.__first = None
+        self.__last = None
+        self.__temp = None
         QgsMapTool.deactivate(self)
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
-
-    def toolName(self):
-        """
-        To get the tool name
-        :return: tool name
-        """
-        return QCoreApplication.translate("VDLTools","Multiselect")
-
-    def setTool(self):
-        """
-        To set the current tool as this one
-        """
-        self.__canvas.setMapTool(self)
 
     def canvasMoveEvent(self, event):
         if self.__selecting:
@@ -119,20 +96,16 @@ class MultiselectTool(QgsMapTool):
             geom = QgsGeometry(polygonV2)
             self.__rubber.setToGeometry(geom, None)
 
-    def canvasReleaseEvent(self, event):
-        self.__selecting = False
-        self.__last = event.mapPoint()
-        self.__rubber.reset()
-        types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
-                 QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
-        searchRect = QgsRectangle(self.__first, self.__last)
-        for layer in self.__iface.mapCanvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
-                layer.select(searchRect, False)
-                if layer.selectedFeatureCount() > 0:
-                    print(layer.name(), layer.selectedFeatureCount())
-
     def canvasPressEvent(self, event):
         self.__selecting = True
         self.__first = event.mapPoint()
 
+    def canvasReleaseEvent(self, event):
+        self.__selecting = False
+        self.__last = event.mapPoint()
+        self.__rubber.reset()
+        searchRect = QgsRectangle(self.__first, self.__last)
+        for layer in self.canvas().layers():
+            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
+                layer.select(searchRect, False)
+        self.selectedSignal.emit()

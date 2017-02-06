@@ -52,7 +52,6 @@ class IntersectTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
         self.__text = QCoreApplication.translate("VDLTools", "From intersection")
         self.setCursor(Qt.ArrowCursor)
@@ -81,14 +80,14 @@ class IntersectTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def activate(self):
         """
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.__canvas, QGis.Point)
+        self.__rubber = QgsRubberBand(self.canvas(), QGis.Point)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubber.setColor(color)
@@ -183,7 +182,7 @@ class IntersectTool(QgsMapTool):
         """
         if not self.__isEditing:
             self.__rubber.reset()
-            match = Finder.snap(mouseEvent.mapPoint(), self.__canvas)
+            match = Finder.snap(mouseEvent.mapPoint(), self.canvas())
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
@@ -192,7 +191,7 @@ class IntersectTool(QgsMapTool):
                     else:
                         self.__rubber.setIcon(1)
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
                     if intersection is not None:
                         self.__rubber.setIcon(1)
                         point = intersection
@@ -207,10 +206,10 @@ class IntersectTool(QgsMapTool):
         """
         if mouseEvent.button() != Qt.LeftButton:
             return
-        match = Finder.snap(mouseEvent.mapPoint(), self.__canvas)
+        match = Finder.snap(mouseEvent.mapPoint(), self.canvas())
         if match.hasVertex() or match.hasEdge():
             point = match.point()
-            intersection = Finder.snapCurvedIntersections(match.point(), self.__canvas, self)
+            intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
             if intersection is not None:
                 point = intersection
             self.__isEditing = True
@@ -228,7 +227,7 @@ class IntersectTool(QgsMapTool):
                 return layer
         layer = QgsMapLayerRegistry.instance().mapLayer(self.__lineLayerID)
         if layer is None:
-            epsg = self.__iface.mapCanvas().mapRenderer().destinationCrs().authid()
+            epsg = self.canvas().mapRenderer().destinationCrs().authid()
             layer = QgsVectorLayer("LineString?crs=%s&index=yes&field=distance:double&field=x:double&field=y:double"
                                    % epsg, "Memory Lines", "memory")
             QgsMapLayerRegistry.instance().addMapLayer(layer)
@@ -258,7 +257,7 @@ class IntersectTool(QgsMapTool):
                 return layer
         layer = QgsMapLayerRegistry.instance().mapLayer(self.__pointLayerID)
         if layer is None:
-            epsg = self.__iface.mapCanvas().mapRenderer().destinationCrs().authid()
+            epsg = self.canvas().mapRenderer().destinationCrs().authid()
             layer = QgsVectorLayer("Point?crs=%s&index=yes" % epsg, "Memory Points", "memory")
             QgsMapLayerRegistry.instance().addMapLayer(layer)
             layer.layerDeleted.connect(self.__pointLayerDeleted)

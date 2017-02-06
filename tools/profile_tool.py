@@ -60,7 +60,6 @@ class ProfileTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__canvas = iface.mapCanvas()
         self.__icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
         self.__lineLayer = None
@@ -105,7 +104,7 @@ class ProfileTool(QgsMapTool):
         """
         To set the current tool as this one
         """
-        self.__canvas.setMapTool(self)
+        self.canvas().setMapTool(self)
 
     def activate(self):
         """
@@ -115,8 +114,8 @@ class ProfileTool(QgsMapTool):
         self.__dockWdg = ProfileDockWidget(self.__iface)
         self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
-        self.__rubberSit = QgsRubberBand(self.__canvas, QGis.Point)
-        self.__rubberDif = QgsRubberBand(self.__canvas, QGis.Point)
+        self.__rubberSit = QgsRubberBand(self.canvas(), QGis.Point)
+        self.__rubberDif = QgsRubberBand(self.canvas(), QGis.Point)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubberSit.setColor(color)
@@ -134,9 +133,9 @@ class ProfileTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__canvas.scene().removeItem(self.__rubberDif)
+        self.canvas().scene().removeItem(self.__rubberDif)
         self.__rubberDif = None
-        self.__canvas.scene().removeItem(self.__rubberSit)
+        self.canvas().scene().removeItem(self.__rubberSit)
         self.__rubberSit = None
         if self.__dockWdg is not None:
             self.__dockWdg.close()
@@ -167,7 +166,7 @@ class ProfileTool(QgsMapTool):
             self.action().setEnabled(True)
             return
         self.action().setEnabled(False)
-        if self.__canvas.mapTool() == self:
+        if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
         if self.__dockWdg is not None:
             self.__dockWdg.close()
@@ -253,7 +252,7 @@ class ProfileTool(QgsMapTool):
         layerList = []
         types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
                  QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
-        for layer in self.__iface.mapCanvas().layers():
+        for layer in self.canvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
                     layerList.append(layer)
         return layerList
@@ -596,7 +595,7 @@ class ProfileTool(QgsMapTool):
                             laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
                                                                        QgsTolerance.LayerUnits)
                             f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-                                                              self.__canvas, [laySettings])
+                                                              self.canvas(), [laySettings])
                             if f_l is not None:
                                 if layer == self.__lineLayer:
                                     other = False
@@ -642,7 +641,7 @@ class ProfileTool(QgsMapTool):
             z = points['z']
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
-                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.__canvas,
+                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.canvas(),
                                                     [laySettings])
                 if f_l is None:
                     feat.append(None)
@@ -729,7 +728,7 @@ class ProfileTool(QgsMapTool):
             if self.__lineLayer is not None:
                 laySettings = QgsSnappingUtils.LayerConfig(self.__lineLayer, QgsPointLocator.All, 10,
                                                            QgsTolerance.Pixels)
-                f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.__canvas, [laySettings])
+                f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
                 if not self.__inSelection:
                     if f_l is not None and self.__lastFeatureId != f_l[0].id():
                         self.__lastFeature = f_l[0]
