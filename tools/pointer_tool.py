@@ -80,7 +80,7 @@ class PointerTool(QgsMapTool):
         display = ""
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
-                layerConfig = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
+                layerConfig = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 10, QgsTolerance.Pixels)
                 features = Finder.findFeaturesAt(event.mapPoint(), layerConfig, self)
                 if len(features) > 0:
                     display += layer.name() + " : \n"
