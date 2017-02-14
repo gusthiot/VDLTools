@@ -50,6 +50,7 @@ class ShowSettings(object):
         self.__icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Settings")
         self.__showDlg = None
+        self.__ctlDb = None
         self.__configTable = None
         self.__uriDb = None
         self.__schemaDb = None
@@ -68,6 +69,7 @@ class ShowSettings(object):
         self.__mntUrl = QgsProject.instance().readEntry("VDLTools", "mnt_url", "None")[0]
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
         dbName = QgsProject.instance().readEntry("VDLTools", "db_name", None)[0]
+        ctlDbName = QgsProject.instance().readEntry("VDLTools", "ctl_db_name", None)[0]
         self.__schemaDb = QgsProject.instance().readEntry("VDLTools", "schema_db", None)[0]
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
@@ -84,6 +86,10 @@ class ShowSettings(object):
             usedDbs = DBConnector.getUsedDatabases()
             if dbName in list(usedDbs.keys()):
                 self.__uriDb = usedDbs[dbName]
+        if ctlDbName != "":
+            usedDbs = DBConnector.getUsedDatabases()
+            if ctlDbName in list(usedDbs.keys()):
+                self.__ctlDb = usedDbs[ctlDbName]
 
 
     def icon_path(self):
@@ -105,7 +111,8 @@ class ShowSettings(object):
         To start the show settings, meaning display a Show Settings Dialog
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
-                                            self.__configTable, self.__uriDb, self.__schemaDb, self.__mntUrl)
+                                            self.__ctlDb, self.__configTable, self.__uriDb, self.__schemaDb,
+                                            self.__mntUrl)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -119,6 +126,7 @@ class ShowSettings(object):
         self.setPointsLayer(self.__showDlg.pointsLayer())
         self.setConfigTable(self.__showDlg.configTable())
         self.setUriDb(self.__showDlg.uriDb())
+        self.setCtlDb(self.__showDlg.ctlDb())
         self.setSchemaDb(self.__showDlg.schemaDb())
         self.setMntUrl(self.__showDlg.mntUrl())
 
@@ -168,6 +176,9 @@ class ShowSettings(object):
 
     def uriDb(self):
         return self.__uriDb
+
+    def ctlDb(self):
+        return self.__ctlDb
 
     def schemaDb(self):
         return self.__schemaDb
@@ -266,6 +277,11 @@ class ShowSettings(object):
         self.__uriDb = uriDb
         if uriDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
+
+    def setCtlDb(self, ctlDb):
+        self.__ctlDb = ctlDb
+        if ctlDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "ctl_db_name", ctlDb.database())
 
     def setSchemaDb(self, schemaDb):
         self.__schemaDb = schemaDb

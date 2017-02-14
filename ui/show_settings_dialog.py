@@ -42,7 +42,7 @@ class ShowSettingsDialog(QDialog):
     Dialog class for plugin settings
     """
 
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, configTable, uriDb, schemaDb, mntUrl):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, ctllDb, configTable, uriDb, schemaDb, mntUrl):
         """
         Constructor
         :param iface: interface
@@ -54,6 +54,7 @@ class ShowSettingsDialog(QDialog):
         self.__iface = iface
         self.__memoryPointsLayer = memoryPointsLayer
         self.__memoryLinesLayer = memoryLinesLayer
+        self.__ctlDb = ctllDb
         self.__configTable = configTable
         self.__uriDb = uriDb
         self.__schemaDb = schemaDb
@@ -157,6 +158,18 @@ class ShowSettingsDialog(QDialog):
         self.__mntText.setMinimumWidth(100)
         self.__layout.addWidget(self.__mntText, 5, 2)
 
+        ctlLabel = QLabel(QCoreApplication.translate("VDLTools","Control database : "))
+        ctlLabel.setMinimumHeight(20)
+        ctlLabel.setMinimumWidth(50)
+        self.__layout.addWidget(ctlLabel, 6, 1)
+
+        self.__ctlCombo = QComboBox()
+        self.__ctlCombo.setMinimumHeight(20)
+        self.__ctlCombo.setMinimumWidth(50)
+        self.__ctlCombo.addItem("")
+        for db in list(self.__dbs.keys()):
+            self.__ctlCombo.addItem(db)
+        self.__layout.addWidget(self.__ctlCombo, 6, 2)
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
         self.__okButton.setMinimumHeight(20)
@@ -173,9 +186,16 @@ class ShowSettingsDialog(QDialog):
         self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
         self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
         self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
+
+        self.__ctlCombo.currentIndexChanged.connect(self.__ctlComboChanged)
+
         if self.__uriDb is not None:
             if self.__uriDb.database() in list(self.__dbs.keys()):
                 self.__dbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__uriDb.database()) + 1)
+
+        if self.__ctlDb is not None:
+            if self.__ctlDb.database() in list(self.__dbs.keys()):
+                self.__ctlCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__ctlDb.database()) + 1)
 
     @staticmethod
     def __resetCombo(combo):
@@ -263,6 +283,9 @@ class ShowSettingsDialog(QDialog):
         if self.schemaDb() is not None:
             self.__setTableCombo(self.uriDb(), self.schemaDb())
 
+    def __ctlComboChanged(self):
+        if self.__ctlCombo.itemText(0) == "":
+            self.__ctlCombo.removeItem(0)
 
     def okButton(self):
         """
@@ -327,3 +350,10 @@ class ShowSettingsDialog(QDialog):
 
     def mntUrl(self):
         return self.__mntText.text()
+
+    def ctlDb(self):
+        index = self.__ctlCombo.currentIndex()
+        if self.__ctlCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__dbs[list(self.__dbs.keys())[index]]

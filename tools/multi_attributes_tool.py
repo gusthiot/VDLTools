@@ -27,6 +27,7 @@ from ..ui.multi_confirm_dialog import MultiConfirmDialog
 from qgis.core import (QGis,
                        QgsMapLayer)
 
+
 class MultiAttributesTool(MultiselectTool):
     """
     Map tool class to duplicate an object
@@ -42,6 +43,7 @@ class MultiAttributesTool(MultiselectTool):
         self.__icon_path = ':/plugins/VDLTools/icons/select_icon.png'
         self.__text = QCoreApplication.translate("VDLTools","Select features on multiple layers")
         self.selectedSignal.connect(self.__selected)
+        self.__confDlg = None
 
     def icon_path(self):
         """

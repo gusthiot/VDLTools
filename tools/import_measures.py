@@ -50,7 +50,6 @@ class ImportMeasures(object):
         self.__text = QCoreApplication.translate("VDLTools","Import Measures")
         self.__ownSettings = None
         self.__configTable = None
-        self.__uriDb = None
         self.__schemaDb = None
         self.__db = None
         self.__jobsDlg = None
@@ -110,9 +109,8 @@ class ImportMeasures(object):
             return
         self.__configTable = self.__ownSettings.configTable()
         self.__schemaDb = self.__ownSettings.schemaDb()
-        self.__uriDb = self.__ownSettings.uriDb()
 
-        self.__connector = DBConnector(self.__uriDb, self.__iface)
+        self.__connector = DBConnector(self.__ownSettings.uriDb(), self.__iface)
         self.__db = self.__connector.setConnection()
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +

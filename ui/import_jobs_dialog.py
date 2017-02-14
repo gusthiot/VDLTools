@@ -44,7 +44,7 @@ class ImportJobsDialog(QDialog):
         QDialog.__init__(self)
         self.__jobs = jobs
         self.__selected = selected
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","What to process (radio button does nothing for now)"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools","What to process"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
