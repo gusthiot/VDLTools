@@ -80,6 +80,12 @@ class AreaTool(QgsMapTool):
     def geom(self):
         return self.__geom
 
+    def first(self):
+        return self.__first
+
+    def last(self):
+        return self.__last
+
     def canvasMoveEvent(self, event):
         if self.__selecting:
             self.__temp = event.mapPoint()

@@ -47,7 +47,7 @@ class MultiselectTool(AreaTool):
         self.releasedSignal.connect(self.__select)
 
     def __select(self):
-        searchRect = QgsRectangle(self.__first, self.__last)
+        searchRect = QgsRectangle(self.first(), self.last())
         for layer in self.canvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
                 layer.select(searchRect, False)
