@@ -829,6 +829,7 @@ class ProfileTool(QgsMapTool):
 
         situations = []
         differences = []
+        tol = 0.0005
         for p in range(len(self.__points)):
             pt = self.__points[p]
             num_lines = len(self.__selectedIds)
@@ -842,7 +843,7 @@ class ProfileTool(QgsMapTool):
                     QCoreApplication.translate("VDLTools","no line z ?!?"), level=QgsMessageBar.WARNING)
             elif len(zz) == 1:
                 z0 = pt['z'][zz[0]]
-                tol = 0.01 * z0
+                # tol = 0.01 * z0
                 for i in range(num_lines, len(pt['z'])):
                     if pt['z'][i] is None:
                         continue
@@ -850,7 +851,7 @@ class ProfileTool(QgsMapTool):
                         situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             elif len(zz) == 2:
                 z0 = pt['z'][zz[0]]
-                tol = 0.01 * z0
+                # tol = 0.01 * z0
                 if abs(pt['z'][zz[1]] - z0) > tol:
                     differences.append({'point': p, 'v1': z0, 'v2': pt['z'][zz[1]]})
                 else:
