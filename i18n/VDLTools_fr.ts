@@ -15,33 +15,50 @@
         <translation>Dupliquer</translation>
     </message>
     <message>
-        <location filename="../tools/duplicate_tool.py" line="365"/>
-        <location filename="../tools/import_measures.py" line="92"/>
-        <location filename="../tools/import_measures.py" line="97"/>
-        <location filename="../tools/import_measures.py" line="102"/>
-        <location filename="../tools/import_measures.py" line="107"/>
-        <location filename="../tools/import_measures.py" line="129"/>
-        <location filename="../tools/import_measures.py" line="300"/>
-        <location filename="../tools/move_tool.py" line="302"/>
-        <location filename="../tools/move_tool.py" line="315"/>
-        <location filename="../tools/profile_tool.py" line="564"/>
+        <location filename="../tools/control_tool.py" line="45"/>
+        <source>Make control requests on selected area</source>
+        <translation>Faire des requêtes de contrôle sur la zone sélectionnée</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="81"/>
+        <source>Control</source>
+        <translation>Contrôle</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="91"/>
+        <location filename="../tools/control_tool.py" line="96"/>
+        <location filename="../tools/duplicate_tool.py" line="364"/>
+        <location filename="../tools/import_measures.py" line="91"/>
+        <location filename="../tools/import_measures.py" line="96"/>
+        <location filename="../tools/import_measures.py" line="101"/>
+        <location filename="../tools/import_measures.py" line="106"/>
+        <location filename="../tools/import_measures.py" line="127"/>
+        <location filename="../tools/import_measures.py" line="299"/>
+        <location filename="../tools/move_tool.py" line="301"/>
+        <location filename="../tools/move_tool.py" line="314"/>
+        <location filename="../tools/profile_tool.py" line="565"/>
         <location filename="../ui/profile_dock_widget.py" line="448"/>
         <location filename="../ui/profile_dock_widget.py" line="596"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../tools/duplicate_tool.py" line="366"/>
-        <location filename="../tools/move_tool.py" line="303"/>
-        <location filename="../tools/move_tool.py" line="316"/>
+        <location filename="../tools/control_tool.py" line="97"/>
+        <source>No control db given !!</source>
+        <translation>Pas de bd à contrôler choisie !!</translation>
+    </message>
+    <message>
+        <location filename="../tools/duplicate_tool.py" line="365"/>
+        <location filename="../tools/move_tool.py" line="302"/>
+        <location filename="../tools/move_tool.py" line="315"/>
         <source>Geos geometry problem</source>
         <translation>Problème de géométrie Geos</translation>
     </message>
     <message>
-        <location filename="../tools/duplicate_tool.py" line="406"/>
-        <location filename="../tools/extrapolate_tool.py" line="212"/>
+        <location filename="../tools/duplicate_tool.py" line="405"/>
+        <location filename="../tools/extrapolate_tool.py" line="211"/>
         <location filename="../tools/interpolate_tool.py" line="268"/>
-        <location filename="../tools/move_tool.py" line="420"/>
+        <location filename="../tools/move_tool.py" line="419"/>
         <source>One feature at a time</source>
         <translation>Un objet à la fois</translation>
     </message>
@@ -49,11 +66,6 @@
         <location filename="../tools/extrapolate_tool.py" line="57"/>
         <source>Extrapolate the elevation of a vertex and a point at the extremity of a line</source>
         <translation>Extrapoler l&apos;altitude d&apos;un vertex et d&apos;un point à l&apos;extrémité d&apos;une ligne</translation>
-    </message>
-    <message>
-        <location filename="../tools/extrapolate_tool.py" line="242"/>
-        <source>The segment is too big</source>
-        <translation>Le segment est trop grand</translation>
     </message>
     <message>
         <location filename="../tools/interpolate_tool.py" line="60"/>
@@ -96,7 +108,7 @@
         <translation>Déplacer/Copier</translation>
     </message>
     <message>
-        <location filename="../tools/move_tool.py" line="425"/>
+        <location filename="../tools/move_tool.py" line="424"/>
         <source>Select vertex for moving (ESC to undo)</source>
         <translation>Sélectionner un vertex pour le déplacement (ESC pour annuler)</translation>
     </message>
@@ -106,48 +118,48 @@
         <translation>Profil d&apos;une ligne</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="222"/>
+        <location filename="../tools/profile_tool.py" line="223"/>
         <source>Do you really want to edit the LineString layer ?</source>
         <translation>Voulez-vous vraiment éditer la couche Ligne ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="237"/>
+        <location filename="../tools/profile_tool.py" line="238"/>
         <source>Do you really want to edit the Point layer(s) ?</source>
         <translation>Voulez-vous vraiment éditer la (les) couches(s) Point ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="460"/>
+        <location filename="../tools/profile_tool.py" line="461"/>
         <source>There is more than one elevation for the point </source>
         <translation>Il y a plus qu&apos;une altitude pour ce point</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="565"/>
+        <location filename="../tools/profile_tool.py" line="566"/>
         <source>error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="696"/>
+        <location filename="../tools/profile_tool.py" line="697"/>
         <source> connected</source>
-        <translation>connecté</translation>
+        <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="782"/>
+        <location filename="../tools/profile_tool.py" line="783"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="840"/>
-        <location filename="../tools/profile_tool.py" line="863"/>
+        <location filename="../tools/profile_tool.py" line="842"/>
+        <location filename="../tools/profile_tool.py" line="865"/>
         <source>Warning</source>
         <translation>Attention</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="841"/>
+        <location filename="../tools/profile_tool.py" line="843"/>
         <source>no line z ?!?</source>
         <translation>pas de z pour la ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="864"/>
+        <location filename="../tools/profile_tool.py" line="866"/>
         <source>more than 2 lines z ?!?</source>
         <translation>plus de 2 z pour la ligne ?!?</translation>
     </message>
@@ -174,11 +186,27 @@
         <location filename="../ui/intersect_distance_dialog.py" line="62"/>
         <location filename="../ui/profile_confirm_dialog.py" line="49"/>
         <location filename="../ui/profile_layers_dialog.py" line="49"/>
-        <location filename="../ui/show_settings_dialog.py" line="161"/>
+        <location filename="../ui/show_settings_dialog.py" line="174"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
+        <location filename="../ui/choose_control_dialog.py" line="44"/>
+        <source>Choose Controls</source>
+        <translation>Choisir les contrôles</translation>
+    </message>
+    <message>
+        <location filename="../ui/choose_control_dialog.py" line="49"/>
+        <source>Choose which controls you want to process :</source>
+        <translation>Choisir les contrôles que vous voulez lancer :</translation>
+    </message>
+    <message>
+        <location filename="../ui/choose_control_dialog.py" line="70"/>
+        <source>Ok</source>
+        <translation>Ok</translation>
+    </message>
+    <message>
+        <location filename="../ui/choose_control_dialog.py" line="74"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="69"/>
         <location filename="../ui/fields_settings_dialog.py" line="67"/>
         <location filename="../ui/import_confirm_dialog.py" line="53"/>
@@ -188,7 +216,7 @@
         <location filename="../ui/move_confirm_dialog.py" line="57"/>
         <location filename="../ui/profile_confirm_dialog.py" line="53"/>
         <location filename="../ui/profile_layers_dialog.py" line="53"/>
-        <location filename="../ui/show_settings_dialog.py" line="165"/>
+        <location filename="../ui/show_settings_dialog.py" line="178"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -198,31 +226,36 @@
         <translation>Dans quelle direction la partie interne doit-elle être dupliquée ?</translation>
     </message>
     <message>
-        <location filename="../ui/extrapolate_confirm_dialog.py" line="44"/>
+        <location filename="../ui/extrapolate_confirm_dialog.py" line="42"/>
         <location filename="../ui/interpolate_confirm_dialog.py" line="44"/>
         <location filename="../ui/profile_confirm_dialog.py" line="41"/>
         <source>Edition Confirmation</source>
         <translation>Confirmation d&apos;édition</translation>
     </message>
     <message>
-        <location filename="../ui/extrapolate_confirm_dialog.py" line="49"/>
+        <location filename="../tools/extrapolate_tool.py" line="232"/>
         <source>This vertex has already an elevation </source>
         <translation>Ce vertex a déjà une altitude</translation>
     </message>
     <message>
-        <location filename="../ui/extrapolate_confirm_dialog.py" line="50"/>
+        <location filename="../tools/extrapolate_tool.py" line="234"/>
         <source> do you really want to change it (new elevation : </source>
         <translation>voulez-vous vraiment la changer (nouvelle altitude : </translation>
     </message>
     <message>
-        <location filename="../ui/extrapolate_confirm_dialog.py" line="55"/>
+        <location filename="../tools/extrapolate_tool.py" line="245"/>
+        <source>The segment is too big, do you really want to extrapolate anyway ? (elevation : </source>
+        <translation>Le segment est trop grand, voulez-vous extrapoler malgré tout ? (altitude : </translation>
+    </message>
+    <message>
+        <location filename="../ui/extrapolate_confirm_dialog.py" line="50"/>
         <location filename="../ui/import_measures_dialog.py" line="57"/>
         <location filename="../ui/multi_confirm_dialog.py" line="51"/>
         <source>Yes</source>
         <translation>Oui</translation>
     </message>
     <message>
-        <location filename="../ui/extrapolate_confirm_dialog.py" line="59"/>
+        <location filename="../ui/extrapolate_confirm_dialog.py" line="54"/>
         <location filename="../ui/import_measures_dialog.py" line="61"/>
         <location filename="../ui/multi_confirm_dialog.py" line="55"/>
         <source>No</source>
@@ -394,39 +427,44 @@
     </message>
     <message>
         <location filename="../tools/show_settings.py" line="51"/>
-        <location filename="../ui/show_settings_dialog.py" line="61"/>
+        <location filename="../ui/show_settings_dialog.py" line="62"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="77"/>
+        <location filename="../ui/show_settings_dialog.py" line="78"/>
         <source>Working points layer : </source>
         <translation>Couche de points de travail : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="94"/>
+        <location filename="../ui/show_settings_dialog.py" line="95"/>
         <source>Working lines layer : </source>
         <translation>Couche de lignes de travail : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="111"/>
+        <location filename="../ui/show_settings_dialog.py" line="112"/>
         <source>Import database : </source>
         <translation>Import base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="124"/>
+        <location filename="../ui/show_settings_dialog.py" line="125"/>
         <source>Database schema : </source>
         <translation>Schéma base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="135"/>
+        <location filename="../ui/show_settings_dialog.py" line="136"/>
         <source>Config table : </source>
         <translation>Table de configuration : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="146"/>
+        <location filename="../ui/show_settings_dialog.py" line="147"/>
         <source>Url for MNT : </source>
         <translation>Url pour MNT : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="161"/>
+        <source>Control database : </source>
+        <translation>Base de données à contrôler : </translation>
     </message>
     <message>
         <location filename="../ui/fields_settings_dialog.py" line="42"/>
@@ -474,37 +512,38 @@
         <translation>Importer des  mesures</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="93"/>
+        <location filename="../tools/control_tool.py" line="92"/>
+        <location filename="../tools/import_measures.py" line="92"/>
         <source>No settings given !!</source>
         <translation>Pas de paramètres entrés !!</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="98"/>
+        <location filename="../tools/import_measures.py" line="97"/>
         <source>No import db given !!</source>
         <translation>Pas de bd d&apos;import choisie !!</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="103"/>
+        <location filename="../tools/import_measures.py" line="102"/>
         <source>No db schema given !!</source>
         <translation>Pas de schéma de bd choisi !!</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="108"/>
+        <location filename="../tools/import_measures.py" line="107"/>
         <source>No config table given !!</source>
         <translation>Pas de table de configuration choisie !!</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="130"/>
+        <location filename="../tools/import_measures.py" line="128"/>
         <source>different sources in config table ?!?</source>
         <translation>Sources différentes dans la table de configuration ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="301"/>
+        <location filename="../tools/import_measures.py" line="300"/>
         <source>different destination layer in config table ?!?</source>
         <translation>Couche de destination différente dans la table de configuration ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="340"/>
+        <location filename="../tools/import_measures.py" line="339"/>
         <source>Success</source>
         <translation>Succès</translation>
     </message>
@@ -564,7 +603,7 @@
         <translation>Sélection d&apos;objets sur plusieurs couches</translation>
     </message>
     <message>
-        <location filename="../tools/multi_attributes_tool.py" line="66"/>
+        <location filename="../tools/multi_attributes_tool.py" line="67"/>
         <source>Multiselect</source>
         <translation>Sélection multiple</translation>
     </message>

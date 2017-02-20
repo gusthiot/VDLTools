@@ -248,11 +248,9 @@ class ProfileDockWidget(QDockWidget):
             rect = fig.patch
             rect.set_facecolor((0.9, 0.9, 0.9))
 
-            self.__axes = fig.add_axes((0.05, 0.15, 0.92, 0.82))
+            self.__axes = fig.add_axes((0.07, 0.16, 0.92, 0.82))
             self.__axes.set_xbound(0, 1000)
             self.__axes.set_ybound(0, 1000)
-            self.__axes.set_xlabel(QCoreApplication.translate("VDLTools","Distance [m]"))
-            self.__axes.set_ylabel(QCoreApplication.translate("VDLTools","Elevation [m]"))
             self.__manageMatplotlibAxe(self.__axes)
             self.__plotWdg = FigureCanvasQTAgg(fig)
             sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -605,11 +603,12 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile.pdf"),"Portable Document Format (*.pdf)")
         if fileName is not None:
-            printer = QPrinter()
+            printer = QPrinter(QPrinter.ScreenResolution)
             printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
             printer.setOutputFileName(fileName)
             printer.setOutputFormat(QPrinter.PdfFormat)
             printer.setOrientation(QPrinter.Landscape)
+            printer.setPaperSize(QPrinter.A4)
             self.__printWdg.render(printer)
 
     def __outPNG(self):
@@ -659,6 +658,8 @@ class ProfileDockWidget(QDockWidget):
         axe.minorticks_on()
         axe.tick_params(axis="both", which="minor", direction="out", length=5, width=1, bottom=True, top=False,
                          left=True, right=False)
+        axe.set_xlabel(QCoreApplication.translate("VDLTools","Distance [m]"))
+        axe.set_ylabel(QCoreApplication.translate("VDLTools","Elevation [m]"))
 
     def __activateMouseTracking(self, activate):
         """

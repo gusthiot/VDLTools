@@ -244,7 +244,7 @@ class ExtrapolateTool(QgsMapTool):
                 else:
                     message = QCoreApplication.translate("VDLTools",
                                                          "The segment is too big, do you really want "
-                                                         "to extrapolate anyway ? (new elevation : ") + \
+                                                         "to extrapolate anyway ? (elevation : ") + \
                               str(self.__elevation) + ") ?"
                     self.__confDlg = ExtrapolateConfirmDialog(message)
                     self.__confDlg.rejected.connect(self.__cancel)
