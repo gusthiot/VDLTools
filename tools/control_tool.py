@@ -127,6 +127,7 @@ class ControlTool(AreaTool):
         where_part = """WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" + self.geom().exportToWkt() + """',
                         """ + str(self.__crs) + """))"""
         request = select_part + from_part + where_part
+        print(request)
         self.__querying(request, layer_name, fNames)
 
     def __querying(self, request, layer_name, fNames):
