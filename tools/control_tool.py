@@ -122,7 +122,8 @@ class ControlTool(AreaTool):
         layer_name = "request1"
         fNames = ["id"]
         fTypes = ["int"]
-        query = self.__db.exec_("""SELECT GeometryType(geometry3d), ST_AsText(geometry3d), id FROM qwat_od.pipe WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" +
+        query = self.__db.exec_("""SELECT GeometryType(geometry3d), ST_AsText(geometry3d), id FROM qwat_od.pipe
+                                WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" +
                                 self.geom().exportToWkt() + """',""" + str(self.__crs) + """))""")
         if query.lastError().isValid():
             print(query.lastError().text())
@@ -139,7 +140,8 @@ class ControlTool(AreaTool):
             self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
 
     def __request2(self):
-        query = self.__db.exec_("""SELECT id, GeometryType(geometry3d) FROM qwat_od.valve WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" +
+        query = self.__db.exec_("""SELECT id, GeometryType(geometry3d) FROM qwat_od.valve
+                                WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" +
                                 self.geom().exportToWkt() + """',""" + str(self.__crs) + """))""")
         if query.lastError().isValid():
             print(query.lastError().text())

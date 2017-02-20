@@ -142,7 +142,8 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
-        self.__lineLayer.removeSelection()
+        if self.__lineLayer is not None:
+            self.__lineLayer.removeSelection()
         self.__lastFeatureId = None
         self.__lastFeature = None
         self.__selectedIds = None
