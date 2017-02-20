@@ -604,11 +604,16 @@ class ProfileDockWidget(QDockWidget):
             QCoreApplication.translate("VDLTools","Profile.pdf"),"Portable Document Format (*.pdf)")
         if fileName is not None:
             printer = QPrinter(QPrinter.ScreenResolution)
+            res = printer.supportedResolutions()
+            for r in res:
+                print("res : " + str(r))
+            print("resS : " + str(printer.resolution()))
             printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
             printer.setOutputFileName(fileName)
             printer.setOutputFormat(QPrinter.PdfFormat)
             printer.setOrientation(QPrinter.Landscape)
             printer.setPaperSize(QPrinter.A4)
+            printer.setResolution(600)
             self.__printWdg.render(printer)
 
     def __outPNG(self):
