@@ -47,6 +47,7 @@ from PyQt4.QtGui import (QDockWidget,
                          QSizePolicy,
                          QPrinter)
 from PyQt4.QtCore import (QSize,
+                          QSizeF,
                           QRectF,
                           QCoreApplication,
                           Qt,
@@ -603,17 +604,13 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile.pdf"),"Portable Document Format (*.pdf)")
         if fileName is not None:
-            printer = QPrinter(QPrinter.ScreenResolution)
-            res = printer.supportedResolutions()
-            for r in res:
-                print("res : " + str(r))
-            print("resS : " + str(printer.resolution()))
+            printer = QPrinter()
             printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
             printer.setOutputFileName(fileName)
             printer.setOutputFormat(QPrinter.PdfFormat)
             printer.setOrientation(QPrinter.Landscape)
-            printer.setPaperSize(QPrinter.A4)
-            printer.setResolution(600)
+            printer.setPaperSize(QSizeF(self.__printWdg.size()), QPrinter.Millimeter)
+            printer.setFullPage(True)
             self.__printWdg.render(printer)
 
     def __outPNG(self):
