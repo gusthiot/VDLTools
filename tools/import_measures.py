@@ -155,7 +155,8 @@ class ImportMeasures(object):
                             selected = False
                         self.__jobsDlg = ImportJobsDialog(jobs, selected)
                         self.__jobsDlg.jobsRadio().clicked.connect(self.__onJobsRadio)
-                        self.__jobsDlg.pointsRadio().clicked.connect(self.__onPointsRadio)
+                        if self.__jobsDlg.pointsRadio() is not None:
+                            self.__jobsDlg.pointsRadio().clicked.connect(self.__onPointsRadio)
                         self.__jobsDlg.rejected.connect(self.__cancel)
                         self.__jobsDlg.okButton().clicked.connect(self.__onOk)
                         self.__jobsDlg.cancelButton().clicked.connect(self.__onCancel)
