@@ -48,8 +48,7 @@ class ControlTool(AreaTool):
         self.__db = None
         self.__ownSettings = None
         self.__requests = {
-            "nom1": self.__request1,
-            "nom2": self.__request2
+            "nom1": self.__request1
         }
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
 
@@ -121,34 +120,35 @@ class ControlTool(AreaTool):
     def __request1(self):
         layer_name = "request1"
         fNames = ["id"]
-        fTypes = ["int"]
-        query = self.__db.exec_("""SELECT GeometryType(geometry3d), ST_AsText(geometry3d), id FROM qwat_od.pipe
-                                WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" +
-                                self.geom().exportToWkt() + """',""" + str(self.__crs) + """))""")
+        select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""
+        for f in fNames:
+            select_part += """, """ + f + """, pg_typeof(""" + f + """)"""
+        from_part = """ FROM qwat_od.pipe """
+        where_part = """WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" + self.geom().exportToWkt() + """',
+                        """ + str(self.__crs) + """))"""
+        request = select_part + from_part + where_part
+        self.__querying(request, layer_name, fNames)
+
+    def __querying(self, request, layer_name, fNames):
+        query = self.__db.exec_(request)
         if query.lastError().isValid():
             print(query.lastError().text())
         else:
             gtype = None
             geometries = []
             attributes = []
+            fTypes = []
             while query.next():
                 gtype = query.value(0)
                 geometries.append(query.value(1))
-                attributes.append([query.value(2)])
+                atts = []
+                for i in range(len(fNames)):
+                    atts.append(query.value(2*i))
+                    fTypes.append(query.value(2*i+1))
+                attributes.append(atts)
             print(len(geometries))
-
-            self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
-
-    def __request2(self):
-        query = self.__db.exec_("""SELECT id, GeometryType(geometry3d) FROM qwat_od.valve
-                                WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" +
-                                self.geom().exportToWkt() + """',""" + str(self.__crs) + """))""")
-        if query.lastError().isValid():
-            print(query.lastError().text())
-        else:
-            nb = 0
-            while query.next():
-                nb += 1
+            if len(geometries) > 0:
+                self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
 
     def __createMemoryLayer(self, layer_name, gtype, geometries, attributes, fNames, fTypes):
             layerList = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)

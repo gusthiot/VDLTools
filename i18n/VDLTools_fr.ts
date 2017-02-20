@@ -229,14 +229,6 @@
         <translation>Non</translation>
     </message>
     <message>
-        <source>Choose job</source>
-        <translation type="obsolete">Choisir un job</translation>
-    </message>
-    <message>
-        <source>Job : </source>
-        <translation type="obsolete">Job : </translation>
-    </message>
-    <message>
         <location filename="../ui/interpolate_confirm_dialog.py" line="49"/>
         <source>This LineString layer is not editable, what do you want to do ?</source>
         <translation>Cette couche Ligne n&apos;est pas éditable, que voulez-vous faire ?</translation>
@@ -255,14 +247,6 @@
         <location filename="../ui/interpolate_confirm_dialog.py" line="58"/>
         <source>Just edit line with new vertex</source>
         <translation>Juste éditer la ligne avec un nouveau vertex</translation>
-    </message>
-    <message>
-        <source>Place distance</source>
-        <translation type="obsolete">Place distance</translation>
-    </message>
-    <message>
-        <source>Distance</source>
-        <translation type="obsolete">Distance</translation>
     </message>
     <message>
         <location filename="../ui/move_confirm_dialog.py" line="41"/>
@@ -358,37 +342,9 @@
         <translation>Profil.png</translation>
     </message>
     <message>
-        <source>Profile of curve.ps</source>
-        <translation type="obsolete">Profil de courve.ps</translation>
-    </message>
-    <message>
         <location filename="../ui/profile_dock_widget.py" line="609"/>
         <source>QGIS Profile Plugin</source>
         <translation>Pllugin QGIS de profil</translation>
-    </message>
-    <message>
-        <source>QGIS Profile</source>
-        <translation type="obsolete">QGIS profil</translation>
-    </message>
-    <message>
-        <source>Profile of curve.pdf</source>
-        <translation type="obsolete">Profil de courbe.pdf</translation>
-    </message>
-    <message>
-        <source>Profile of curve.svg</source>
-        <translation type="obsolete">Profil de courbe.svg</translation>
-    </message>
-    <message>
-        <source>Profile of curve.png</source>
-        <translation type="obsolete">Profil de courbe.png</translation>
-    </message>
-    <message>
-        <source>Tracking exception...</source>
-        <translation type="obsolete">Erreur de tracking...</translation>
-    </message>
-    <message>
-        <source>Mouse event exception...</source>
-        <translation type="obsolete">Erreur d&apos;évènement de souris...</translation>
     </message>
     <message>
         <location filename="../ui/profile_layers_dialog.py" line="46"/>
