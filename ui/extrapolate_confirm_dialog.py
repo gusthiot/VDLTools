@@ -34,21 +34,16 @@ class ExtrapolateConfirmDialog(QDialog):
     Dialog class to confirm the extrapolation
     """
 
-    def __init__(self, oldElevation, newElevation):
+    def __init__(self, message):
         """
         Constructor
-        :param oldElevation: the actual position elevation
-        :param newElevation: the proposed new elevation
         """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Edition Confirmation"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
-        self.__confirmLabel = QLabel(
-            QCoreApplication.translate("VDLTools", "This vertex has already an elevation ") + "(" + str(oldElevation) +
-            ")" + QCoreApplication.translate("VDLTools"," do you really want to change it (new elevation : ") +
-            str(newElevation) + ") ?")
+        self.__confirmLabel = QLabel(message)
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 2)
 

@@ -225,12 +225,17 @@ class ExtrapolateTool(QgsMapTool):
                     pt1 = line_v2.pointN(num_p-2)
                 big_d = Finder.sqrDistForPoints(pt0, pt1)
                 small_d = Finder.sqrDistForPoints(pt1, pt)
+                self.__isEditing = True
+                self.__selectedFeature = found_features[0]
+                self.__elevation = pt0.z() + (1 + old_div(small_d,big_d)) * (pt1.z() - pt0.z())
                 if small_d < (old_div(big_d,4)):
-                    self.__isEditing = True
-                    self.__selectedFeature = found_features[0]
-                    self.__elevation = pt0.z() + (1 + old_div(small_d,big_d)) * (pt1.z() - pt0.z())
                     if pt.z() is not None and pt.z() != 0:
-                        self.__confDlg = ExtrapolateConfirmDialog(pt.z(), self.__elevation)
+                        message = QCoreApplication.translate("VDLTools", "This vertex has already an elevation ") + \
+                                  "(" + str(pt.z()) + ")" + \
+                                  QCoreApplication.translate("VDLTools",
+                                                             " do you really want to change it (new elevation : ") + \
+                                  str(self.__elevation) + ") ?"
+                        self.__confDlg = ExtrapolateConfirmDialog(message)
                         self.__confDlg.rejected.connect(self.__cancel)
                         self.__confDlg.okButton().clicked.connect(self.__onEditOk)
                         self.__confDlg.cancelButton().clicked.connect(self.__onEditCancel)
@@ -238,9 +243,14 @@ class ExtrapolateTool(QgsMapTool):
                     else:
                         self.__edit()
                 else:
-                    self.__iface.messageBar().pushMessage(
-                        QCoreApplication.translate("VDLTools", "The segment is too big"), level=QgsMessageBar.INFO,
-                        duration=5)
+                    message = QCoreApplication.translate("VDLTools",
+                                                         "The segment is too big, "
+                                                         "do you really want to extrapolate anyway ? ")
+                    self.__confDlg = ExtrapolateConfirmDialog(message)
+                    self.__confDlg.rejected.connect(self.__cancel)
+                    self.__confDlg.okButton().clicked.connect(self.__onEditOk)
+                    self.__confDlg.cancelButton().clicked.connect(self.__onEditCancel)
+                    self.__confDlg.show()
 
     def __onEditOk(self):
         """
