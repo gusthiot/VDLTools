@@ -170,4 +170,4 @@ class SubProfileTool(QgsMapTool):
         for i in range(self.__line.numPoints()):
             points.append({'x': self.__line.pointN(i).x(), 'y': self.__line.pointN(i).y()})
         self.__dockWdg.setProfiles(points, 0)
-        self.__dockWdg.attachCurves(None, self.__ownSettings)
+        self.__dockWdg.attachCurves(None, self.__ownSettings, [1, 1, 1])
