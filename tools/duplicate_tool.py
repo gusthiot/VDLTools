@@ -161,7 +161,6 @@ class DuplicateTool(QgsMapTool):
                 return
 
             if self.__layer is not None:
-                self.__layer.removeSelection()
                 if self.__layer.isEditable():
                     self.__layer.editingStopped.disconnect(self.stopEditing)
                 else:
