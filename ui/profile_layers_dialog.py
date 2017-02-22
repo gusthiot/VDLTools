@@ -97,6 +97,10 @@ class ProfileLayersDialog(QDialog):
         self.setLayout(self.__layout)
 
     def getUsedMnts(self):
+        """
+        To get the selected MN profiles
+        :return: selected MN profiles
+        """
         if self.__with_mnt:
             used = []
             for i in range(len(self.__mntChecks)):

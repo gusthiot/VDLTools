@@ -172,15 +172,31 @@ class ShowSettings(object):
         return self.__configTable
 
     def mntUrl(self):
+        """
+        To get the saved mnt url
+        :return: saved mnt url
+        """
         return self.__mntUrl
 
     def uriDb(self):
+        """
+        To get the saved uri import database
+        :return: saved uri import database
+        """
         return self.__uriDb
 
     def ctlDb(self):
+        """
+        To get the saved uri control database
+        :return: saved uri control database
+        """
         return self.__ctlDb
 
     def schemaDb(self):
+        """
+        To get the saved schema import database
+        :return: saved schema import database
+        """
         return self.__schemaDb
 
     def setPointsLayer(self, pointsLayer):
@@ -224,6 +240,9 @@ class ShowSettings(object):
         self.__fieldsDlg.reject()
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__linesLayer = None
 
     def __onFieldsOk(self):
@@ -269,21 +288,37 @@ class ShowSettings(object):
             QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
 
     def setMntUrl(self, mntUrl):
+        """
+        To set the saved mnt url
+        :param saved mnt url
+        """
         self.__mntUrl = mntUrl
         if mntUrl is not None:
             QgsProject.instance().writeEntry("VDLTools", "mnt_url", mntUrl)
 
     def setUriDb(self, uriDb):
+        """
+        To set the saved uri import database
+        :param saved uri import database
+        """
         self.__uriDb = uriDb
         if uriDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
 
     def setCtlDb(self, ctlDb):
+        """
+        To set the saved uri control database
+        :param saved uri control database
+        """
         self.__ctlDb = ctlDb
         if ctlDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "ctl_db_name", ctlDb.database())
 
     def setSchemaDb(self, schemaDb):
+        """
+        To set the saved schema import database
+        :param saved schema import database
+        """
         self.__schemaDb = schemaDb
         if schemaDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "schema_db", schemaDb)

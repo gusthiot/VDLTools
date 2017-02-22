@@ -68,6 +68,10 @@ class ImportMeasuresDialog(QDialog):
         self.setLayout(self.__layout)
 
     def data(self):
+        """
+        To get the displayed data
+        :return: displayed data
+        """
         return self.__data
 
     def okButton(self):

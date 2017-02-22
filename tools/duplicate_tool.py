@@ -128,6 +128,9 @@ class DuplicateTool(QgsMapTool):
         self.canvas().setMapTool(self)
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__isEditing = False
         if self.__rubberBand is not None:
             self.canvas().scene().removeItem(self.__rubberBand)

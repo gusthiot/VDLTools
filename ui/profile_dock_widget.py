@@ -286,6 +286,10 @@ class ProfileDockWidget(QDockWidget):
             self.__profiles[i+1]['l'] = profileLen
 
     def __getMnt(self, settings):
+        """
+        To get the MN data for the profile
+        :param settings: settings containing MN url
+        """
         if settings is None or settings.mntUrl() is None or settings.mntUrl() == "None":
             url = 'http://map.lausanne.ch/main/wsgi/profile.json'
         elif settings.mntUrl() == "":

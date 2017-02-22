@@ -137,11 +137,17 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             self.__iface.actionPan().trigger()
 
     def __done(self):
+        """
+        When the edition is finished
+        """
         self.__isEditing = False
         self.__confDlg = None
         self.__mapPoint = None
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__findVertex = False
         if self.__lastLayer is not None:
             self.__lastLayer.removeSelection()
@@ -202,6 +208,10 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                                                                              QgsTolerance.Pixels))
 
     def keyReleaseEvent(self, event):
+        """
+        When keyboard is pressed
+        :param event: keyboard event
+        """
         if event.key() == Qt.Key_Escape:
             self.__done()
             self.__cancel()

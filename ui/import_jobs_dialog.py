@@ -99,12 +99,24 @@ class ImportJobsDialog(QDialog):
         return self.__okButton
 
     def jobsRadio(self):
+        """
+        To get the jobs radio button
+        :return: jobs radio button
+        """
         return self.__jobButton
 
     def pointsRadio(self):
+        """
+        To get the points radio button
+        :return: points radio button
+        """
         return self.__pointsButton
 
     def enableJobs(self, enable):
+        """
+        To display/hide the available jobs
+        :param enable: if we want to display/hide
+        """
         for i in range(len(self.__jobs)):
             if enable:
                 label = QLabel(self.__jobs[i])

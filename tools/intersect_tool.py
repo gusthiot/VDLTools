@@ -105,6 +105,9 @@ class IntersectTool(QgsMapTool):
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__rubber.reset()
         self.__isEditing = False
 

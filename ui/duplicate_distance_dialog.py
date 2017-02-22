@@ -124,20 +124,11 @@ class DuplicateDistanceDialog(QDialog):
         return self.__distanceEdit
 
     def directionCheck(self):
+        """
+        To get the direction check button
+        :return: direction check button
+        """
         return self.__distanceDirection
-
-    def distanceEditText(self):
-        """
-        To get the text putted into the distance edit field
-        :return: text from ditance edit field
-        """
-        return self.__distanceEdit.text()
-
-    def setDistanceEditText(self, text):
-        """
-        To set the distance displayed in the distance edit field
-        """
-        self.__distanceEdit.setText(text)
 
     def isInverted(self):
         """

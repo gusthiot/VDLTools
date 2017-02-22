@@ -88,6 +88,8 @@ class ProfileZerosDialog(QDialog):
 
     def getZeros(self):
         """
+        To get selected zeros to interolate
+        :return: zeros list
         """
         zeros = []
         for i in range(len(self.__zeros)):

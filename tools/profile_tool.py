@@ -126,6 +126,9 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.setIconSize(20)
 
     def __closed(self):
+        """
+        When the dock is closed
+        """
         self.__cancel()
         self.__iface.actionPan().trigger()
 
@@ -142,6 +145,9 @@ class ProfileTool(QgsMapTool):
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         if self.__lineLayer is not None:
             self.__lineLayer.removeSelection()
         self.__lastFeatureId = None
@@ -290,6 +296,9 @@ class ProfileTool(QgsMapTool):
         self.__confirmLine()
 
     def __checkZeros(self):
+        """
+        To check if there are zeros in selected objects
+        """
         alts = []
         nb_not_none = []
         for i in range(len(self.__points)):
@@ -407,9 +416,15 @@ class ProfileTool(QgsMapTool):
             self.__cancel()
 
     def __onZeroPass(self):
+        """
+        When the Pass button in Profile Zeros Dialog is pushed
+        """
         self.__zeroDlg.reject()
 
     def __onZeroApply(self):
+        """
+        When the Apply button in Profile Zeros Dialog is pushed
+        """
         self.__zeroDlg.accept()
         zeros = self.__zeroDlg.getZeros()
 
@@ -516,6 +531,13 @@ class ProfileTool(QgsMapTool):
         self.__checkZeros()
 
     def __changePoint(self, layer, pos, feat, newZ):
+        """
+        To change Vertex elevation
+        :param layer: layer containing the object
+        :param pos: vertex position in the object (if not a point)
+        :param feat: QgsFeature of the object
+        :param newZ: new elevation
+        """
         if layer.geometryType() == QGis.Polygon:
             closest = feat.geometry().closestVertex(
                 QgsPoint(self.__points[pos]['x'], self.__points[pos]['y']))
@@ -545,6 +567,11 @@ class ProfileTool(QgsMapTool):
         self.__isChoosed = False
 
     def __lineVertices(self, checkLayers=False):
+        """
+        To check if vertices of oter layers are crossing the displaying line
+        :param checkLayers: if we want to get the list of the other layers in return
+        :return: other layers list if requested
+        """
         if checkLayers:
             availableLayers = self.__getOtherLayers()
             otherLayers = []
@@ -633,6 +660,9 @@ class ProfileTool(QgsMapTool):
         self.__isChoosed = False
 
     def __createProfile(self):
+        """
+        Create the profile in the dock
+        """
         self.__features = []
 
         for points in self.__points:
@@ -717,6 +747,10 @@ class ProfileTool(QgsMapTool):
         return -1
 
     def keyReleaseEvent(self, event):
+        """
+        When keyboard is pressed
+        :param event: keyboard event
+        """
         if event.key() == Qt.Key_Escape:
             self.__cancel()
 

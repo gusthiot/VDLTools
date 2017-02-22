@@ -37,6 +37,11 @@ class DBConnector(object):
     """
 
     def __init__(self, uri, iface):
+        """
+        Constructor
+        :param uri: database uri
+        :param iface: interface
+        """
         self.__dbName = uri.database()
         self.__host = uri.host()
         self.__username = uri.username()
@@ -75,6 +80,10 @@ class DBConnector(object):
                 self.__pwd = passwd
 
     def setConnection(self):
+        """
+        To set a connection to the initialized database
+        :return: database connection
+        """
         db = QSqlDatabase.addDatabase('QPSQL')
         db.setHostName(self.__host)
         db.setDatabaseName(self.__dbName)
@@ -91,6 +100,10 @@ class DBConnector(object):
 
     @staticmethod
     def getUsedDatabases():
+        """
+        To get all used databases in the project
+        :return: databases uri list
+        """
         dbs = {}
         for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "postgres":

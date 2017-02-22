@@ -30,7 +30,7 @@ from qgis.core import (QGis,
 
 class MultiAttributesTool(MultiselectTool):
     """
-    Map tool class to duplicate an object
+    Map tool class to display attributes tables from different objects from multiple layers
     """
 
     def __init__(self, iface):
@@ -73,15 +73,24 @@ class MultiAttributesTool(MultiselectTool):
         self.canvas().setMapTool(self)
 
     def __selected(self):
+        """
+        When search polygon is selected
+        """
         self.__confDlg = MultiConfirmDialog()
         self.__confDlg.okButton().clicked.connect(self.__onConfirmYes)
         self.__confDlg.cancelButton().clicked.connect(self.__onConfirmNo)
         self.__confDlg.show()
 
     def __onConfirmNo(self):
+        """
+        When the No button in Multi Confirm Dialog is pushed
+        """
         self.__confDlg.reject()
 
     def __onConfirmYes(self):
+        """
+        When the Yes button in Multi Confirm Dialog is pushed
+        """
         self.__confDlg.accept()
         for layer in self.__iface.mapCanvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:

@@ -189,6 +189,13 @@ class Finder(object):
 
     @staticmethod
     def getLayersSettings(mapCanvas, types, snapType=None):
+        """
+        To get the snapping config from different layers
+        :param mapCanvas: the used QgsMapCanvas
+        :param types: geometry types in use
+        :param snapType: snapping type
+        :return: list of layers config
+        """
         snap_layers = []
         for layer in mapCanvas.layers():
             if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:

@@ -126,6 +126,9 @@ class ExtrapolateTool(QgsMapTool):
             self.__iface.actionPan().trigger()
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__layer.removeSelection()
         self.__rubber.reset()
         self.__lastFeatureId = None

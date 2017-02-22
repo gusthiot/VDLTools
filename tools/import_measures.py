@@ -163,9 +163,15 @@ class ImportMeasures(object):
                         self.__jobsDlg.show()
 
     def __onPointsRadio(self):
+        """
+        When the Points Radio Button in Import Jobs Dialog is selected
+        """
         self.__jobsDlg.enableJobs(False)
 
     def __onJobsRadio(self):
+        """
+        When the Jobs Radio Button in Import Jobs Dialog is selected
+        """
         self.__jobsDlg.enableJobs(True)
 
     def __onOk(self):
@@ -217,6 +223,9 @@ class ImportMeasures(object):
             self.__checkIfExist()
 
     def __checkIfExist(self):
+        """
+        To check if the data we want to import is already in the table
+        """
         if self.__iter < len(self.__data):
             data = self.__data[self.__iter]
 
@@ -262,18 +271,31 @@ class ImportMeasures(object):
         self.__confDlg.accept()
 
     def __cancelAndNext(self):
+        """
+        To flag we will not import this data and check the next
+        """
         self.__data[self.__iter]['add'] = False
         self.__nextCheck()
 
     def __confirmAndNext(self):
+        """
+        To flag we will import this data and check the next
+        """
         self.__data[self.__iter]['add'] = True
         self.__nextCheck()
 
     def __nextCheck(self):
+        """
+        To check the next data
+        :return:
+        """
         self.__iter += 1
         self.__checkIfExist()
 
     def __insert(self):
+        """
+        To insert the data into the tables
+        """
         not_added = []
         for data in self.__data:
             if data['add']:
@@ -334,6 +356,9 @@ class ImportMeasures(object):
             self.__conclude()
 
     def __conclude(self):
+        """
+        To display a resume message and clear variables
+        """
         if self.__num > 0:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Success"),
@@ -353,6 +378,10 @@ class ImportMeasures(object):
         self.__measDlg.accept()
 
     def __ids(self):
+        """
+        To create string data list
+        :return: string list
+        """
         pos = 0
         ids = ""
         for data in self.__measDlg.data():
@@ -364,6 +393,9 @@ class ImportMeasures(object):
         return ids
 
     def __validAndNext(self):
+        """
+        To update data in source table and conclude
+        """
         query = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
                                 str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
                                 """, usr_import_user = '""" + self.__db.userName() +
@@ -373,6 +405,9 @@ class ImportMeasures(object):
         self.__conclude()
 
     def __deleteAndNext(self):
+        """
+        To delete data in source table and conclude
+        """
         query = self.__db.exec_("""DELETE FROM """ + self.__sourceTable +
                                 """ WHERE id IN (""" + self.__ids() + """)""")
         if query.lastError().isValid():
@@ -380,6 +415,9 @@ class ImportMeasures(object):
         self.__conclude()
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__confDlg = None
         self.__jobsDlg = None
         self.__measDlg = None

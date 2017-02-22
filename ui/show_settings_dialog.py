@@ -199,10 +199,18 @@ class ShowSettingsDialog(QDialog):
 
     @staticmethod
     def __resetCombo(combo):
+        """
+        To reset a combo list
+        :param combo: concerned combo
+        """
         while combo.count() > 0:
             combo.removeItem(combo.count()-1)
 
     def __setSchemaCombo(self, uriDb):
+        """
+        To fill the schema combo list
+        :param uriDb: selected database uri
+        """
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
         if db:
@@ -227,6 +235,11 @@ class ShowSettingsDialog(QDialog):
                         self.__schemaCombo.setCurrentIndex(self.__schemas.index(self.__schemaDb) + 1)
 
     def __setTableCombo(self, uriDb, schema):
+        """
+        To fill the table combo list
+        :param uriDb: selected database uri
+        :param schema: selected database schema
+        """
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
         if db:
@@ -272,18 +285,27 @@ class ShowSettingsDialog(QDialog):
             self.__tableCombo.removeItem(0)
 
     def __dbComboChanged(self):
+        """
+        When the selection in db combo has changed
+        """
         if self.__dbCombo.itemText(0) == "":
             self.__dbCombo.removeItem(0)
         if self.uriDb() is not None:
             self.__setSchemaCombo(self.uriDb())
 
     def __schemaComboChanged(self):
+        """
+        When the selection in schema combo has changed
+        """
         if self.__schemaCombo.itemText(0) == "":
             self.__schemaCombo.removeItem(0)
         if self.schemaDb() is not None:
             self.__setTableCombo(self.uriDb(), self.schemaDb())
 
     def __ctlComboChanged(self):
+        """
+        When the selection in ctl combo has changed
+        """
         if self.__ctlCombo.itemText(0) == "":
             self.__ctlCombo.removeItem(0)
 
@@ -335,6 +357,10 @@ class ShowSettingsDialog(QDialog):
             return self.__tables[index]
 
     def uriDb(self):
+        """
+        To get selected import database uri
+        :return: import database uri
+        """
         index = self.__dbCombo.currentIndex()
         if self.__dbCombo.itemText(index) == "":
             return None
@@ -342,6 +368,10 @@ class ShowSettingsDialog(QDialog):
             return self.__dbs[list(self.__dbs.keys())[index]]
 
     def schemaDb(self):
+        """
+        To get selected import database schema
+        :return: import database schema
+        """
         index = self.__schemaCombo.currentIndex()
         if self.__schemaCombo.itemText(index) == "":
             return None
@@ -349,9 +379,17 @@ class ShowSettingsDialog(QDialog):
             return self.__schemas[index]
 
     def mntUrl(self):
+        """
+        To get selected MN url
+        :return: MN url
+        """
         return self.__mntText.text()
 
     def ctlDb(self):
+        """
+        To get selected control database uri
+        :return: control database uri
+        """
         index = self.__ctlCombo.currentIndex()
         if self.__ctlCombo.itemText(index) == "":
             return None

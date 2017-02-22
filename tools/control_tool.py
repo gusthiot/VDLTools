@@ -87,6 +87,9 @@ class ControlTool(AreaTool):
         self.canvas().setMapTool(self)
 
     def __released(self):
+        """
+        When selection is complete
+        """
         if self.__ownSettings is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
                                                   QCoreApplication.translate("VDLTools","No settings given !!"),
@@ -104,9 +107,15 @@ class ControlTool(AreaTool):
         self.__chooseDlg.show()
 
     def __onCancel(self):
+        """
+        When the Cancel button in Choose Control Dialog is pushed
+        """
         self.__chooseDlg.reject()
 
     def __onOk(self):
+        """
+        When the Ok button in Choose Control Dialog is pushed
+        """
         self.__chooseDlg.accept()
 
         self.__connector = DBConnector(self.__ownSettings.ctlDb(), self.__iface)
@@ -118,7 +127,9 @@ class ControlTool(AreaTool):
             self.__cancel()
 
     def __request1(self):
-
+        """
+        Request which can be choosed for control
+        """
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
         layer_name = "request1"
         fNames = ["id"]
@@ -133,6 +144,12 @@ class ControlTool(AreaTool):
         self.__querying(request, layer_name, fNames)
 
     def __querying(self, request, layer_name, fNames):
+        """
+        Process query to database and display the results
+        :param request: request string to query
+        :param layer_name: name for new memory layer to display the results
+        :param fNames: fields names requested as result
+        """
         query = self.__db.exec_(request)
         if query.lastError().isValid():
             print(query.lastError().text())
@@ -154,26 +171,38 @@ class ControlTool(AreaTool):
                 self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
 
     def __createMemoryLayer(self, layer_name, gtype, geometries, attributes, fNames, fTypes):
-            layerList = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
-            if layerList:
-                QgsMapLayerRegistry.instance().removeMapLayers([layerList[0].id()])
-            epsg = self.canvas().mapRenderer().destinationCrs().authid()
-            fieldsParam = ""
-            for i in range(len(fNames)):
-                fieldsParam += "&field=" + fNames[i] + ":" + fTypes[i]
-            layer = QgsVectorLayer(gtype + "?crs=" + epsg + fieldsParam + "&index=yes", layer_name, "memory")
-            QgsMapLayerRegistry.instance().addMapLayer(layer)
-            layer.startEditing()
-            for i in range(len(geometries)):
-                feature = QgsFeature()
-                feature.setGeometry(QgsGeometry().fromWkt(geometries[i]))
-                fields = layer.pendingFields()
-                feature.setFields(fields)
-                for j in range(len(fNames)):
-                    feature.setAttribute(fNames[j], attributes[i][j])
-                layer.addFeature(feature)
-            layer.commitChanges()
+        """
+        Create a memory layer from parameters
+        :param layer_name: name for the layer
+        :param gtype: geometry type of the layer
+        :param geometries: objects geometries
+        :param attributes: objects attributes
+        :param fNames: fields names
+        :param fTypes: fields types
+        """
+        layerList = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
+        if layerList:
+            QgsMapLayerRegistry.instance().removeMapLayers([layerList[0].id()])
+        epsg = self.canvas().mapRenderer().destinationCrs().authid()
+        fieldsParam = ""
+        for i in range(len(fNames)):
+            fieldsParam += "&field=" + fNames[i] + ":" + fTypes[i]
+        layer = QgsVectorLayer(gtype + "?crs=" + epsg + fieldsParam + "&index=yes", layer_name, "memory")
+        QgsMapLayerRegistry.instance().addMapLayer(layer)
+        layer.startEditing()
+        for i in range(len(geometries)):
+            feature = QgsFeature()
+            feature.setGeometry(QgsGeometry().fromWkt(geometries[i]))
+            fields = layer.pendingFields()
+            feature.setFields(fields)
+            for j in range(len(fNames)):
+                feature.setAttribute(fNames[j], attributes[i][j])
+            layer.addFeature(feature)
+        layer.commitChanges()
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__chooseDlg = None
         self.__db.close()

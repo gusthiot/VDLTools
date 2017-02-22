@@ -95,6 +95,10 @@ class ChooseControlDialog(QDialog):
         return self.__cancelButton
 
     def controls(self):
+        """
+        To get the selected controls
+        :return: control list
+        """
         controls = []
         for i in range(len(self.__names)):
             if self.__controlsChecks[i].isChecked():

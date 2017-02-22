@@ -139,6 +139,9 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         self.canvas().setMapTool(self)
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         if self.__rubberBand is not None:
             self.canvas().scene().removeItem(self.__rubberBand)
             self.__rubberBand.reset()
@@ -328,6 +331,10 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         self.__cancel()
 
     def keyReleaseEvent(self, event):
+        """
+        When keyboard is pressed
+        :param event: keyboard event
+        """
         if event.key() == Qt.Key_Escape:
             self.__cancel()
 

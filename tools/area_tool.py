@@ -78,15 +78,31 @@ class AreaTool(QgsMapTool):
         QgsMapTool.deactivate(self)
 
     def geom(self):
+        """
+        To get the selected polygon QgsGeometry
+        :return: geometry
+        """
         return self.__geom
 
     def first(self):
+        """
+        To get the up/left QgsPointV2 of the selected polygon
+        :return: up/left point
+        """
         return self.__first
 
     def last(self):
+        """
+        To get the down/right QgsPointV2 of the selected polygon
+        :return: down/right point
+        """
         return self.__last
 
     def canvasMoveEvent(self, event):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
         if self.__selecting:
             self.__temp = event.mapPoint()
             self.__rubber.reset()
@@ -103,10 +119,18 @@ class AreaTool(QgsMapTool):
             self.__rubber.setToGeometry(self.__geom, None)
 
     def canvasPressEvent(self, event):
+        """
+        When the mouse is pressed
+        :param event: mouse event
+        """
         self.__selecting = True
         self.__first = event.mapPoint()
 
     def canvasReleaseEvent(self, event):
+        """
+        When the mouse is clicked
+        :param event: mouse event
+        """
         self.__selecting = False
         self.__last = event.mapPoint()
         self.__rubber.reset()

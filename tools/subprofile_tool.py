@@ -96,6 +96,9 @@ class SubProfileTool(QgsMapTool):
 
 
     def __closed(self):
+        """
+        When the dock is closed
+        """
         self.__cancel()
         self.__iface.actionPan().trigger()
 
@@ -110,6 +113,9 @@ class SubProfileTool(QgsMapTool):
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
+        """
+        To cancel used variables
+        """
         self.__isSelected = False
         self.__rubberDots = None
         self.__line = None
@@ -123,6 +129,10 @@ class SubProfileTool(QgsMapTool):
         self.__ownSettings = settings
 
     def keyReleaseEvent(self, event):
+        """
+        When keyboard is pressed
+        :param event: keyboard event
+        """
         if event.key() == Qt.Key_Escape:
             self.__cancel()
 
@@ -161,6 +171,9 @@ class SubProfileTool(QgsMapTool):
                 self.__rubberLine.setToGeometry(QgsGeometry(self.__line.clone()), None)
 
     def __calculateProfile(self):
+        """
+        To calculate the profile and display it
+        """
         if self.__line is None:
             return
         self.__dockWdg.clearData()
