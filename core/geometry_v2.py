@@ -20,10 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from builtins import range
 from builtins import object
 
+from PyQt4.QtCore import QCoreApplication
+from qgis.gui import QgsMessageBar
 from qgis.core import (QgsPointV2,
                        QgsVertexId,
                        QgsCompoundCurveV2,
@@ -38,7 +39,7 @@ class GeometryV2(object):
     """
 
     @staticmethod
-    def asPolygonV2(geometry):
+    def asPolygonV2(geometry, iface):
         """
         To get the feature geometry from a polygon as a QgsCurvePolygonV2
         :param geometry: the feature geometry
@@ -55,7 +56,9 @@ class GeometryV2(object):
         elif wktPolygon.startswith('CurvePolygon'):
             polygon = wktPolygon.replace('CurvePolygon', '')
         else:
-            print("This geometry is not yet implemented")
+            iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "This geometry is not yet implemented"),
+                level=QgsMessageBar.WARNING)
             return None
         polygon = polygon.strip()[1:-1]
         lines = polygon.split('),')
@@ -79,7 +82,7 @@ class GeometryV2(object):
         return polygonV2, curved
 
     @staticmethod
-    def asLineV2(geometry):
+    def asLineV2(geometry, iface):
         """
         To get the feature geometry from a line as a QgsLineStringV2/QgsCircularStringV2
         (as soon as the geometry().geometry() is crashing)
@@ -105,7 +108,9 @@ class GeometryV2(object):
             elif wktLine.startswith('CompoundCurve'):
                 compound = wktLine.replace('CompoundCurve', '')
             else:
-                print("This geometry is not yet implemented")
+                iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "This geometry is not yet implemented"),
+                    level=QgsMessageBar.WARNING)
                 return None
             compound = compound.strip()[1:-1]
             lines = compound.split('),')
@@ -152,7 +157,7 @@ class GeometryV2(object):
         return lineV2
 
     @staticmethod
-    def asPointV2(geometry):
+    def asPointV2(geometry, iface):
         """
         To get the feature geometry from a line as a QgsPointV2
         (as soon as the geometry().geometry() is crashing)
@@ -165,7 +170,9 @@ class GeometryV2(object):
         elif wktPoint.startswith('Point'):
             point = wktPoint.replace('Point', '')
         else:
-            print("This geometry is not yet implemented")
+            iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "This geometry is not yet implemented"),
+                level=QgsMessageBar.WARNING)
             return None
         point = point.strip()[1:-1]
         pt_tab = point.strip().split()

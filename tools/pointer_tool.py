@@ -26,7 +26,8 @@ from qgis.core import (QgsWKBTypes,
                        QgsTolerance,
                        QgsPointLocator,
                        QGis)
-from qgis.gui import QgsMapTool
+from qgis.gui import (QgsMapTool,
+                      QgsMessageBar)
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QMessageBox
@@ -89,7 +90,9 @@ class PointerTool(QgsMapTool):
                             closest = f.geometry().closestVertex(event.mapPoint())
                             alt = f.geometry().geometry().zAt(closest[1])
                         elif f.geometry().type() == QGis.Polygon:
-                            print("polygon not yet implemented")
+                            self.__iface.messageBar().pushMessage(
+                                QCoreApplication.translate("VDLTools", "Polygon not yet implemented"),
+                                level=QgsMessageBar.WARNING)
                             continue
                         else:
                             continue

@@ -20,7 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from builtins import next
 from builtins import str
 from builtins import object
@@ -88,24 +87,20 @@ class ImportMeasures(object):
         To start the importation
         """
         if self.__ownSettings is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","No settings given !!"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.__ownSettings.uriDb() is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","No import db given !!"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import db given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.__ownSettings.schemaDb() is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","No db schema given !!"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No db schema given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.__ownSettings.configTable() is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","No config table given !!"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No config table given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
             return
         self.__configTable = self.__ownSettings.configTable()
         self.__schemaDb = self.__ownSettings.schemaDb()
@@ -116,7 +111,7 @@ class ImportMeasures(object):
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
                                     self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
             if query.lastError().isValid():
-                print(query.lastError().text())
+                self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                 self.__cancel()
             else:
                 while next(query):
@@ -124,7 +119,6 @@ class ImportMeasures(object):
                         self.__sourceTable = query.value(0)
                     elif self.__sourceTable != query.value(0):
                         self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools", "Error"),
                             QCoreApplication.translate("VDLTools", "different sources in config table ?!?"),
                             level=QgsMessageBar.WARNING)
                 for layer in self.__iface.mapCanvas().layers():
@@ -141,7 +135,7 @@ class ImportMeasures(object):
                 query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
                     usr_valid = FALSE AND usr_session_name IS NOT NULL""")
                 if query.lastError().isValid():
-                    print(query.lastError().text())
+                    self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                     self.__cancel()
                 else:
                     jobs = []
@@ -204,7 +198,7 @@ class ImportMeasures(object):
         query = self.__db.exec_("""SELECT code,description,geometry,id,usr_session_name FROM """ + self.__sourceTable +
                                 """ WHERE """ + condition + """ AND usr_valid = FALSE""")
         if query.lastError().isValid():
-            print(query.lastError().text())
+            self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
         else:
             self.__data = []
             while next(query):
@@ -214,7 +208,7 @@ class ImportMeasures(object):
                 query2 = self.__db.exec_(
                     """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
                 if query2.lastError().isValid():
-                    print(query2.lastError().text())
+                    self.__iface.messageBar().pushMessage(query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                 else:
                     next(query2)
                     data['id_table'] = query2.value(0)
@@ -234,7 +228,7 @@ class ImportMeasures(object):
                 """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['descr'] +
                 """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
             if query.lastError().isValid():
-                print(query.lastError().text())
+                self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
             else:
                 in_base = False
                 point = None
@@ -311,14 +305,13 @@ class ImportMeasures(object):
                     self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + data['code'] +
                     """' AND static_value IS NOT NULL""")
                 if query.lastError().isValid():
-                    print(query.lastError().text())
+                    self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                 else:
                     while next(query):
                         if destLayer == "":
                             destLayer = query.value(0)
                         elif destLayer != query.value(0):
                             self.__iface.messageBar().pushMessage(
-                                QCoreApplication.translate("VDLTools","Error"),
                                 QCoreApplication.translate("VDLTools",
                                                            "different destination layer in config table ?!?"),
                                 level=QgsMessageBar.WARNING)
@@ -330,7 +323,7 @@ class ImportMeasures(object):
                     #  insert data
                     query2 = self.__db.exec_(request)
                     if query2.lastError().isValid():
-                        print(query2.lastError().text())
+                        self.__iface.messageBar().pushMessage(query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                     else:
                         self.__num += 1
                         query2.first()
@@ -342,7 +335,8 @@ class ImportMeasures(object):
                             str(data['id_table']) + """, usr_import_user = '""" + self.__db.userName() +
                             """' WHERE id = """ + str(data['id_survey']))
                         if query3.lastError().isValid():
-                            print(query3.lastError().text())
+                            self.__iface.messageBar().pushMessage(query3.lastError().text(),
+                                                                  level=QgsMessageBar.CRITICAL, duration=0)
             else:
                 not_added.append(data)
         if len(not_added) > 0:
@@ -361,7 +355,6 @@ class ImportMeasures(object):
         """
         if self.__num > 0:
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "Success"),
                 QCoreApplication.translate("VDLTools", str(self.__num) + " points inserted !"),level=QgsMessageBar.INFO)
         self.__cancel()
 
@@ -401,7 +394,7 @@ class ImportMeasures(object):
                                 """, usr_import_user = '""" + self.__db.userName() +
                                 """' WHERE id IN (""" + self.__ids() + """)""")
         if query.lastError().isValid():
-            print(query.lastError().text())
+            self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
         self.__conclude()
 
     def __deleteAndNext(self):
@@ -411,7 +404,7 @@ class ImportMeasures(object):
         query = self.__db.exec_("""DELETE FROM """ + self.__sourceTable +
                                 """ WHERE id IN (""" + self.__ids() + """)""")
         if query.lastError().isValid():
-            print(query.lastError().text())
+            self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
         self.__conclude()
 
     def __cancel(self):

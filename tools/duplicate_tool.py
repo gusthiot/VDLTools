@@ -245,7 +245,7 @@ class DuplicateTool(QgsMapTool):
         :param distance: the given distance
         """
         self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
-        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
         if isinstance(curved, (list, tuple)):
             self.__newFeature = QgsCompoundCurveV2()
             for pos in range(line_v2.nCurves()):
@@ -312,7 +312,7 @@ class DuplicateTool(QgsMapTool):
         :param distance: the given distance
         """
         self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
-        polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
+        polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry(), self.__iface)
         self.__newFeature = QgsCurvePolygonV2()
         line_v2 = self.__newPolygonCurve(polygon_v2.exteriorRing(), distance, curved[0])
         self.__newFeature.setExteriorRing(line_v2)
@@ -364,9 +364,8 @@ class DuplicateTool(QgsMapTool):
         self.__dstDlg.accept()
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","Geos geometry problem"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Geos geometry problem"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()

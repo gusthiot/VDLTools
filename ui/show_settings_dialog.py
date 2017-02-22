@@ -20,10 +20,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from builtins import next
 
 
+from qgis.gui import QgsMessageBar
 from PyQt4.QtGui import (QDialog,
                          QLineEdit,
                          QGridLayout,
@@ -222,7 +222,7 @@ class ShowSettingsDialog(QDialog):
                 ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
                 (SELECT f_table_name FROM geometry_columns)""")
             if query.lastError().isValid():
-                print(query.lastError().text())
+                self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
             else:
                 while next(query):
                     self.__schemas.append(query.value(0))
@@ -250,7 +250,7 @@ class ShowSettingsDialog(QDialog):
             query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema = '""" + schema +
                              """' ORDER BY table_name""")
             if query.lastError().isValid():
-                print(query.lastError().text())
+                self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
             else:
                 while next(query):
                     self.__tables.append(query.value(0))

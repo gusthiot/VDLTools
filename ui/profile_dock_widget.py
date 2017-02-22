@@ -112,9 +112,8 @@ class ProfileDockWidget(QDockWidget):
         else:
             self.__lib = None
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "Graph Error"),
                 QCoreApplication.translate("VDLTools", "No graph lib available (qwt5 or matplotlib)"),
-                level=QgsMessageBar.CRITICAL)
+                level=QgsMessageBar.CRITICAL, duration=0)
 
         self.__doTracking = False
         self.__vline = None
@@ -335,11 +334,11 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "HTTP Error"),
                 QCoreApplication.translate("VDLTools", "status error [" + str(e.code) + "] : " + e.reason),
-                level=QgsMessageBar.CRITICAL)
+                level=QgsMessageBar.CRITICAL, duration=0)
         except URLError as e:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "URL Error"),
-                e.reason, level=QgsMessageBar.CRITICAL)
+                e.reason, level=QgsMessageBar.CRITICAL, duration=0)
 
     def attachCurves(self, names, settings, usedMnts):
         """
@@ -448,11 +447,10 @@ class ProfileDockWidget(QDockWidget):
             self.__reScalePlot(None, True)
         except:
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Error"),
-                QCoreApplication.translate("VDLTools","rescale problem... (trace printed)"),
-                level=QgsMessageBar.CRITICAL)
-            print((
-                QCoreApplication.translate("VDLTools","rescale problem : "), sys.exc_info()[0], traceback.format_exc()))
+                QCoreApplication.translate("VDLTools","Rescale problem... (trace printed)"),
+                level=QgsMessageBar.CRITICAL, duration=0)
+            print(
+                QCoreApplication.translate("VDLTools","rescale problem : "), sys.exc_info()[0], traceback.format_exc())
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
@@ -596,9 +594,8 @@ class ProfileDockWidget(QDockWidget):
             self.__outPNG()
         else:
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Error"),
                 QCoreApplication.translate("VDLTools","Invalid index ") + str(idx),
-                level=QgsMessageBar.CRITICAL)
+                level=QgsMessageBar.CRITICAL, duration=0)
 
     def __outPDF(self):
         """
@@ -686,7 +683,9 @@ class ProfileDockWidget(QDockWidget):
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
                     self.__plotWdg.draw()
             except Exception as e:
-                print("Tracking exception : " + str(e))
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "Tracking exception : ") + str(e),
+                    level=QgsMessageBar.CRITICAL, duration=0)
 
     def __mouseevent_mpl(self, event):
         """
@@ -698,7 +697,9 @@ class ProfileDockWidget(QDockWidget):
                 if self.__vline is not None:
                     self.__plotWdg.figure.get_axes()[0].lines.remove(self.__vline)
             except Exception as e:
-                print("Mouse event exception : " +str(e))
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "Mouse event exception : ") + str(e),
+                    level=QgsMessageBar.CRITICAL, duration=0)
             xdata = float(event.xdata)
             self.__vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')
             self.__plotWdg.draw()

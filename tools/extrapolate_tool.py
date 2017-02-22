@@ -192,7 +192,7 @@ class ExtrapolateTool(QgsMapTool):
                 self.__rubber.reset()
                 geom = f_l[0].geometry()
                 index = geom.closestVertex(event.mapPoint())[1]
-                line_v2, curved = GeometryV2.asLineV2(geom)
+                line_v2, curved = GeometryV2.asLineV2(geom, self.__iface)
                 num_p = line_v2.numPoints()
                 if num_p > 2 and (index == 0 or index == (num_p-1)):
                     self.__rubber.setIcon(4)
@@ -215,7 +215,7 @@ class ExtrapolateTool(QgsMapTool):
                 return
             geom = found_features[0].geometry()
             self.__selectedVertex = geom.closestVertex(event.mapPoint())[1]
-            line_v2, curved = GeometryV2.asLineV2(geom)
+            line_v2, curved = GeometryV2.asLineV2(geom, self.__iface)
             num_p = line_v2.numPoints()
             if num_p > 2 and (self.__selectedVertex == 0 or self.__selectedVertex == (num_p-1)):
                 pt = line_v2.pointN(self.__selectedVertex)
@@ -272,7 +272,7 @@ class ExtrapolateTool(QgsMapTool):
         """
         To add the new extrapolate elevation
         """
-        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
         line_v2.setZAt(self.__selectedVertex, self.__elevation)
         self.__layer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
         self.__cancel()

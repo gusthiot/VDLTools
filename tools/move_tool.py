@@ -20,7 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
 from builtins import range
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
@@ -41,7 +40,6 @@ from qgis.core import (QgsPointV2,
                        QgsVectorLayer)
 from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsRubberBand,
-                      QgsMapMouseEvent,
                       QgsMessageBar)
 from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
@@ -215,7 +213,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         To create a point geometry preview (rubberBand)
         :param point: new position as mapPoint
         """
-        point_v2 = GeometryV2.asPointV2(self.__selectedFeature.geometry())
+        point_v2 = GeometryV2.asPointV2(self.__selectedFeature.geometry(), self.__iface)
         self.__newFeature = QgsPointV2(point.x(), point.y())
         self.__newFeature.addZValue(point_v2.z())
         self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Point)
@@ -226,7 +224,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         To create a line geometry preview (rubberBand)
         :param point: new position as mapPoint
         """
-        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
         vertex = QgsPointV2()
         line_v2.pointAt(self.__selectedVertex, vertex)
         self.__rubberBand = QgsRubberBand(self.canvas(), QGis.Line)
@@ -274,7 +272,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         To create a polygon geometry preview (rubberBand)
         :param point: new position as mapPoint
         """
-        polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry())
+        polygon_v2, curved = GeometryV2.asPolygonV2(self.__selectedFeature.geometry(), self.__iface)
         vertex = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, self.__selectedVertex))
         dx = vertex.x() - point.x()
         dy = vertex.y() - point.y()
@@ -301,8 +299,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Error"),
-                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
+                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL, duration=0)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
         self.__confDlg.accept()
         self.__cancel()
@@ -314,8 +311,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Error"),
-                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL)
+                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL, duration=0)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
@@ -457,7 +453,6 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
                     if intersection is not None:
-                        print("release intersect")
                         mapPoint = intersection
             self.__isEditing = True
             if self.__rubberBand is not None:

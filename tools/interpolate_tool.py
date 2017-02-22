@@ -361,7 +361,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         :param withVertex: if we want a new interpolated vertex
         :param withPoint: if we want a new interpolated point
         """
-        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry())
+        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
         vertex_v2 = QgsPointV2()
         vertex_id = QgsVertexId()
         line_v2.closestSegment(QgsPointV2(self.__mapPoint), vertex_v2, vertex_id, 0)

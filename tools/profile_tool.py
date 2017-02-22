@@ -433,7 +433,7 @@ class ProfileTool(QgsMapTool):
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
                 if f.id() == iden:
-                    line, curved = GeometryV2.asLineV2(f.geometry())
+                    line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
                     lines.append(line)
                     break
         for z in zeros:
@@ -481,7 +481,7 @@ class ProfileTool(QgsMapTool):
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
                 if f.id() == iden:
-                    line, curved = GeometryV2.asLineV2(f.geometry())
+                    line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
                     lines.append(line)
                     break
         for s in situations:
@@ -541,7 +541,7 @@ class ProfileTool(QgsMapTool):
         if layer.geometryType() == QGis.Polygon:
             closest = feat.geometry().closestVertex(
                 QgsPoint(self.__points[pos]['x'], self.__points[pos]['y']))
-            feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry())
+            feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry(), self.__iface)
             position = GeometryV2.polygonVertexId(feat_v2, closest[1])
             vertex = feat_v2.vertexAt(position)
             feat_v2.deleteVertex(position)
@@ -550,10 +550,10 @@ class ProfileTool(QgsMapTool):
         elif layer.geometryType() == QGis.Line:
             closest = feat.geometry().closestVertex(
                 QgsPoint(self.__points[pos]['x'], self.__points[pos]['y']))
-            feat_v2, curved = GeometryV2.asLineV2(feat.geometry())
+            feat_v2, curved = GeometryV2.asLineV2(feat.geometry(), self.__iface)
             feat_v2.setZAt(closest[1], newZ)
         else:
-            feat_v2 = GeometryV2.asPointV2(feat.geometry())
+            feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
             feat_v2.setZ(newZ)
         if not layer.isEditable():
             layer.startEditing()
@@ -589,10 +589,9 @@ class ProfileTool(QgsMapTool):
                     break
             if selected is None:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","Error"),
-                    QCoreApplication.translate("VDLTools","error on selected"), level=QgsMessageBar.CRITICAL)
+                    QCoreApplication.translate("VDLTools","Error on selected"), level=QgsMessageBar.CRITICAL, duration=0)
                 continue
-            line_v2, curved = GeometryV2.asLineV2(selected.geometry())
+            line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
             if direction:
                 rg = range(line_v2.numPoints())
             else:
@@ -680,7 +679,7 @@ class ProfileTool(QgsMapTool):
                 else:
                     if f_l[1].geometryType() == QGis.Polygon:
                         closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
-                        polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry())
+                        polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry(), self.__iface)
                         zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
                         feat.append(f_l[0])
                         if zp is None or zp != zp:
@@ -703,7 +702,7 @@ class ProfileTool(QgsMapTool):
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
                             feat.append(f_ok)
-                            line, curved = GeometryV2.asLineV2(f_ok.geometry())
+                            line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
                             zp = line.zAt(closest[1])
                             if zp is None or zp != zp:
                                 z.append(0)
@@ -713,7 +712,7 @@ class ProfileTool(QgsMapTool):
                             feat.append(None)
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry()).z()
+                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
                         feat.append(f_l[0])
                         if zp is None or zp != zp:
                             z.append(0)
@@ -873,8 +872,7 @@ class ProfileTool(QgsMapTool):
                     zz.append(i)
             if len(zz) == 0:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","Warning"),
-                    QCoreApplication.translate("VDLTools","no line z ?!?"), level=QgsMessageBar.WARNING)
+                    QCoreApplication.translate("VDLTools","No line z ?!?"), level=QgsMessageBar.WARNING)
             elif len(zz) == 1:
                 z0 = pt['z'][zz[0]]
                 # tol = 0.01 * z0
@@ -896,8 +894,7 @@ class ProfileTool(QgsMapTool):
                             situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","Warning"),
-                    QCoreApplication.translate("VDLTools","more than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
+                    QCoreApplication.translate("VDLTools","More than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
 
         if (len(situations) > 0) or (len(differences) > 0):
             self.__setMessageDialog(situations, differences, names)

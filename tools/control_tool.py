@@ -91,14 +91,12 @@ class ControlTool(AreaTool):
         When selection is complete
         """
         if self.__ownSettings is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","No settings given !!"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","No settings given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.__ownSettings.ctlDb() is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Error"),
-                                                  QCoreApplication.translate("VDLTools","No control db given !!"),
-                                                  level=QgsMessageBar.CRITICAL)
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","No control db given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
             return
 
         self.__chooseDlg = ChooseControlDialog(self.__requests.keys())
@@ -133,7 +131,7 @@ class ControlTool(AreaTool):
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
         layer_name = "request1"
         fNames = ["id"]
-        select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""
+        select_part = """SELECTGeometryType(geometry3d), ST_AsText(geometry3d)"""
         for f in fNames:
             select_part += """, """ + f + """, pg_typeof(""" + f + """)"""
         from_part = """ FROM qwat_od.pipe """
@@ -152,7 +150,7 @@ class ControlTool(AreaTool):
         """
         query = self.__db.exec_(request)
         if query.lastError().isValid():
-            print(query.lastError().text())
+            self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
         else:
             gtype = None
             geometries = []

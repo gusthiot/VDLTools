@@ -104,5 +104,4 @@ class MultiAttributesTool(MultiselectTool):
                             c = True
                         ids += str(f.id())
                     ids += ")"
-                    print(layer.name(), layer.selectedFeatureCount(), ids)
                     self.__iface.showAttributeTable(layer, "$id IN {}".format(ids))

@@ -94,7 +94,7 @@ class DBConnector(object):
         if not ok:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Database Error: ") + db.lastError().text(),
-                level=QgsMessageBar.CRITICAL)
+                level=QgsMessageBar.CRITICAL, duration=0)
             return None
         return db
 
