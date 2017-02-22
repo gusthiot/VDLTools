@@ -50,7 +50,7 @@ class ControlTool(AreaTool):
         self.__requests = {
             "nom1": self.__request1
         }
-        self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
+        self.__crs = None
 
     def icon_path(self):
         """
@@ -118,6 +118,8 @@ class ControlTool(AreaTool):
             self.__cancel()
 
     def __request1(self):
+
+        self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
         layer_name = "request1"
         fNames = ["id"]
         select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""
