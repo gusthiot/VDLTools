@@ -173,48 +173,68 @@ class ImportMeasures(object):
         When the Ok button in Import Jobs Dialog is pushed
         """
         self.__jobsDlg.accept()
-        if self.__jobsDlg.jobsRadio().isChecked():
-            self.__jobs = self.__jobsDlg.jobs()
-            #  select geodata for insertion
-            jobs = ""
-            i = 0
-            for job in self.__jobs:
-                if i == 0:
-                    i += 1
-                else:
-                    jobs += ","
-                jobs += "'" + job + "'"
-            condition = """usr_session_name IN (""" + jobs + """)"""
-        else:
-            ids = ""
-            i = 0
-            for selected in self.__selectedFeatures:
-                if i == 0:
-                    i += 1
-                else:
-                    ids += ","
-                ids += "'" + str(selected) + "'"
-            condition = """id IN (""" + ids + """)"""
-        query = self.__db.exec_("""SELECT code,description,geometry,id,usr_session_name FROM """ + self.__sourceTable +
-                                """ WHERE """ + condition + """ AND usr_valid = FALSE""")
+
+        codes = []
+        query = self.__db.exec_("""SELECT DISTINCT code FROM """ + self.__schemaDb + """.""" +
+                                self.__configTable)
         if query.lastError().isValid():
             self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
+            self.__cancel()
         else:
-            self.__data = []
             while next(query):
-                data = {'code': query.value(0), 'descr': query.value(1), 'geom': query.value(2),
-                        'id_survey': query.value(3), 'job': query.value(4)}
-                # select schema and id for insertion table
-                query2 = self.__db.exec_(
-                    """SELECT id, schema FROM qwat_sys.doctables WHERE name = '""" + data['descr'] + """'""")
-                if query2.lastError().isValid():
-                    self.__iface.messageBar().pushMessage(query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
-                else:
-                    next(query2)
-                    data['id_table'] = query2.value(0)
-                    data['schema_table'] = query2.value(1)
-                self.__data.append(data)
-            self.__checkIfExist()
+                codes.append(query.value(0))
+
+            if self.__jobsDlg.jobsRadio().isChecked():
+                self.__jobs = self.__jobsDlg.jobs()
+                #  select geodata for insertion
+                jobs = ""
+                i = 0
+                for job in self.__jobs:
+                    if i == 0:
+                        i += 1
+                    else:
+                        jobs += ","
+                    jobs += "'" + job + "'"
+                condition = """usr_session_name IN (""" + jobs + """)"""
+            else:
+                ids = ""
+                i = 0
+                for selected in self.__selectedFeatures:
+                    if i == 0:
+                        i += 1
+                    else:
+                        ids += ","
+                    ids += "'" + str(selected) + "'"
+                condition = """id IN (""" + ids + """)"""
+            query = self.__db.exec_("""SELECT code,usr_fk_table,geometry,id,usr_session_name FROM """ +
+                                    self.__sourceTable + """ WHERE """ + condition + """ AND usr_valid = FALSE""")
+            if query.lastError().isValid():
+                self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
+            else:
+                self.__data = []
+                while next(query):
+                    code = query.value(0)
+                    if code in codes:
+                        data = {'code': code, 'fk_table': query.value(1), 'geom': query.value(2),
+                                'id_survey': query.value(3), 'job': query.value(4)}
+                        # select schema and id for insertion table
+                        query2 = self.__db.exec_(
+                            """SELECT id, schema, name FROM qwat_sys.doctables WHERE name = '""" +
+                            data['fk_table'] + """'""")
+                        if query2.lastError().isValid():
+                            self.__iface.messageBar().pushMessage(query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
+                        else:
+                            next(query2)
+                            data['id_table'] = query2.value(0)
+                            data['schema_table'] = query2.value(1)
+                            data['name_table'] = query2.value(2)
+                        self.__data.append(data)
+                    else:
+                        self.__iface.messageBar().pushMessage(
+                            QCoreApplication.translate("VDLTools",
+                                                       "Code not in config table, measure not processed"),
+                            level=QgsMessageBar.CRITICAL, duration=0)
+                self.__checkIfExist()
 
     def __checkIfExist(self):
         """
@@ -225,7 +245,7 @@ class ImportMeasures(object):
 
             # check if already in table
             query = self.__db.exec_(
-                """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['descr'] +
+                """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['name_table'] +
                 """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
             if query.lastError().isValid():
                 self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -241,7 +261,7 @@ class ImportMeasures(object):
                     self.__confDlg.setMessage(
                         QCoreApplication.translate("VDLTools","There is already a " + point +
                                                    " in table " + data['schema_table'] + """.""" +
-                                                   data['descr'] + ".\n Would you like to add it anyway ? "))
+                                                   data['name_table'] + ".\n Would you like to add it anyway ? "))
                     self.__confDlg.rejected.connect(self.__cancelAndNext)
                     self.__confDlg.accepted.connect(self.__confirmAndNext)
                     self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
@@ -294,9 +314,9 @@ class ImportMeasures(object):
         for data in self.__data:
             if data['add']:
                 destLayer = ""
-                request = """INSERT INTO """ + data['schema_table'] + """.""" + data['descr']
+                request = """INSERT INTO """ + data['schema_table'] + """.""" + data['name_table']
                 columns = "(id,geometry3d"
-                values = "(nextval('" + data['schema_table'] + """.""" + data['descr'] + "_id_seq'::regclass),'" + \
+                values = "(nextval('" + data['schema_table'] + """.""" + data['name_table'] + "_id_seq'::regclass),'" + \
                          data['geom'] + "'"
 
                 #  select import data for insertion

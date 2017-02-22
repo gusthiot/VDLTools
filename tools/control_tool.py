@@ -131,7 +131,7 @@ class ControlTool(AreaTool):
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
         layer_name = "request1"
         fNames = ["id"]
-        select_part = """SELECTGeometryType(geometry3d), ST_AsText(geometry3d)"""
+        select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""
         for f in fNames:
             select_part += """, """ + f + """, pg_typeof(""" + f + """)"""
         from_part = """ FROM qwat_od.pipe """
