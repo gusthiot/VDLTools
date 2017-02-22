@@ -215,19 +215,17 @@ class ImportMeasures(object):
                 while next(query):
                     code = query.value(0)
                     if code in codes:
-                        data = {'code': code, 'fk_table': query.value(1), 'geom': query.value(2),
+                        data = {'code': code, 'id_table': query.value(1), 'geom': query.value(2),
                                 'id_survey': query.value(3), 'job': query.value(4)}
                         # select schema and id for insertion table
                         query2 = self.__db.exec_(
-                            """SELECT id, schema, name FROM qwat_sys.doctables WHERE name = '""" +
-                            data['fk_table'] + """'""")
+                            """SELECT schema, name FROM qwat_sys.doctables WHERE id = """ + data['id_table'])
                         if query2.lastError().isValid():
                             self.__iface.messageBar().pushMessage(query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                         else:
                             next(query2)
-                            data['id_table'] = query2.value(0)
-                            data['schema_table'] = query2.value(1)
-                            data['name_table'] = query2.value(2)
+                            data['schema_table'] = query2.value(0)
+                            data['name_table'] = query2.value(1)
                         self.__data.append(data)
                     else:
                         self.__iface.messageBar().pushMessage(
