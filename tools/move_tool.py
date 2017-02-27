@@ -405,9 +405,9 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                 if intersection is not None:
                     self.__rubberSnap.setIcon(1)
                     self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
-                elif self.__selectedFeature.id() == match.featureId():
-                    self.__rubberSnap.setIcon(3)
-                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+                # elif self.__selectedFeature.id() == match.featureId():
+                self.__rubberSnap.setIcon(3)
+                self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
 
     def cadCanvasReleaseEvent(self, event):
         """
