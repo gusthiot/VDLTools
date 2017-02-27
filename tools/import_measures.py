@@ -182,7 +182,7 @@ class ImportMeasures(object):
             self.__cancel()
         else:
             while next(query):
-                codes.append(str(query.value(0)))
+                codes.append(query.value(0))
 
             if self.__jobsDlg.jobsRadio().isChecked():
                 self.__jobs = self.__jobsDlg.jobs()
@@ -214,11 +214,9 @@ class ImportMeasures(object):
                 self.__data = []
                 while next(query):
                     code = str(query.value(0))
-                    print(code)
-                    print(codes)
                     if code in codes:
                         print("yes")
-                        data = {'code': code, 'id_table': query.value(1), 'geom': query.value(2),
+                        data = {'code': code, 'id_table': str(query.value(1)), 'geom': query.value(2),
                                 'id_survey': query.value(3), 'job': query.value(4)}
                         # select schema and id for insertion table
                         query2 = self.__db.exec_(
