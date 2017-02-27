@@ -228,9 +228,10 @@ class ImportMeasures(object):
                             data['name_table'] = query2.value(1)
                         self.__data.append(data)
                     else:
+                        print(code)
+                        print(codes)
                         self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools",
-                                                       str(code) + " | " + codes + " -> Code not in config table, measure not processed"),
+                            QCoreApplication.translate("VDLTools", "Code not in config table, measure not processed"),
                             level=QgsMessageBar.CRITICAL, duration=0)
                 self.__checkIfExist()
 
