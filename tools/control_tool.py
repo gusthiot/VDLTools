@@ -165,9 +165,6 @@ class ControlTool(AreaTool):
                     fTypes.append(query.value(2*i+3))
                 attributes.append(atts)
             print(len(geometries))
-            print(fNames)
-            print(atts)
-            print(fTypes)
             if len(geometries) > 0:
                 self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
 
