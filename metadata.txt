@@ -4,7 +4,8 @@
 # embedding metadata in __init__.py will 
 # is no longer supported since version 2.0.
 
-# This file should be included when you package your plugin.# Mandatory items:
+# This file should be included when you package your plugin.
+# Mandatory items:
 
 [general]
 name=VDL Tools
@@ -12,7 +13,7 @@ qgisMinimumVersion=2.14.0
 description=Tools needed by the Ville de Lausanne
 version=0.5
 author=Christophe Gusthiot (Ville de Lausanne)
-email=christophe.gusthiot@lausanne.ch
+email=cgusthiot@gmail.com
 
 about=This plugin contains tools needed by the Ville de Lausanne for water system.
     - a tool to duplicate a feature at a given distance (geometry not kept)
@@ -22,8 +23,10 @@ about=This plugin contains tools needed by the Ville de Lausanne for water syste
     - a tool to create temporary circles from snapped points
     - a tool to interpolate elevation on a 3d edge by adding a 3d point
     - a tool to extrapolate elevation at the end of a 3d line
-    - a tool to pick the elevation of diffrent layers at a position
+    - a tool to pick the elevation of different layers at a position
     - a tool to import values from field in database tables (more specific parameters)
+    - a tool to get attributes for different objects from different layers
+    - a tool to make controls on database data on a given area
 
 tracker=https://github.com/gusthiot/VDLTools/issues
 repository=https://github.com/gusthiot/VDLTools
