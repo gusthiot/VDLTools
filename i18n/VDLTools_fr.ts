@@ -294,13 +294,13 @@
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="226"/>
-        <location filename="../ui/profile_dock_widget.py" line="664"/>
+        <location filename="../ui/profile_dock_widget.py" line="673"/>
         <source>Distance [m]</source>
         <translation>Distance [m]</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="229"/>
-        <location filename="../ui/profile_dock_widget.py" line="665"/>
+        <location filename="../ui/profile_dock_widget.py" line="674"/>
         <source>Elevation [m]</source>
         <translation>Altitude [m]</translation>
     </message>
@@ -320,12 +320,12 @@
         <translation>Problème de rescale... (trace imrpimée dans la console)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="687"/>
+        <location filename="../ui/profile_dock_widget.py" line="696"/>
         <source>Tracking exception : </source>
         <translation>Exception de tracking : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="701"/>
+        <location filename="../ui/profile_dock_widget.py" line="710"/>
         <source>Mouse event exception : </source>
         <translation>Exception d&apos;évènement souris : </translation>
     </message>
@@ -341,7 +341,7 @@
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="605"/>
-        <location filename="../ui/profile_dock_widget.py" line="622"/>
+        <location filename="../ui/profile_dock_widget.py" line="631"/>
         <source>Save As</source>
         <translation>Sauver sous</translation>
     </message>
@@ -351,12 +351,12 @@
         <translation>Profil.pdf</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="623"/>
+        <location filename="../ui/profile_dock_widget.py" line="632"/>
         <source>Profile.png</source>
         <translation>Profil.png</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="609"/>
+        <location filename="../ui/profile_dock_widget.py" line="610"/>
         <source>QGIS Profile Plugin</source>
         <translation>Pllugin QGIS de profil</translation>
     </message>
@@ -519,7 +519,12 @@
         <translation>Sources différentes dans la table de configuration ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="315"/>
+        <location filename="../tools/import_measures.py" line="232"/>
+        <source>Code not in config table, measure not processed</source>
+        <translation>Code absent de la table de configuration, cette emasure ne sera pas traitée</translation>
+    </message>
+    <message>
+        <location filename="../tools/import_measures.py" line="333"/>
         <source>different destination layer in config table ?!?</source>
         <translation>Couche de destination différente dans la table de configuration ?!?</translation>
     </message>
