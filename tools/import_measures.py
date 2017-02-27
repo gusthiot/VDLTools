@@ -213,14 +213,13 @@ class ImportMeasures(object):
             else:
                 self.__data = []
                 while next(query):
-                    code = str(query.value(0))
+                    code = int(query.value(0))
                     if code in codes:
-                        print("yes")
-                        data = {'code': code, 'id_table': str(query.value(1)), 'geom': query.value(2),
+                        data = {'code': code, 'id_table': query.value(1), 'geom': query.value(2),
                                 'id_survey': query.value(3), 'job': query.value(4)}
                         # select schema and id for insertion table
                         query2 = self.__db.exec_(
-                            """SELECT schema, name FROM qwat_sys.doctables WHERE id = """ + data['id_table'])
+                            """SELECT schema, name FROM qwat_sys.doctables WHERE id = """ + str(data['id_table']))
                         if query2.lastError().isValid():
                             self.__iface.messageBar().pushMessage(query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
                         else:
@@ -229,7 +228,6 @@ class ImportMeasures(object):
                             data['name_table'] = query2.value(1)
                         self.__data.append(data)
                     else:
-                        print("no")
                         self.__iface.messageBar().pushMessage(
                             QCoreApplication.translate("VDLTools", "Code not in config table, measure not processed"),
                             level=QgsMessageBar.CRITICAL, duration=0)
@@ -321,7 +319,7 @@ class ImportMeasures(object):
                 #  select import data for insertion
                 query = self.__db.exec_(
                     """SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
-                    self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + data['code'] +
+                    self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + str(data['code']) +
                     """' AND static_value IS NOT NULL""")
                 if query.lastError().isValid():
                     self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
