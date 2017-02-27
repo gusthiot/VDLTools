@@ -50,7 +50,7 @@ class ImportMeasuresDialog(QDialog):
         pos = 1
 
         for data in self.__data:
-            lineLabel = QLabel("id : " + str(data['id_survey']) + " - type : " + data['descr'] + " - position : " + data['point'] + " - job : " + data['job'])
+            lineLabel = QLabel("id : " + str(data['id_survey']) + " - type : " + data['name_table'] + " - position : " + data['point'] + " - job : " + data['job'])
             self.__layout.addWidget(lineLabel, pos, 0, 1, 2)
             pos += 1
 
