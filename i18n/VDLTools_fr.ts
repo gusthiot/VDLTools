@@ -521,7 +521,7 @@
     <message>
         <location filename="../tools/import_measures.py" line="232"/>
         <source>Code not in config table, measure not processed</source>
-        <translation>Code absent de la table de configuration, cette emasure ne sera pas traitée</translation>
+        <translation>Code absent de la table de configuration, cette mesure ne sera pas traitée</translation>
     </message>
     <message>
         <location filename="../tools/import_measures.py" line="333"/>
