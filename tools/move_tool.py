@@ -382,7 +382,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
                 self.__rubberBand.setLineStyle(Qt.DotLine)
             else:
                 self.__rubberBand.setIcon(4)
-                self.__rubberBand.setIconSize(20)
+                self.__rubberBand.setIconSize(8)
             if self.__rubberSnap is not None:
                 self.__rubberSnap.reset()
             else:
