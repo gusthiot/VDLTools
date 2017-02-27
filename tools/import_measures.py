@@ -214,7 +214,10 @@ class ImportMeasures(object):
                 self.__data = []
                 while next(query):
                     code = query.value(0)
+                    print(code)
+                    print(codes)
                     if code in codes:
+                        print("yes")
                         data = {'code': code, 'id_table': query.value(1), 'geom': query.value(2),
                                 'id_survey': query.value(3), 'job': query.value(4)}
                         # select schema and id for insertion table
@@ -228,8 +231,7 @@ class ImportMeasures(object):
                             data['name_table'] = query2.value(1)
                         self.__data.append(data)
                     else:
-                        print(code)
-                        print(codes)
+                        print("no")
                         self.__iface.messageBar().pushMessage(
                             QCoreApplication.translate("VDLTools", "Code not in config table, measure not processed"),
                             level=QgsMessageBar.CRITICAL, duration=0)
