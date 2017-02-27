@@ -130,7 +130,7 @@ class ControlTool(AreaTool):
         """
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
         layer_name = "request1"
-        fNames = ["id"]
+        fNames = ["id", "fk_status"]
         select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""
         for f in fNames:
             select_part += """, """ + f + """, pg_typeof(""" + f + """)"""
@@ -161,10 +161,13 @@ class ControlTool(AreaTool):
                 geometries.append(query.value(1))
                 atts = []
                 for i in range(len(fNames)):
-                    atts.append(query.value(i+2))
-                    fTypes.append(query.value(i+3))
+                    atts.append(query.value(2*i+2))
+                    fTypes.append(query.value(2*i+3))
                 attributes.append(atts)
             print(len(geometries))
+            print(fNames)
+            print(atts)
+            print(fTypes)
             if len(geometries) > 0:
                 self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
 
