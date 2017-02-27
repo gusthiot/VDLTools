@@ -182,7 +182,7 @@ class ImportMeasures(object):
             self.__cancel()
         else:
             while next(query):
-                codes.append(query.value(0))
+                codes.append(int(query.value(0)))
 
             if self.__jobsDlg.jobsRadio().isChecked():
                 self.__jobs = self.__jobsDlg.jobs()
@@ -213,7 +213,7 @@ class ImportMeasures(object):
             else:
                 self.__data = []
                 while next(query):
-                    code = query.value(0)
+                    code = int(query.value(0))
                     print(code)
                     print(codes)
                     if code in codes:
