@@ -182,7 +182,7 @@ class ImportMeasures(object):
             self.__cancel()
         else:
             while next(query):
-                codes.append(int(query.value(0)))
+                codes.append(str(query.value(0)))
 
             if self.__jobsDlg.jobsRadio().isChecked():
                 self.__jobs = self.__jobsDlg.jobs()
@@ -213,7 +213,7 @@ class ImportMeasures(object):
             else:
                 self.__data = []
                 while next(query):
-                    code = int(query.value(0))
+                    code = str(query.value(0))
                     print(code)
                     print(codes)
                     if code in codes:
@@ -231,8 +231,6 @@ class ImportMeasures(object):
                             data['name_table'] = query2.value(1)
                         self.__data.append(data)
                     else:
-                        if str(code) in codes:
-                            print("but")
                         print("no")
                         self.__iface.messageBar().pushMessage(
                             QCoreApplication.translate("VDLTools", "Code not in config table, measure not processed"),
