@@ -161,8 +161,8 @@ class ControlTool(AreaTool):
                 geometries.append(query.value(1))
                 atts = []
                 for i in range(len(fNames)):
-                    atts.append(query.value(2*i))
-                    fTypes.append(query.value(2*i+1))
+                    atts.append(query.value(i+2))
+                    fTypes.append(query.value(i+3))
                 attributes.append(atts)
             print(len(geometries))
             if len(geometries) > 0:
