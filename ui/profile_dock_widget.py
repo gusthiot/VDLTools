@@ -605,14 +605,23 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
             QCoreApplication.translate("VDLTools","Profile.pdf"),"Portable Document Format (*.pdf)")
         if fileName is not None:
-            printer = QPrinter()
-            printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
-            printer.setOutputFileName(fileName)
-            printer.setOutputFormat(QPrinter.PdfFormat)
-            printer.setOrientation(QPrinter.Landscape)
-            printer.setPaperSize(QSizeF(self.__printWdg.size()), QPrinter.Millimeter)
-            printer.setFullPage(True)
-            self.__printWdg.render(printer)
+            if self.__lib == 'Qwt5':
+                printer = QPrinter()
+                printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
+                printer.setOutputFileName(fileName)
+                printer.setOutputFormat(QPrinter.PdfFormat)
+                printer.setOrientation(QPrinter.Landscape)
+                self.__plotWdg.print_(printer)
+            elif self.__lib == 'Matplotlib':
+                self.__plotWdg.figure.savefig(str(fileName))
+            # printer = QPrinter()
+            # printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
+            # printer.setOutputFileName(fileName)
+            # printer.setOutputFormat(QPrinter.PdfFormat)
+            # printer.setOrientation(QPrinter.Landscape)
+            # printer.setPaperSize(QSizeF(self.__printWdg.size()), QPrinter.Millimeter)
+            # printer.setFullPage(True)
+            # self.__printWdg.render(printer)
 
     def __outPNG(self):
         """
