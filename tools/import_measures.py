@@ -230,7 +230,7 @@ class ImportMeasures(object):
                     else:
                         self.__iface.messageBar().pushMessage(
                             QCoreApplication.translate("VDLTools",
-                                                       "Code not in config table, measure not processed"),
+                                                       str(code) + " | " + codes + " -> Code not in config table, measure not processed"),
                             level=QgsMessageBar.CRITICAL, duration=0)
                 self.__checkIfExist()
 
