@@ -28,7 +28,8 @@ from PyQt4.QtGui import (QDialog,
                          QLabel,
                          QLineEdit,
                          QDoubleSpinBox)
-from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtCore import (QCoreApplication,
+                          QLocale)
 
 
 class IntersectDistanceDialog(QDialog):
@@ -51,6 +52,8 @@ class IntersectDistanceDialog(QDialog):
         self.__gridLayout.addWidget(self.__label, 2, 1, 1, 1)
 
         self.__observation = QDoubleSpinBox()
+        locale = QLocale(QLocale::English);
+        self.__observation.setLocale(locale);
         self.__observation.setDecimals(4)
         self.__observation.setMaximum(999999.99)
         self.__observation.setSingleStep(1.0)
