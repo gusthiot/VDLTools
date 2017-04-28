@@ -159,7 +159,7 @@
         <location filename="../ui/import_confirm_dialog.py" line="49"/>
         <location filename="../ui/import_jobs_dialog.py" line="50"/>
         <location filename="../ui/interpolate_confirm_dialog.py" line="66"/>
-        <location filename="../ui/intersect_distance_dialog.py" line="62"/>
+        <location filename="../ui/intersect_distance_dialog.py" line="65"/>
         <location filename="../ui/profile_confirm_dialog.py" line="49"/>
         <location filename="../ui/profile_layers_dialog.py" line="49"/>
         <location filename="../ui/show_settings_dialog.py" line="174"/>
@@ -188,7 +188,7 @@
         <location filename="../ui/import_confirm_dialog.py" line="53"/>
         <location filename="../ui/import_jobs_dialog.py" line="54"/>
         <location filename="../ui/interpolate_confirm_dialog.py" line="72"/>
-        <location filename="../ui/intersect_distance_dialog.py" line="66"/>
+        <location filename="../ui/intersect_distance_dialog.py" line="69"/>
         <location filename="../ui/move_confirm_dialog.py" line="57"/>
         <location filename="../ui/profile_confirm_dialog.py" line="53"/>
         <location filename="../ui/profile_layers_dialog.py" line="53"/>
@@ -473,12 +473,12 @@
         <translation>Utiliser sans ces champs</translation>
     </message>
     <message>
-        <location filename="../ui/intersect_distance_dialog.py" line="46"/>
+        <location filename="../ui/intersect_distance_dialog.py" line="47"/>
         <source>Choose radius</source>
         <translation>Choisir un rayon</translation>
     </message>
     <message>
-        <location filename="../ui/intersect_distance_dialog.py" line="50"/>
+        <location filename="../ui/intersect_distance_dialog.py" line="51"/>
         <source>Radius</source>
         <translation>Rayon</translation>
     </message>
@@ -524,7 +524,7 @@
         <translation>Code absent de la table de configuration, cette mesure ne sera pas traitée</translation>
     </message>
     <message>
-        <location filename="../tools/import_measures.py" line="333"/>
+        <location filename="../tools/import_measures.py" line="332"/>
         <source>different destination layer in config table ?!?</source>
         <translation>Couche de destination différente dans la table de configuration ?!?</translation>
     </message>
