@@ -36,7 +36,7 @@ clean:
 	rm -f resources.py i18n/*.qm *.pyc */*.pyc
 
 prepare:
-	rm -f i18n/*.qm *.pyc */*.pyc
+	rm -f *.pyc */*.pyc
 
 update:
 	lupdate i18n/VDLTools.pro
