@@ -42,8 +42,9 @@ class MultiselectTool(AreaTool):
         :param iface: interface
         """
         AreaTool.__init__(self, iface)
-        self.types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ,
-                      QgsWKBTypes.CompoundCurveZ, QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
+        # self.types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ,
+        #               QgsWKBTypes.CompoundCurveZ, QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
+        self.types = [QGis.Point, QGis.Line, QGis.Polygon]
         self.releasedSignal.connect(self.__select)
 
     def __select(self):
@@ -52,6 +53,7 @@ class MultiselectTool(AreaTool):
         """
         searchRect = QgsRectangle(self.first, self.last)
         for layer in self.canvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
+            # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
+            if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
                 layer.select(searchRect, False)
         self.selectedSignal.emit()

@@ -79,7 +79,8 @@ class MultiAttributesTool(MultiselectTool):
         """
         self.__confDlg.accept()
         for layer in self.__iface.mapCanvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
+            # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
+            if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
                 if layer.selectedFeatureCount() > 0:
                     ids = "("
                     c = False
