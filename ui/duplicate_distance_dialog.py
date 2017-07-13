@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
+from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -45,9 +45,9 @@ class DuplicateDistanceDialog(QDialog):
         :param isComplexPolygon: for a polygon, if it has interior ring(s)
         """
         QDialog.__init__(self)
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Duplicate"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Duplicate"))
         self.resize(300, 100)
-        self.__distanceLabel = QLabel(QCoreApplication.translate("VDLTools","distance :"))
+        self.__distanceLabel = QLabel(QCoreApplication.translate("VDLTools", "distance :"))
         self.__distanceLabel.setMinimumHeight(20)
         self.__distanceLabel.setMinimumWidth(50)
 
@@ -56,17 +56,17 @@ class DuplicateDistanceDialog(QDialog):
         self.__distanceEdit.setMinimumWidth(120)
         self.__distanceEdit.setValidator(QDoubleValidator(-1000, 1000, 4, self))
 
-        self.__distanceDirection = QCheckBox(QCoreApplication.translate("VDLTools","invert direction"))
+        self.__distanceDirection = QCheckBox(QCoreApplication.translate("VDLTools", "invert direction"))
 
-        self.__previewButton = QPushButton(QCoreApplication.translate("VDLTools","Preview"))
+        self.__previewButton = QPushButton(QCoreApplication.translate("VDLTools", "Preview"))
         self.__previewButton.setMinimumHeight(20)
         self.__previewButton.setMinimumWidth(100)
 
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
@@ -77,13 +77,13 @@ class DuplicateDistanceDialog(QDialog):
 
         if isComplexPolygon:
             self.__polygonLabel = QLabel(
-                QCoreApplication.translate("VDLTools","In which direction the internal part has to be duplicated ?"))
+                QCoreApplication.translate("VDLTools", "In which direction the internal part has to be duplicated ?"))
             self.__polygonLabel.setMinimumHeight(20)
             self.__polygonLabel.setMinimumWidth(50)
             self.__layout.addWidget(self.__polygonLabel, 1, 0, 1, 3)
 
-            self.__directions = [QRadioButton(QCoreApplication.translate("VDLTools","same")),
-                                 QRadioButton(QCoreApplication.translate("VDLTools","opposite"))]
+            self.__directions = [QRadioButton(QCoreApplication.translate("VDLTools", "same")),
+                                 QRadioButton(QCoreApplication.translate("VDLTools", "opposite"))]
             self.__directions[0].setChecked(True)
             self.__direction_button_group = QButtonGroup()
             for i in range(len(self.__directions)):

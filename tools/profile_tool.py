@@ -21,8 +21,8 @@
  ***************************************************************************/
 """
 from __future__ import division
-from builtins import str
-from builtins import range
+from future.builtins import str
+from future.builtins import range
 from past.utils import old_div
 from qgis.core import (QgsMapLayer,
                        QgsPointLocator,
@@ -60,8 +60,8 @@ class ProfileTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Profile of a line")
+        self.icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Profile of a line")
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isChoosed = False
@@ -85,20 +85,6 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif = None
         self.__ownSettings = None
         self.__usedMnts = None
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setTool(self):
         """
@@ -226,7 +212,7 @@ class ProfileTool(QgsMapTool):
         self.__confDlg = ProfileConfirmDialog()
         if origin == 0 and not self.__lineLayer.isEditable():
             self.__confDlg.setMessage(
-                QCoreApplication.translate("VDLTools","Do you really want to edit the LineString layer ?"))
+                QCoreApplication.translate("VDLTools", "Do you really want to edit the LineString layer ?"))
             self.__confDlg.rejected.connect(self.__checkZeros)
             self.__confDlg.okButton().clicked.connect(self.__onConfirmLine)
             self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
@@ -241,7 +227,7 @@ class ProfileTool(QgsMapTool):
                     break
             if not case:
                 self.__confDlg.setMessage(
-                    QCoreApplication.translate("VDLTools","Do you really want to edit the Point layer(s) ?"))
+                    QCoreApplication.translate("VDLTools", "Do you really want to edit the Point layer(s) ?"))
                 self.__confDlg.rejected.connect(self.__checkZeros)
                 self.__confDlg.okButton().clicked.connect(self.__onConfirmPoints)
                 self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
@@ -342,7 +328,7 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[ap]['y'], self.__points[app]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
                                                           self.__points[i]['y'], self.__points[ap]['y'])
-                        if small_d < (old_div(big_d,4)):
+                        if small_d < (old_div(big_d, 4)):
                             zextra = alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app])
                             zeros.append([i, zextra, nb_not_none[i]])
                         else:
@@ -373,7 +359,7 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[i-av]['y'], self.__points[i-avv]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
                                                           self.__points[i]['y'], self.__points[i-av]['y'])
-                        if small_d < (old_div(big_d,4)):
+                        if small_d < (old_div(big_d, 4)):
                             zextra = alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv])
                             zeros.append([i, zextra, nb_not_none[i]])
                         else:
@@ -401,10 +387,12 @@ class ProfileTool(QgsMapTool):
                         zeros.append([i, None, None])
                     else:
                         d0 = Finder.sqrDistForCoords(
-                            self.__points[i-av]['x'], self.__points[i]['x'], self.__points[i-av]['y'], self.__points[i]['y'])
+                            self.__points[i-av]['x'], self.__points[i]['x'], self.__points[i-av]['y'],
+                            self.__points[i]['y'])
                         d1 = Finder.sqrDistForCoords(
-                            self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'], self.__points[i]['y'])
-                        zinter = old_div((d0*alts[i+ap] + d1*alts[i-av]),(d0 + d1))
+                            self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'],
+                            self.__points[i]['y'])
+                        zinter = old_div((d0*alts[i+ap] + d1*alts[i-av]), (d0 + d1))
                         zeros.append([i, zinter, nb_not_none[i]])
         if len(zeros) > 0:
             self.__zeroDlg = ProfileZerosDialog(zeros)
@@ -473,7 +461,7 @@ class ProfileTool(QgsMapTool):
                 points.append(s['point'])
             else:
                 QMessageBox(
-                    QCoreApplication.translate("VDLTools","There is more than one elevation for the point ") +
+                    QCoreApplication.translate("VDLTools", "There is more than one elevation for the point ") +
                     str(s['point']))
                 return
         self.__msgDlg.accept()
@@ -589,7 +577,7 @@ class ProfileTool(QgsMapTool):
                     break
             if selected is None:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","Error on selected"), level=QgsMessageBar.CRITICAL, duration=0)
+                    QCoreApplication.translate("VDLTools", "Error on selected"), level=QgsMessageBar.CRITICAL, duration=0)
                 continue
             line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
             if direction:
@@ -672,7 +660,7 @@ class ProfileTool(QgsMapTool):
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
                 f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.canvas(),
-                                                    [laySettings])
+                                                  [laySettings])
                 if f_l is None:
                     feat.append(None)
                     z.append(None)
@@ -872,7 +860,7 @@ class ProfileTool(QgsMapTool):
                     zz.append(i)
             if len(zz) == 0:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","No line z ?!?"), level=QgsMessageBar.WARNING)
+                    QCoreApplication.translate("VDLTools", "No line z ?!?"), level=QgsMessageBar.WARNING)
             elif len(zz) == 1:
                 z0 = pt['z'][zz[0]]
                 # tol = 0.01 * z0
@@ -894,7 +882,7 @@ class ProfileTool(QgsMapTool):
                             situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools","More than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
+                    QCoreApplication.translate("VDLTools", "More than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
 
         if (len(situations) > 0) or (len(differences) > 0):
             self.__setMessageDialog(situations, differences, names)

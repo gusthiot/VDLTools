@@ -40,31 +40,17 @@ class MultiAttributesTool(MultiselectTool):
         """
         MultiselectTool.__init__(self, iface)
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/select_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Select features on multiple layers")
+        self.icon_path = ':/plugins/VDLTools/icons/select_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Select features on multiple layers")
         self.selectedSignal.connect(self.__selected)
         self.__confDlg = None
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def toolName(self):
         """
         To get the tool name
         :return: tool name
         """
-        return QCoreApplication.translate("VDLTools","Multiselect")
+        return QCoreApplication.translate("VDLTools", "Multiselect")
 
     def setTool(self):
         """

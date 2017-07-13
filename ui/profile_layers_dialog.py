@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
+from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -43,18 +43,18 @@ class ProfileLayersDialog(QDialog):
         QDialog.__init__(self)
         self.__pointLayers = pointLayers
         self.__with_mnt = with_mnt
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Add Points Layers Profiles"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Add Points Layers Profiles"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
-        self.__layersLabel = QLabel(QCoreApplication.translate("VDLTools","Also points layers profile ? :"))
+        self.__layersLabel = QLabel(QCoreApplication.translate("VDLTools", "Also points layers profile ? :"))
         self.__layersLabel.setMinimumHeight(20)
         self.__layersLabel.setMinimumWidth(50)
 

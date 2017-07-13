@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
+from future.builtins import range
 from math import (cos,
                   sin,
                   pi)
@@ -52,8 +52,8 @@ class IntersectTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools", "From intersection")
+        self.icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "From intersection")
         self.setCursor(Qt.ArrowCursor)
         self.__lineLayerID = None
         self.__pointLayerID = None
@@ -61,20 +61,6 @@ class IntersectTool(QgsMapTool):
         self.__ownSettings = None
         self.__isEditing = False
         self.__distance = 0
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setTool(self):
         """
@@ -108,7 +94,8 @@ class IntersectTool(QgsMapTool):
         """
         To cancel used variables
         """
-        self.__rubber.reset()
+        if self.__rubber is not None:
+            self.__rubber.reset()
         self.__isEditing = False
 
     def setOwnSettings(self, settings):

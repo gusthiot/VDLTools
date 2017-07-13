@@ -45,23 +45,10 @@ class PointerTool(QgsMapTool):
         :param iface: interface
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
-        self.__icon_path = ':/plugins/VDLTools/icons/pointer_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Elevation pointer")
+        self.__iface = iface
+        self.icon_path = ':/plugins/VDLTools/icons/pointer_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Elevation pointer")
         self.setCursor(Qt.ArrowCursor)
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setTool(self):
         """
@@ -98,4 +85,4 @@ class PointerTool(QgsMapTool):
                             continue
                         display += "    " + str(f.id()) + " | " + str(alt) + " m.\n"
         if display != "":
-            QMessageBox.information(None, QCoreApplication.translate("VDLTools","Id | Elevation"), display)
+            QMessageBox.information(None, QCoreApplication.translate("VDLTools", "Id | Elevation"), display)

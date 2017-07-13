@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
-from builtins import object
+from future.builtins import range
+from future.builtins import object
 
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
@@ -207,6 +207,8 @@ class Finder(object):
                             snap_type = QgsPointLocator.Vertex
                         elif snappingType == QgsSnapper.SnapToSegment:
                             snap_type = QgsPointLocator.Edge
+                        #elif snappingType == QgsSnapper.SnapToVertexAndSegment:
+                        #    snap_type = QgsPointLocator.Edge | QgsPointLocator.Vertex
                         else:
                             snap_type = QgsPointLocator.All
                     else:

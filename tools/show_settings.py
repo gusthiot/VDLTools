@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
-from builtins import object
+from future.builtins import range
+from future.builtins import object
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
 from ..ui.fields_settings_dialog import FieldsSettingsDialog
@@ -47,8 +47,8 @@ class ShowSettings(object):
         :param iface: interface
         """
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Settings")
+        self.icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Settings")
         self.__showDlg = None
         self.__ctlDb = None
         self.__configTable = None
@@ -90,21 +90,6 @@ class ShowSettings(object):
             usedDbs = DBConnector.getUsedDatabases()
             if ctlDbName in list(usedDbs.keys()):
                 self.__ctlDb = usedDbs[ctlDbName]
-
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def start(self):
         """
@@ -205,11 +190,11 @@ class ShowSettings(object):
         :param pointsLayer: memory points layer to save
         """
         self.__memoryPointsLayer = pointsLayer
-        id = None
+        layer_id = None
         if pointsLayer:
-            id = pointsLayer.id()
+            layer_id = pointsLayer.id()
             self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
-        QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", id)
+        QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", layer_id)
 
     def setLinesLayer(self, linesLayer):
         """
@@ -290,7 +275,7 @@ class ShowSettings(object):
     def setMntUrl(self, mntUrl):
         """
         To set the saved mnt url
-        :param saved mnt url
+        :param mntUrl: saved mnt url
         """
         self.__mntUrl = mntUrl
         if mntUrl is not None:
@@ -299,7 +284,7 @@ class ShowSettings(object):
     def setUriDb(self, uriDb):
         """
         To set the saved uri import database
-        :param saved uri import database
+        :param uriDb: saved uri import database
         """
         self.__uriDb = uriDb
         if uriDb is not None:
@@ -308,7 +293,7 @@ class ShowSettings(object):
     def setCtlDb(self, ctlDb):
         """
         To set the saved uri control database
-        :param saved uri control database
+        :param ctlDb: saved uri control database
         """
         self.__ctlDb = ctlDb
         if ctlDb is not None:
@@ -317,7 +302,7 @@ class ShowSettings(object):
     def setSchemaDb(self, schemaDb):
         """
         To set the saved schema import database
-        :param saved schema import database
+        :param schemaDb: saved schema import database
         """
         self.__schemaDb = schemaDb
         if schemaDb is not None:

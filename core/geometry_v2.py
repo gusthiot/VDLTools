@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
-from builtins import object
+from future.builtins import range
+from future.builtins import object
 
 from PyQt4.QtCore import QCoreApplication
 from qgis.gui import QgsMessageBar
@@ -43,6 +43,7 @@ class GeometryV2(object):
         """
         To get the feature geometry from a polygon as a QgsCurvePolygonV2
         :param geometry: the feature geometry
+        :param iface: interface
         :return: the polygon as QgsCurvePolygonV2 , and true if it has curves or false if it hasn't, or none
         """
         wktPolygon = geometry.exportToWkt()
@@ -87,6 +88,7 @@ class GeometryV2(object):
         To get the feature geometry from a line as a QgsLineStringV2/QgsCircularStringV2
         (as soon as the geometry().geometry() is crashing)
         :param geometry: the feature geometry
+        :param iface: interface
         :return: the line as QgsLineStringV2/QgsCircularStringV2 , and true if it has curves or false if it hasn't,
         or none
         """
@@ -162,6 +164,7 @@ class GeometryV2(object):
         To get the feature geometry from a line as a QgsPointV2
         (as soon as the geometry().geometry() is crashing)
         :param geometry: the feature geometry
+        :param iface: interface
         :return: the point as QgsPointV2, or none
         """
         wktPoint = geometry.exportToWkt()
@@ -210,3 +213,4 @@ class GeometryV2(object):
                 if sel < iR.numPoints():
                     return QgsVertexId(0, num + 1, sel, 1)
                 sel -= iR.numPoints()
+            return QgsVertexId()

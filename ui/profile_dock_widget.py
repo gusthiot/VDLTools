@@ -23,9 +23,10 @@
 from __future__ import print_function
 from __future__ import division
 from future import standard_library
-standard_library.install_aliases()
-from builtins import str
-from builtins import range
+from future.builtins import str
+from future.builtins import range
+from math import sqrt
+from matplotlib import rc
 from past.utils import old_div
 from qgis.core import QgsPoint
 from qgis.gui import (QgsVertexMarker,
@@ -47,7 +48,6 @@ from PyQt4.QtGui import (QDockWidget,
                          QSizePolicy,
                          QPrinter)
 from PyQt4.QtCore import (QSize,
-                          QSizeF,
                           QRectF,
                           QCoreApplication,
                           Qt,
@@ -59,8 +59,6 @@ import json
 from future.moves.urllib.request import urlopen
 from future.moves.urllib.error import (HTTPError,
                                        URLError)
-from math import sqrt
-from matplotlib import rc
 
 try:
     from PyQt4.Qwt5.Qwt import (QwtPlot,
@@ -81,6 +79,8 @@ try:
 except ImportError:
     matplotlib_loaded = False
 
+standard_library.install_aliases()
+
 
 class ProfileDockWidget(QDockWidget):
     """
@@ -95,7 +95,7 @@ class ProfileDockWidget(QDockWidget):
         :param iface: interface
         """
         QDockWidget.__init__(self)
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Profile Tool"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Profile Tool"))
         self.resize(1024, 400)
         self.__iface = iface
         self.__canvas = self.__iface.mapCanvas()
@@ -183,7 +183,7 @@ class ProfileDockWidget(QDockWidget):
         self.__typeCombo.setFixedSize(size)
         self.__typeCombo.addItems(self.__types)
         self.__vertLayout.addWidget(self.__typeCombo)
-        self.__saveButton = QPushButton(QCoreApplication.translate("VDLTools","Save"))
+        self.__saveButton = QPushButton(QCoreApplication.translate("VDLTools", "Save"))
         self.__saveButton.setFixedSize(size)
         self.__saveButton.clicked.connect(self.__save)
         self.__vertLayout.addWidget(self.__saveButton)
@@ -223,14 +223,14 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.plotLayout().setSpacing(100)
             self.__plotWdg.plotLayout().setCanvasMargin(10, QwtPlot.xBottom)
             self.__plotWdg.plotLayout().setCanvasMargin(10, QwtPlot.yLeft)
-            title = QwtText(QCoreApplication.translate("VDLTools","Distance [m]"))
+            title = QwtText(QCoreApplication.translate("VDLTools", "Distance [m]"))
             title.setFont(QFont("Helvetica", 10))
             self.__plotWdg.setAxisTitle(QwtPlot.xBottom, title)
-            title.setText(QCoreApplication.translate("VDLTools","Elevation [m]"))
+            title.setText(QCoreApplication.translate("VDLTools", "Elevation [m]"))
             title.setFont(QFont("Helvetica", 10))
             self.__plotWdg.setAxisTitle(QwtPlot.yLeft, title)
             self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
-                                   self.__plotWdg.canvas())
+                                          self.__plotWdg.canvas())
             self.__zoomer.setRubberBandPen(QPen(Qt.blue))
             grid = QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
@@ -303,7 +303,7 @@ class ProfileDockWidget(QDockWidget):
                 url += ','
             pos += 1
             url += name
-        url += '&geom={"type":"LineString","coordinates":['
+        url += '&geom={"type":"LineString", "coordinates":['
         pos = 0
         for i in range(len(self.__profiles)):
             if pos > 0:
@@ -447,10 +447,10 @@ class ProfileDockWidget(QDockWidget):
             self.__reScalePlot(None, True)
         except:
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Rescale problem... (trace printed)"),
+                QCoreApplication.translate("VDLTools", "Rescale problem... (trace printed)"),
                 level=QgsMessageBar.CRITICAL, duration=0)
             print(
-                QCoreApplication.translate("VDLTools","rescale problem : "), sys.exc_info()[0], traceback.format_exc())
+                QCoreApplication.translate("VDLTools", "rescale problem : "), sys.exc_info()[0], traceback.format_exc())
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
@@ -505,7 +505,7 @@ class ProfileDockWidget(QDockWidget):
         self.__minSpin.setEnabled(True)
 
         if self.__lib == 'Qwt5':
-            rect = QRectF(0, minimumValue,maxi, maximumValue-minimumValue)
+            rect = QRectF(0, minimumValue, maxi, maximumValue-minimumValue)
             self.__zoomer.setZoomBase(rect)
 
         # to draw vertical lines
@@ -544,11 +544,12 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.setAxisScale(0, minimumValue, maximumValue, 0)
                 self.__plotWdg.replot()
             elif self.__lib == 'Matplotlib':
-                self.__plotWdg.figure.get_axes()[0].set_ybound(minimumValue,maximumValue)
+                self.__plotWdg.figure.get_axes()[0].set_ybound(minimumValue, maximumValue)
                 self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
                 self.__plotWdg.draw()
 
-    def __minTab(self, tab):
+    @staticmethod
+    def __minTab(tab):
         """
         To get the minimum value in a table
         :param tab: table to scan
@@ -562,7 +563,8 @@ class ProfileDockWidget(QDockWidget):
                 mini = t
         return mini
 
-    def __maxTab(self, tab):
+    @staticmethod
+    def __maxTab(tab):
         """
         To get the maximum value in a table
         :param tab: table to scan
@@ -594,7 +596,7 @@ class ProfileDockWidget(QDockWidget):
             self.__outPNG()
         else:
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Invalid index ") + str(idx),
+                QCoreApplication.translate("VDLTools", "Invalid index ") + str(idx),
                 level=QgsMessageBar.CRITICAL, duration=0)
 
     def __outPDF(self):
@@ -602,12 +604,12 @@ class ProfileDockWidget(QDockWidget):
         To save the profile as pdf file
         """
         fileName = QFileDialog.getSaveFileName(
-            self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
-            QCoreApplication.translate("VDLTools","Profile.pdf"),"Portable Document Format (*.pdf)")
+            self.__iface.mainWindow(), QCoreApplication.translate("VDLTools", "Save As"),
+            QCoreApplication.translate("VDLTools", "Profile.pdf"),"Portable Document Format (*.pdf)")
         if fileName is not None:
             if self.__lib == 'Qwt5':
                 printer = QPrinter()
-                printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
+                printer.setCreator(QCoreApplication.translate("VDLTools", "QGIS Profile Plugin"))
                 printer.setOutputFileName(fileName)
                 printer.setOutputFormat(QPrinter.PdfFormat)
                 printer.setOrientation(QPrinter.Landscape)
@@ -615,7 +617,7 @@ class ProfileDockWidget(QDockWidget):
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.savefig(str(fileName))
             # printer = QPrinter()
-            # printer.setCreator(QCoreApplication.translate("VDLTools","QGIS Profile Plugin"))
+            # printer.setCreator(QCoreApplication.translate("VDLTools", "QGIS Profile Plugin"))
             # printer.setOutputFileName(fileName)
             # printer.setOutputFormat(QPrinter.PdfFormat)
             # printer.setOrientation(QPrinter.Landscape)
@@ -628,8 +630,8 @@ class ProfileDockWidget(QDockWidget):
         To save the profile as png file
         """
         fileName = QFileDialog.getSaveFileName(
-            self.__iface.mainWindow(), QCoreApplication.translate("VDLTools","Save As"),
-            QCoreApplication.translate("VDLTools","Profile.png"),"Portable Network Graphics (*.png)")
+            self.__iface.mainWindow(), QCoreApplication.translate("VDLTools", "Save As"),
+            QCoreApplication.translate("VDLTools", "Profile.png"),"Portable Network Graphics (*.png)")
         if fileName is not None:
             QPixmap.grabWidget(self.__printWdg).save(fileName, "PNG")
 
@@ -666,12 +668,12 @@ class ProfileDockWidget(QDockWidget):
         """
         axe.grid()
         axe.tick_params(axis="both", which="major", direction="out", length=10, width=1, bottom=True, top=False,
-                         left=True, right=False)
+                        left=True, right=False)
         axe.minorticks_on()
         axe.tick_params(axis="both", which="minor", direction="out", length=5, width=1, bottom=True, top=False,
-                         left=True, right=False)
-        axe.set_xlabel(QCoreApplication.translate("VDLTools","Distance [m]"))
-        axe.set_ylabel(QCoreApplication.translate("VDLTools","Elevation [m]"))
+                        left=True, right=False)
+        axe.set_xlabel(QCoreApplication.translate("VDLTools", "Distance [m]"))
+        axe.set_ylabel(QCoreApplication.translate("VDLTools", "Elevation [m]"))
 
     def __activateMouseTracking(self, activate):
         """

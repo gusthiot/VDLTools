@@ -20,8 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
@@ -47,11 +45,11 @@ class ExtrapolateConfirmDialog(QDialog):
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 2)
 
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","Yes"))
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "Yes"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(300)
 
-        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","No"))
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "No"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from __future__ import division
-from builtins import range
+from future.builtins import range
 from past.utils import old_div
 from math import (pi,
                   cos,
@@ -64,8 +64,8 @@ class DuplicateTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/duplicate_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Duplicate a feature")
+        self.icon_path = ':/plugins/VDLTools/icons/duplicate_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Duplicate a feature")
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = False
         self.__layer = None
@@ -82,26 +82,12 @@ class DuplicateTool(QgsMapTool):
         self.__cancel()
         QgsMapTool.deactivate(self)
 
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
-
     def toolName(self):
         """
         To get the tool name
         :return: tool name
         """
-        return QCoreApplication.translate("VDLTools","Duplicate")
+        return QCoreApplication.translate("VDLTools", "Duplicate")
 
     def startEditing(self):
         """
@@ -364,7 +350,7 @@ class DuplicateTool(QgsMapTool):
         self.__dstDlg.accept()
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","Geos geometry problem"),
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "Geos geometry problem"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
@@ -404,7 +390,7 @@ class DuplicateTool(QgsMapTool):
         found_features = self.__layer.selectedFeatures()
         if len(found_features) > 0:
             if len(found_features) > 1:
-                self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","One feature at a time"),
+                self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "One feature at a time"),
                                                       level=QgsMessageBar.INFO)
                 return
             self.__selectedFeature = found_features[0]

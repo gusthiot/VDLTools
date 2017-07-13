@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
+from future.builtins import range
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
 from PyQt4.QtGui import QColor, QMoveEvent
@@ -58,8 +58,8 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         """
         QgsMapToolAdvancedDigitizing.__init__(self,  iface.mapCanvas(), iface.cadDockWidget())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/move_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Move/Copy a feature")
+        self.icon_path = ':/plugins/VDLTools/icons/move_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Move/Copy a feature")
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = False
         self.__findVertex = False
@@ -90,27 +90,12 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         self.__cancel()
         QgsMapToolAdvancedDigitizing.deactivate(self)
 
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
-
     def toolName(self):
         """
         To get the tool name
         :return: tool name
         """
-        return QCoreApplication.translate("VDLTools","Move/Copy")
+        return QCoreApplication.translate("VDLTools", "Move/Copy")
 
     def startEditing(self):
         """
@@ -299,7 +284,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL, duration=0)
+                QCoreApplication.translate("VDLTools", "Geos geometry problem"), level=QgsMessageBar.CRITICAL, duration=0)
         self.__layer.changeGeometry(self.__selectedFeature.id(), geometry)
         self.__confDlg.accept()
         self.__cancel()
@@ -311,7 +296,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         geometry = QgsGeometry(self.__newFeature)
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools","Geos geometry problem"), level=QgsMessageBar.CRITICAL, duration=0)
+                QCoreApplication.translate("VDLTools", "Geos geometry problem"), level=QgsMessageBar.CRITICAL, duration=0)
         feature = QgsFeature(self.__layer.pendingFields())
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
@@ -419,7 +404,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             if len(found_features) > 0:
                 if len(found_features) > 1:
                     self.__iface.messageBar().pushMessage(
-                        QCoreApplication.translate("VDLTools","One feature at a time"), level=QgsMessageBar.INFO)
+                        QCoreApplication.translate("VDLTools", "One feature at a time"), level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
                 if self.__layer.geometryType() != QGis.Point:

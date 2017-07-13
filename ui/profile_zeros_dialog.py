@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
+from future.builtins import str
+from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -41,7 +41,7 @@ class ProfileZerosDialog(QDialog):
         """
         QDialog.__init__(self)
         self.__zeros = zeros
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Zeros"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Zeros"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
@@ -52,33 +52,33 @@ class ProfileZerosDialog(QDialog):
 
         for i in range(len(self.__zeros)):
             msg = "- vertex " + str(self.__zeros[i][0])
-            msg += QCoreApplication.translate("VDLTools",", elevation : '0', ")
+            msg += QCoreApplication.translate("VDLTools", ", elevation : '0', ")
             if self.__zeros[i][1] is not None:
-                msg += QCoreApplication.translate("VDLTools","interpolated elevation : ")
+                msg += QCoreApplication.translate("VDLTools", "interpolated elevation : ")
                 msg += str(self.__zeros[i][1]) + "m"
                 if self.__zeros[i][2] > 1:
-                    msg += QCoreApplication.translate("VDLTools"," (and apply to point)")
+                    msg += QCoreApplication.translate("VDLTools", " (and apply to point)")
                 msgCheck = QCheckBox()
                 msgCheck.setChecked(True)
                 self.__zeroChecks.append(msgCheck)
                 self.__layout.addWidget(self.__zeroChecks[i], i+1, 2)
                 displayButton = True
             else:
-                msg += QCoreApplication.translate("VDLTools","no interpolated elevation")
+                msg += QCoreApplication.translate("VDLTools", "no interpolated elevation")
                 self.__zeroChecks.append(None)
 
             zeroLabel = QLabel(msg)
             self.__zeroLabels.append(zeroLabel)
             self.__layout.addWidget(self.__zeroLabels[i], i+1, 0, 1, 2)
 
-        self.__passButton = QPushButton(QCoreApplication.translate("VDLTools","Pass"))
+        self.__passButton = QPushButton(QCoreApplication.translate("VDLTools", "Pass"))
         self.__passButton.setMinimumHeight(20)
         self.__passButton.setMinimumWidth(100)
 
         pos = len(self.__zeros) + 1
         self.__layout.addWidget(self.__passButton, pos, 0)
 
-        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools","Apply interpolation"))
+        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply interpolation"))
         self.__applyButton.setMinimumHeight(20)
         self.__applyButton.setMinimumWidth(100)
         if displayButton:

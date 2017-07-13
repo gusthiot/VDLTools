@@ -25,7 +25,10 @@ from PyQt4.QtCore import QCoreApplication
 from .area_tool import AreaTool
 from ..ui.choose_control_dialog import ChooseControlDialog
 from qgis.gui import QgsMessageBar
-from qgis.core import QgsMapLayerRegistry,QgsVectorLayer,QgsGeometry,QgsFeature
+from qgis.core import (QgsMapLayerRegistry,
+                       QgsVectorLayer,
+                       QgsGeometry,
+                       QgsFeature)
 from ..core.db_connector import DBConnector
 
 
@@ -41,8 +44,8 @@ class ControlTool(AreaTool):
         """
         AreaTool.__init__(self, iface)
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/control_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Make control requests on selected area")
+        self.icon_path = ':/plugins/VDLTools/icons/control_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Make control requests on selected area")
         self.releasedSignal.connect(self.__released)
         self.__chooseDlg = None
         self.__db = None
@@ -51,20 +54,6 @@ class ControlTool(AreaTool):
             "nom1": self.__request1
         }
         self.__crs = None
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setOwnSettings(self, settings):
         """
@@ -78,7 +67,7 @@ class ControlTool(AreaTool):
         To get the tool name
         :return: tool name
         """
-        return QCoreApplication.translate("VDLTools","Control")
+        return QCoreApplication.translate("VDLTools", "Control")
 
     def setTool(self):
         """
@@ -91,11 +80,11 @@ class ControlTool(AreaTool):
         When selection is complete
         """
         if self.__ownSettings is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","No settings given !!"),
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.__ownSettings.ctlDb() is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","No control db given !!"),
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control db given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
 

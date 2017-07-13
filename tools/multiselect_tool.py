@@ -50,7 +50,7 @@ class MultiselectTool(AreaTool):
         """
         To select objects in multiples layers inside a selection rectangle
         """
-        searchRect = QgsRectangle(self.first(), self.last())
+        searchRect = QgsRectangle(self.first, self.last)
         for layer in self.canvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
                 layer.select(searchRect, False)

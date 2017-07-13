@@ -56,9 +56,9 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         """
         QgsMapToolAdvancedDigitizing.__init__(self, iface.mapCanvas(), iface.cadDockWidget())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/interpolate_icon.png'
-        self.__text = QCoreApplication.translate(
-            "VDLTools","Interpolate the elevation of a vertex and a point in the middle of a line")
+        self.icon_path = ':/plugins/VDLTools/icons/interpolate_icon.png'
+        self.text = QCoreApplication.translate(
+            "VDLTools", "Interpolate the elevation of a vertex and a point in the middle of a line")
         self.__layer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isEditing = False
@@ -70,20 +70,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         self.__rubber = None
         self.__selectedFeature = None
         self.__findVertex = False
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setTool(self):
         """
@@ -152,7 +138,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if self.__lastLayer is not None:
             self.__lastLayer.removeSelection()
             self.__lastLayer = None
-        self.__rubber.reset()
+        if self.__rubber is not None:
+           self.__rubber.reset()
         self.__lastFeatureId = None
         self.__selectedFeature = None
 
@@ -247,7 +234,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
-                    if match.layer() is not None and self.__selectedFeature.id() == match.featureId():
+                    if match.layer() is not None and self.__selectedFeature.id() == match.featureId() \
+                            and match.layer().id() == self.__lastLayer.id():
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
                     else:
@@ -262,7 +250,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     if intersection is not None:
                         self.__rubber.setIcon(1)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
-                    elif self.__selectedFeature.id() == match.featureId():
+                    elif self.__selectedFeature.id() == match.featureId() \
+                            and match.layer().id() == self.__lastLayer.id():
                         self.__rubber.setIcon(3)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
 
@@ -275,7 +264,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
                 if len(found_features) > 1:
-                    self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools","One feature at a time"),
+                    self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "One feature at a time"),
                                                           level=QgsMessageBar.INFO)
                     return
                 self.__selectedFeature = found_features[0]
@@ -294,7 +283,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                 point = match.point()
                 ok = False
                 if match.hasVertex():
-                    if match.layer() is not None and self.__selectedFeature.id() == match.featureId():
+                    if match.layer() is not None and self.__selectedFeature.id() == match.featureId() \
+                            and match.layer().id() == self.__lastLayer.id():
                         ok = True
                     else:
                         intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self,
@@ -308,7 +298,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     if intersection is not None:
                         point = intersection
                         ok = True
-                    elif self.__selectedFeature.id() == match.featureId():
+                    elif self.__selectedFeature.id() == match.featureId() \
+                            and match.layer().id() == self.__lastLayer.id():
                         ok = True
                 if ok:
                     self.__isEditing = True
@@ -317,9 +308,9 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     if not match.hasVertex() or match.featureId() == 0:
                         self.__confDlg = InterpolateConfirmDialog()
                         if self.__lastLayer.isEditable():
-                            self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools","What do you want to do ?"))
-                            self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools","Create point and new vertex"))
-                            self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools","Create only the vertex"))
+                            self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools", "What do you want to do ?"))
+                            self.__confDlg.setAllLabel(QCoreApplication.translate("VDLTools", "Create point and new vertex"))
+                            self.__confDlg.setVtLabel(QCoreApplication.translate("VDLTools", "Create only the vertex"))
                         self.__confDlg.rejected.connect(self.__done)
                         self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
                         self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
@@ -374,7 +365,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         d1 = Finder.sqrDistForCoords(x1, vertex_v2.x(), y1, vertex_v2.y())
         z0 = line_v2.zAt(vertex_id.vertex-1)
         z1 = line_v2.zAt(vertex_id.vertex)
-        vertex_v2.addZValue(old_div((d0*z1 + d1*z0),(d0 + d1)))
+        vertex_v2.addZValue(old_div((d0*z1 + d1*z0), (d0 + d1)))
 
         if withPoint:
             pt_feat = QgsFeature(self.__layer.pendingFields())

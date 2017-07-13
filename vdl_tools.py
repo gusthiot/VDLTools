@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from __future__ import absolute_import
-from builtins import object
+from future.builtins import object
 from PyQt4.QtCore import (QSettings,
                           QTranslator,
                           qVersion,
@@ -106,8 +106,8 @@ class VDLTools(object):
         :return: the added action
         """
 
-        icon = QIcon(tool.icon_path())
-        action = QAction(icon, tool.text(), parent)
+        icon = QIcon(tool.icon_path)
+        action = QAction(icon, tool.text, parent)
 
         if isMapTool:
             tool.setAction(action)

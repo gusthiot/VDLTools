@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
+from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QButtonGroup,
@@ -41,21 +41,21 @@ class InterpolateConfirmDialog(QDialog):
         Constructor
         """
         QDialog.__init__(self)
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Edition Confirmation"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Edition Confirmation"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
         self.__confirmLabel = QLabel(
-            QCoreApplication.translate("VDLTools","This LineString layer is not editable, what do you want to do ?"))
+            QCoreApplication.translate("VDLTools", "This LineString layer is not editable, what do you want to do ?"))
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 2)
 
         self.__radios = []
 
         self.__radios.append(QRadioButton(
-            QCoreApplication.translate("VDLTools","Create point, and edit line with new vertex")))
-        self.__radios.append(QRadioButton(QCoreApplication.translate("VDLTools","Create only the point")))
-        self.__radios.append(QRadioButton(QCoreApplication.translate("VDLTools","Just edit line with new vertex")))
+            QCoreApplication.translate("VDLTools", "Create point, and edit line with new vertex")))
+        self.__radios.append(QRadioButton(QCoreApplication.translate("VDLTools", "Create only the point")))
+        self.__radios.append(QRadioButton(QCoreApplication.translate("VDLTools", "Just edit line with new vertex")))
 
         self.__radios[0].setChecked(True)
         self.__radio_button_group = QButtonGroup()
@@ -63,13 +63,13 @@ class InterpolateConfirmDialog(QDialog):
             self.__layout.addWidget(self.__radios[i], i+1, 0, 1, 2)
             self.__radio_button_group.addButton(self.__radios[i], i)
 
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","OK"))
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
         self.__layout.addWidget(self.__okButton, 4, 0)
 
-        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

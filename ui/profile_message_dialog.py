@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
+from future.builtins import str
+from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
                          QGridLayout,
@@ -50,7 +50,7 @@ class ProfileMessageDialog(QDialog):
         self.__names = names
         num_lines = len(points[0]['z']) - len(names) + 1
         self.__points = points
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Elevations situations"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Elevations situations"))
         self.resize(300, 100)
         self.__layout = QGridLayout()
 
@@ -61,9 +61,9 @@ class ProfileMessageDialog(QDialog):
         for i in range(len(self.__situations)):
             line = self.__situations[i]
             ptz = self.__points[line['point']]['z']
-            msg = "- point " + str(line['point']) + QCoreApplication.translate("VDLTools"," in layer '") + \
+            msg = "- point " + str(line['point']) + QCoreApplication.translate("VDLTools", " in layer '") + \
                   self.__names[line['layer']] + "' (point: " + str(ptz[line['layer']+num_lines-1]) + "m |" + \
-                  QCoreApplication.translate("VDLTools","line vertex: ") + str(line['vertex']) + "m) \n"
+                  QCoreApplication.translate("VDLTools", "line vertex: ") + str(line['vertex']) + "m) \n"
 
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
@@ -76,13 +76,13 @@ class ProfileMessageDialog(QDialog):
         for i in range(len(self.__differences)):
             line = self.__differences[i]
             msg = "- point " + str(line['point']) + \
-                  QCoreApplication.translate("VDLTools"," in layer : different elevations on same position ") + "(" +\
+                  QCoreApplication.translate("VDLTools", " in layer : different elevations on same position ") + "(" +\
                   str(line['v1']) + "m and" + str(line['v2']) + "m) \n"
             difLabel = QLabel(msg)
             self.__difLabels.append(difLabel)
             self.__layout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)
 
-        self.__passButton = QPushButton(QCoreApplication.translate("VDLTools","Pass"))
+        self.__passButton = QPushButton(QCoreApplication.translate("VDLTools", "Pass"))
         self.__passButton.setMinimumHeight(20)
         self.__passButton.setMinimumWidth(100)
 

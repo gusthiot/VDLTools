@@ -39,32 +39,32 @@ class FieldsSettingsDialog(QDialog):
         Constructor
         """
         QDialog.__init__(self)
-        self.setWindowTitle(QCoreApplication.translate("VDLTools","Memory lines layer fields"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Memory lines layer fields"))
 
         self.resize(400, 200)
         self.__layout = QGridLayout()
 
-        titleLabel = QLabel(QCoreApplication.translate("VDLTools","One or more fields needed are missing in the memory lines layer."))
+        titleLabel = QLabel(QCoreApplication.translate("VDLTools", "One or more fields needed are missing in the memory lines layer."))
         titleLabel.setMinimumHeight(20)
         titleLabel.setMinimumWidth(50)
         self.__layout.addWidget(titleLabel, 0, 0)
 
-        subtitleLabel = QLabel(QCoreApplication.translate("VDLTools","You want to : "))
+        subtitleLabel = QLabel(QCoreApplication.translate("VDLTools", "You want to : "))
         subtitleLabel.setMinimumHeight(20)
         subtitleLabel.setMinimumWidth(50)
         self.__layout.addWidget(subtitleLabel, 1, 0)
 
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","Add the needed fields in the layer and use it"))
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "Add the needed fields in the layer and use it"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
         self.__layout.addWidget(self.__okButton, 2, 0)
 
-        self.__butButton = QPushButton(QCoreApplication.translate("VDLTools","Use it without those fields"))
+        self.__butButton = QPushButton(QCoreApplication.translate("VDLTools", "Use it without those fields"))
         self.__butButton.setMinimumHeight(20)
         self.__butButton.setMinimumWidth(100)
         self.__layout.addWidget(self.__butButton, 3, 0)
 
-        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
         self.__layout.addWidget(self.__cancelButton, 4, 0)

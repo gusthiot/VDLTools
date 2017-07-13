@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from __future__ import division
-from builtins import object
+from future.builtins import object
 from past.utils import old_div
 
 from qgis.core import QgsPointV2
@@ -50,21 +50,21 @@ class Circle(object):
         To get the middle between point 1 and point 2
         :return: the middle point 1-2
         """
-        return QgsPointV2(old_div((self.__p1.x() + self.__p2.x()),2), old_div((self.__p1.y() + self.__p2.y()),2))
+        return QgsPointV2(old_div((self.__p1.x() + self.__p2.x()), 2), old_div((self.__p1.y() + self.__p2.y()), 2))
 
     def __mid_23(self):
         """
         To get the middle between point 2 and point 3
         :return: the middle poinr 2-3
         """
-        return QgsPointV2(old_div((self.__p2.x() + self.__p3.x()),2), old_div((self.__p2.y() + self.__p3.y()),2))
+        return QgsPointV2(old_div((self.__p2.x() + self.__p3.x()), 2), old_div((self.__p2.y() + self.__p3.y()), 2))
 
     def __slop_12(self):
         """
         To get the slop between point 1 and point 2
         :return: the slop 1-2
         """
-        return old_div((self.__p1.y() - self.__p2.y()),(self.__p1.x() - self.__p2.x()))
+        return old_div((self.__p1.y() - self.__p2.y()), (self.__p1.x() - self.__p2.x()))
 
     def __slop_23(self):
         """
@@ -78,14 +78,14 @@ class Circle(object):
         To get the bisector slop between point 1 and point 2
         :return: the bisector slop 1-2
         """
-        return old_div(-1,self.__slop_12())
+        return old_div(-1, self.__slop_12())
 
     def __slop_p_23(self):
         """
         To get the bisector slop between point 2 and point 3
         :return: the bisector slop 2-3
         """
-        return old_div(-1,self.__slop_23())
+        return old_div(-1, self.__slop_23())
 
     def center(self):
         """

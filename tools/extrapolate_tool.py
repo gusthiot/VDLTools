@@ -53,8 +53,8 @@ class ExtrapolateTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/extrapolate_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools",
+        self.icon_path = ':/plugins/VDLTools/icons/extrapolate_icon.png'
+        self.text = QCoreApplication.translate("VDLTools",
                                                  "Extrapolate the elevation of a vertex and a "
                                                  "point at the extremity of a line")
         self.__layer = None
@@ -66,20 +66,6 @@ class ExtrapolateTool(QgsMapTool):
         self.__selectedVertex = None
         self.__elevation = None
         self.__selectedFeature = None
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setTool(self):
         """
@@ -130,7 +116,8 @@ class ExtrapolateTool(QgsMapTool):
         To cancel used variables
         """
         self.__layer.removeSelection()
-        self.__rubber.reset()
+        if self.__rubber is not None:
+            self.__rubber.reset()
         self.__lastFeatureId = None
         self.__confDlg = None
         self.__selectedFeature = None
@@ -229,8 +216,8 @@ class ExtrapolateTool(QgsMapTool):
                 small_d = Finder.sqrDistForPoints(pt1, pt)
                 self.__isEditing = True
                 self.__selectedFeature = found_features[0]
-                self.__elevation = pt0.z() + (1 + old_div(small_d,big_d)) * (pt1.z() - pt0.z())
-                if small_d < (old_div(big_d,4)):
+                self.__elevation = pt0.z() + (1 + old_div(small_d, big_d)) * (pt1.z() - pt0.z())
+                if small_d < (old_div(big_d, 4)):
                     if pt.z() is not None and pt.z() != 0:
                         message = QCoreApplication.translate("VDLTools", "This vertex has already an elevation ") + \
                                   "(" + str(pt.z()) + ")" + \

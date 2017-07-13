@@ -45,12 +45,8 @@ class AreaTool(QgsMapTool):
         :param iface: interface
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
-        self.__selecting = False
-        self.__first = None
-        self.__last = None
-        self.__temp = None
-        self.__rubber = None
-        self.__geom = None
+        self.__clear()
+
 
     def activate(self):
         """
@@ -69,34 +65,18 @@ class AreaTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.__rubber = None
-        self.__selecting = False
-        self.__first = None
-        self.__last = None
-        self.__temp = None
-        self.__geom = None
+        self.__clear()
         QgsMapTool.deactivate(self)
 
-    def geom(self):
+    def __clear(self):
         """
-        To get the selected polygon QgsGeometry
-        :return: geometry
+        To clear used variables
         """
-        return self.__geom
-
-    def first(self):
-        """
-        To get the up/left QgsPointV2 of the selected polygon
-        :return: up/left point
-        """
-        return self.__first
-
-    def last(self):
-        """
-        To get the down/right QgsPointV2 of the selected polygon
-        :return: down/right point
-        """
-        return self.__last
+        self.__selecting = False
+        self.__rubber = None
+        self.first = None
+        self.last = None
+        self.geom = None
 
     def canvasMoveEvent(self, event):
         """
@@ -104,18 +84,16 @@ class AreaTool(QgsMapTool):
         :param event: mouse event
         """
         if self.__selecting:
-            self.__temp = event.mapPoint()
             self.__rubber.reset()
-            first = QgsPointV2(self.__first.x(), self.__first.y())
-            second = QgsPointV2(self.__first.x(), self.__temp.y())
-            third = QgsPointV2(self.__temp.x(), self.__temp.y())
-            forth = QgsPointV2(self.__temp.x(), self.__first.y())
+            third = event.mapPoint()
+            second = QgsPointV2(self.first.x(), third.y())
+            fourth = QgsPointV2(third.x(), self.first.y())
 
             lineV2 = QgsLineStringV2()
-            lineV2.setPoints([first, second, third, forth, first])
+            lineV2.setPoints([self.first, second, third, fourth, self.first])
             polygonV2 = QgsPolygonV2()
             polygonV2.setExteriorRing(lineV2)
-            self.__geom = QgsGeometry(polygonV2)
+            self.geom = QgsGeometry(polygonV2)
             self.__rubber.setToGeometry(self.__geom, None)
 
     def canvasPressEvent(self, event):
@@ -124,7 +102,7 @@ class AreaTool(QgsMapTool):
         :param event: mouse event
         """
         self.__selecting = True
-        self.__first = event.mapPoint()
+        self.first = event.mapPoint()
 
     def canvasReleaseEvent(self, event):
         """
@@ -132,6 +110,6 @@ class AreaTool(QgsMapTool):
         :param event: mouse event
         """
         self.__selecting = False
-        self.__last = event.mapPoint()
+        self.last = event.mapPoint()
         self.__rubber.reset()
         self.releasedSignal.emit()

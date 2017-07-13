@@ -67,11 +67,11 @@ class ChooseControlDialog(QDialog):
             self.__controlsChecks.append(check)
             self.__layout.addWidget(self.__controlsChecks[i], i+1, 1)
 
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools","Ok"))
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "Ok"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
 
-        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools","Cancel"))
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 

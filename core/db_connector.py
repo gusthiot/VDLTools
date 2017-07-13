@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import object
+from future.builtins import object
 
 from PyQt4.QtCore import QSettings
 from PyQt4.QtSql import QSqlDatabase
@@ -30,6 +30,7 @@ from qgis.core import (QgsMapLayer,
                        QgsCredentials,
                        QgsMapLayerRegistry,
                        QgsDataSourceURI)
+
 
 class DBConnector(object):
     """

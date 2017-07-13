@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
+from future.builtins import range
 from qgis.core import (QgsPointV2,
                        QgsLineStringV2,
                        QgsGeometry,
@@ -45,8 +45,8 @@ class SubProfileTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.__icon_path = ':/plugins/VDLTools/icons/profile_2_icon.png'
-        self.__text = QCoreApplication.translate("VDLTools","Line for MNT profile")
+        self.icon_path = ':/plugins/VDLTools/icons/profile_2_icon.png'
+        self.text = QCoreApplication.translate("VDLTools", "Line for MNT profile")
         self.setCursor(Qt.ArrowCursor)
         self.__isSelected = False
         self.__dockWdg = None
@@ -55,20 +55,6 @@ class SubProfileTool(QgsMapTool):
         self.__ownSettings = None
         self.__line = None
         self.__startVertex = None
-
-    def icon_path(self):
-        """
-        To get the icon path
-        :return: icon path
-        """
-        return self.__icon_path
-
-    def text(self):
-        """
-        To get the menu text
-        :return: menu text
-        """
-        return self.__text
 
     def setTool(self):
         """
@@ -93,7 +79,6 @@ class SubProfileTool(QgsMapTool):
         color.setAlphaF(0.78)
         self.__rubberDots.setColor(color)
         self.__rubberDots.setLineStyle(Qt.DotLine)
-
 
     def __closed(self):
         """
