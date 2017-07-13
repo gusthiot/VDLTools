@@ -379,6 +379,18 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
+            self.__lastLayer.updateExtents()
+
+            found_features = self.__lastLayer.selectedFeatures()
+            if len(found_features) > 0:
+                if len(found_features) > 1:
+                    self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "One feature at a time"),
+                                                          level=QgsMessageBar.INFO)
+                else:
+                    self.__selectedFeature = found_features[0]
+            else:
+                self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No more feature selected"),
+                                                          level=QgsMessageBar.INFO)
 
         self.__done()
         self.__findVertex = True
