@@ -379,12 +379,10 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                 self.__layer.addFeature(pt_feat)
             else:
                 self.__iface.openFeatureForm(self.__layer, pt_feat)
-            self.__layer.updateExtents()
 
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
             self.__lastLayer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
-            self.__lastLayer.updateExtents()
 
             found_features = self.__lastLayer.selectedFeatures()
             if len(found_features) > 0:
@@ -396,6 +394,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             else:
                 self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No more feature selected"),
                                                           level=QgsMessageBar.INFO)
+
+        self.__iface.mapCanvas().refresh()
 
         self.__done()
         self.__findVertex = True
