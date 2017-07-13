@@ -370,11 +370,16 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if withPoint:
             pt_feat = QgsFeature(self.__layer.pendingFields())
             pt_feat.setGeometry(QgsGeometry(vertex_v2))
+            for i in range(len(self.__layer.pendingFields())):
+                default = self.__layer.defaultValue(i)
+                if default is not None:
+                    pt_feat.setAttribute(i, default)
 
             if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
                 self.__layer.addFeature(pt_feat)
             else:
                 self.__iface.openFeatureForm(self.__layer, pt_feat)
+            self.__layer.updateExtents()
 
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex_v2)
