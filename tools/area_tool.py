@@ -85,16 +85,17 @@ class AreaTool(QgsMapTool):
         """
         if self.__selecting:
             self.__rubber.reset()
-            third = event.mapPoint()
-            second = QgsPointV2(self.first.x(), third.y())
-            fourth = QgsPointV2(third.x(), self.first.y())
+            firstV2 = QgsPointV2(self.first)
+            second = QgsPointV2(self.first.x(), event.mapPoint().y())
+            third = QgsPointV2(event.mapPoint())
+            fourth = QgsPointV2(event.mapPoint().x(), self.first.y())
 
             lineV2 = QgsLineStringV2()
-            lineV2.setPoints([self.first, second, third, fourth, self.first])
+            lineV2.setPoints([firstV2, second, third, fourth, firstV2])
             polygonV2 = QgsPolygonV2()
             polygonV2.setExteriorRing(lineV2)
             self.geom = QgsGeometry(polygonV2)
-            self.__rubber.setToGeometry(self.__geom, None)
+            self.__rubber.setToGeometry(self.geom, None)
 
     def canvasPressEvent(self, event):
         """
