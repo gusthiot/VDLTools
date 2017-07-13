@@ -230,7 +230,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         elif self.__findVertex:
             self.__rubber.reset()
             snap_layers = Finder.getLayersSettings(self.canvas(), [QGis.Line, QGis.Polygon], QgsPointLocator.All)
-            match = Finder.snap(map_point, self.canvas(), snap_layers, QgsSnappingUtils.SnapAdvanced)
+            match = Finder.snap(map_point, self.canvas(), snap_layers)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 if match.hasVertex():
@@ -278,7 +278,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         elif self.__findVertex:
             self.__rubber.reset()
             snap_layers = Finder.getLayersSettings(self.canvas(), [QGis.Line, QGis.Polygon], QgsPointLocator.All)
-            match = Finder.snap(event.mapPoint(), self.canvas(), snap_layers, QgsSnappingUtils.SnapAdvanced)
+            match = Finder.snap(event.mapPoint(), self.canvas(), snap_layers)
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 ok = False

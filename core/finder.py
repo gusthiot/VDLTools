@@ -199,21 +199,31 @@ class Finder(object):
         snap_layers = []
         for layer in mapCanvas.layers():
             if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
-                noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                    QgsProject.instance().snapSettingsForLayer(layer.id())
-                if isinstance(layer, QgsVectorLayer) and enabled:
-                    if snapType is None:
-                        if snappingType == QgsSnapper.SnapToVertex:
-                            snap_type = QgsPointLocator.Vertex
-                        elif snappingType == QgsSnapper.SnapToSegment:
-                            snap_type = QgsPointLocator.Edge
-                        #elif snappingType == QgsSnapper.SnapToVertexAndSegment:
-                        #    snap_type = QgsPointLocator.Edge | QgsPointLocator.Vertex
+                snap_util = mapCanvas.snappingUtils()
+                mode = snap_util.snapToMapMode()
+                if mode == QgsSnappingUtils.SnapCurrentLayer and layer.id() != mapCanvas.currentLayer().id():
+                    continue
+                if mode == QgsSnappingUtils.SnapAllLayers:
+                    snap_index, tolerance, unitType = snap_util.defaultSettings()
+                    snap_type = QgsPointLocator.Type(snap_index)
+                else:
+                    noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                        QgsProject.instance().snapSettingsForLayer(layer.id())
+                    if isinstance(layer, QgsVectorLayer) and enabled:
+                        if snapType is None:
+                            if snappingType == QgsSnapper.SnapToVertex:
+                                snap_type = QgsPointLocator.Vertex
+                            elif snappingType == QgsSnapper.SnapToSegment:
+                                snap_type = QgsPointLocator.Edge
+                            elif snappingType == QgsSnapper.SnapToVertexAndSegment:
+                                snap_type = QgsPointLocator.Edge and QgsPointLocator.Vertex
+                            else:
+                                snap_type = QgsPointLocator.All
                         else:
-                            snap_type = QgsPointLocator.All
+                            snap_type = snapType
                     else:
-                        snap_type = snapType
-                    snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
+                        continue
+                snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
         return snap_layers
 
     @staticmethod
@@ -226,7 +236,7 @@ class Finder(object):
         :param featureId: if we want to snap on a given feature
         :return: intersection point
         """
-        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Point, QGis.Line, QGis.Polygon])
+        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line])
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         if len(features) > 1:
             if len(features) > 2:
