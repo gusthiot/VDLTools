@@ -56,6 +56,7 @@ import itertools
 import traceback
 import sys
 import json
+from ..core.signal import Signal
 from future.moves.urllib.request import urlopen
 from future.moves.urllib.error import (HTTPError,
                                        URLError)
@@ -755,16 +756,16 @@ class ProfileDockWidget(QDockWidget):
         :param event: close event
         """
         if self.__maxSpin is not None:
-            self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
+            Signal.safelyDisconnect(self.__maxSpin.valueChanged, self.__reScalePlot)
             self.__maxSpin = None
         if self.__minSpin is not None:
-            self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
+            Signal.safelyDisconnect(self.__minSpin.valueChanged, self.__reScalePlot)
             self.__minSpin = None
         if self.__saveButton is not None:
-            self.__saveButton.clicked.disconnect(self.__save)
+            Signal.safelyDisconnect(self.__saveButton.clicked, self.__save)
             self.__saveButton = None
         if self.__libCombo is not None:
-            self.__libCombo.currentIndexChanged.disconnect(self.__setLib)
+            Signal.safelyDisconnect(self.__libCombo.currentIndexChanged, self.__setLib)
             self.__libCombo = None
         self.closeSignal.emit()
         if self.__marker is not None:

@@ -44,6 +44,7 @@ from qgis.gui import (QgsMapToolAdvancedDigitizing,
 from ..ui.move_confirm_dialog import MoveConfirmDialog
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
+from ..core.signal import Signal
 
 
 class MoveTool(QgsMapToolAdvancedDigitizing):
@@ -102,7 +103,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         To set the action as enable, as the layer is editable
         """
         self.action().setEnabled(True)
-        self.__layer.editingStarted.disconnect(self.startEditing)
+        Signal.safelyDisconnect(self.__layer.editingStarted, self.startEditing)
         self.__layer.editingStopped.connect(self.stopEditing)
 
     def stopEditing(self):
@@ -110,7 +111,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         To set the action as disable, as the layer is not editable
         """
         self.action().setEnabled(False)
-        self.__layer.editingStopped.disconnect(self.stopEditing)
+        Signal.safelyDisconnect(self.__layer.editingStopped, self.stopEditing)
         self.__layer.editingStarted.connect(self.startEditing)
         if self.canvas().mapTool() == self:
             self.__iface.actionPan().trigger()
@@ -153,9 +154,9 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         """
         if self.__layer is not None:
             if self.__layer.isEditable():
-                self.__layer.editingStopped.disconnect(self.stopEditing)
+                Signal.safelyDisconnect(self.__layer.editingStopped, self.stopEditing)
             else:
-                self.__layer.editingStarted.disconnect(self.startEditing)
+                Signal.safelyDisconnect(self.__layer.editingStarted, self.startEditing)
             self.__layer = None
 
     def setEnable(self, layer):
@@ -169,9 +170,9 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
 
             if self.__layer is not None:
                 if self.__layer.isEditable():
-                    self.__layer.editingStopped.disconnect(self.stopEditing)
+                    Signal.safelyDisconnect(self.__layer.editingStopped, self.stopEditing)
                 else:
-                    self.__layer.editingStarted.disconnect(self.startEditing)
+                    Signal.safelyDisconnect(self.__layer.editingStarted, self.startEditing)
             self.__layer = layer
 
             if self.__layer.geometryType() == QGis.Point:

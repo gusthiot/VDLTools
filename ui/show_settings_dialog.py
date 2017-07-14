@@ -35,6 +35,7 @@ from qgis.core import (QgsMapLayer,
                        QGis)
 from PyQt4.QtCore import QCoreApplication
 from ..core.db_connector import DBConnector
+from ..core.signal import Signal
 
 
 class ShowSettingsDialog(QDialog):
@@ -214,7 +215,7 @@ class ShowSettingsDialog(QDialog):
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
         if db:
-            self.__schemaCombo.currentIndexChanged.disconnect(self.__schemaComboChanged)
+            Signal.safelyDisconnect(self.__schemaCombo.currentIndexChanged, self.__schemaComboChanged)
             self.__resetCombo(self.__schemaCombo)
             self.__schemaCombo.addItem("")
             self.__schemas = []
@@ -243,7 +244,7 @@ class ShowSettingsDialog(QDialog):
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
         if db:
-            self.__tableCombo.currentIndexChanged.disconnect(self.__tableComboChanged)
+            Signal.safelyDisconnect(self.__tableCombo.currentIndexChanged, self.__tableComboChanged)
             self.__resetCombo(self.__tableCombo)
             self.__tableCombo.addItem("")
             self.__tables = []
