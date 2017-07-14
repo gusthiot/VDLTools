@@ -24,7 +24,7 @@ from __future__ import division
 from PyQt4.QtCore import QCoreApplication
 from .multiselect_tool import MultiselectTool
 from ..ui.multi_confirm_dialog import MultiConfirmDialog
-from qgis.core import (QGis,
+from qgis.core import (QgsProject,
                        QgsMapLayer)
 
 
@@ -78,10 +78,11 @@ class MultiAttributesTool(MultiselectTool):
         When the Yes button in Multi Confirm Dialog is pushed
         """
         self.__confDlg.accept()
+        disabled = QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
         for layer in self.__iface.mapCanvas().layers():
             # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
-                if layer.selectedFeatureCount() > 0:
+                if layer.selectedFeatureCount() > 0 and layer.id() not in disabled:
                     ids = "("
                     c = False
                     for f in layer.selectedFeatures():
