@@ -83,7 +83,7 @@ class ProfileTool(QgsMapTool):
         self.__endVertex = None
         self.__rubberSit = None
         self.__rubberDif = None
-        self.__ownSettings = None
+        self.ownSettings = None
         self.__usedMnts = None
 
     def setTool(self):
@@ -165,21 +165,14 @@ class ProfileTool(QgsMapTool):
             self.__dockWdg.close()
         self.__lineLayer = None
 
-    def setOwnSettings(self, settings):
-        """
-        To set the settings
-        :param settings: income settings
-        """
-        self.__ownSettings = settings
-
     def __setLayerDialog(self):
         """
         To create a Profile Layers Dialog
         """
         otherLayers = self.__lineVertices(True)
         with_mnt = True
-        if self.__ownSettings is None or self.__ownSettings.mntUrl() is None \
-                or self.__ownSettings.mntUrl() == "":
+        if self.ownSettings is None or self.ownSettings.mntUrl is None \
+                or self.ownSettings.mntUrl == "":
             with_mnt = False
         if not with_mnt and len(otherLayers) == 0:
             self.__layers = []
@@ -846,7 +839,7 @@ class ProfileTool(QgsMapTool):
         if len(self.__points) == 0:
             return
         self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
-        self.__dockWdg.attachCurves(names, self.__ownSettings, self.__usedMnts)
+        self.__dockWdg.attachCurves(names, self.ownSettings, self.__usedMnts)
 
         situations = []
         differences = []

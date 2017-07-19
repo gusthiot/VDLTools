@@ -26,7 +26,7 @@ from future.builtins import object
 from PyQt4.QtCore import QPoint
 from qgis.core import (QgsPoint,
                        QGis,
-                       QgsVectorLayer,
+                       QgsMapLayer,
                        QgsTolerance,
                        QgsPointLocator,
                        QgsProject,
@@ -198,7 +198,7 @@ class Finder(object):
         """
         snap_layers = []
         for layer in mapCanvas.layers():
-            if isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
+            if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in types:
                 snap_util = mapCanvas.snappingUtils()
                 mode = snap_util.snapToMapMode()
                 if mode == QgsSnappingUtils.SnapCurrentLayer and layer.id() != mapCanvas.currentLayer().id():
@@ -209,7 +209,7 @@ class Finder(object):
                 else:
                     noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
                         QgsProject.instance().snapSettingsForLayer(layer.id())
-                    if isinstance(layer, QgsVectorLayer) and enabled:
+                    if layer.type() == QgsMapLayer.VectorLayer and enabled:
                         if snapType is None:
                             if snappingType == QgsSnapper.SnapToVertex:
                                 snap_type = QgsPointLocator.Vertex

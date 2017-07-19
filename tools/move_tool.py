@@ -37,7 +37,7 @@ from qgis.core import (QgsPointV2,
                        QgsCurvePolygonV2,
                        QGis,
                        QgsGeometry,
-                       QgsVectorLayer)
+                       QgsMapLayer)
 from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsRubberBand,
                       QgsMessageBar)
@@ -164,7 +164,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and isinstance(layer, QgsVectorLayer):
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
             if layer == self.__layer:
                 return
 

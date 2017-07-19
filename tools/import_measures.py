@@ -47,7 +47,7 @@ class ImportMeasures(object):
         self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/import_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Import Measures")
-        self.__ownSettings = None
+        self.ownSettings = None
         self.__configTable = None
         self.__schemaDb = None
         self.__db = None
@@ -61,37 +61,30 @@ class ImportMeasures(object):
         self.__sourceTable = ""
         self.__selectedFeatures = None
 
-    def setOwnSettings(self, settings):
-        """
-        To set the settings
-        :param settings: income settings
-        """
-        self.__ownSettings = settings
-
     def start(self):
         """
         To start the importation
         """
-        if self.__ownSettings is None:
+        if self.ownSettings is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
-        if self.__ownSettings.uriDb() is None:
+        if self.ownSettings.uriDb is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import db given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
-        if self.__ownSettings.schemaDb() is None:
+        if self.ownSettings.schemaDb is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No db schema given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
-        if self.__ownSettings.configTable() is None:
+        if self.ownSettings.configTable is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No config table given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
-        self.__configTable = self.__ownSettings.configTable()
-        self.__schemaDb = self.__ownSettings.schemaDb()
+        self.__configTable = self.ownSettings.configTable
+        self.__schemaDb = self.ownSettings.schemaDb
 
-        self.__connector = DBConnector(self.__ownSettings.uriDb(), self.__iface)
+        self.__connector = DBConnector(self.ownSettings.uriDb, self.__iface)
         self.__db = self.__connector.setConnection()
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +

@@ -166,11 +166,11 @@ class VDLTools(object):
         self.moveTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
 
-        self.intersectTool.setOwnSettings(self.showSettings)
-        self.importMeasures.setOwnSettings(self.showSettings)
-        self.profileTool.setOwnSettings(self.showSettings)
-        self.subProfileTool.setOwnSettings(self.showSettings)
-        self.controlTool.setOwnSettings(self.showSettings)
+        self.intersectTool.ownSettings = self.showSettings
+        self.importMeasures.ownSettings = self.showSettings
+        self.profileTool.ownSettings = self.showSettings
+        self.subProfileTool.ownSettings = self.showSettings
+        self.controlTool.ownSettings = self.showSettings
 
     def unload(self):
         """

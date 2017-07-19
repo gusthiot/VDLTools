@@ -58,7 +58,7 @@ class MultiselectTool(AreaTool):
         for s in styles:
             print (s.key(), s.value())
         for layer in self.canvas().layers():
-            print(layer.id(), styles)
+            #print(layer.id(), styles.get(layer.id()))
             if not self.identified or layer.id() not in self.disabled:
                 # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
                 if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:

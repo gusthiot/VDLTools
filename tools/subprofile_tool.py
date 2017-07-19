@@ -52,7 +52,7 @@ class SubProfileTool(QgsMapTool):
         self.__dockWdg = None
         self.__rubberLine = None
         self.__rubberDots = None
-        self.__ownSettings = None
+        self.ownSettings = None
         self.__line = None
         self.__startVertex = None
 
@@ -105,13 +105,6 @@ class SubProfileTool(QgsMapTool):
         self.__rubberDots = None
         self.__line = None
         self.__startVertex = None
-
-    def setOwnSettings(self, settings):
-        """
-        To set the settings
-        :param settings: income settings
-        """
-        self.__ownSettings = settings
 
     def keyReleaseEvent(self, event):
         """
@@ -168,4 +161,4 @@ class SubProfileTool(QgsMapTool):
         for i in range(self.__line.numPoints()):
             points.append({'x': self.__line.pointN(i).x(), 'y': self.__line.pointN(i).y()})
         self.__dockWdg.setProfiles(points, 0)
-        self.__dockWdg.attachCurves(None, self.__ownSettings, [1, 1, 1])
+        self.__dockWdg.attachCurves(None, self.ownSettings, [1, 1, 1])

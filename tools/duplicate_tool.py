@@ -42,7 +42,7 @@ from qgis.core import (QgsPointV2,
                        QGis,
                        QgsGeometry,
                        QgsFeature,
-                       QgsVectorLayer)
+                       QgsMapLayer)
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand,
                       QgsMessageBar)
@@ -146,7 +146,7 @@ class DuplicateTool(QgsMapTool):
         :param layer: selected layer
         """
         types = [QGis.Line, QGis.Polygon]
-        if layer is not None and isinstance(layer, QgsVectorLayer) and layer.geometryType() in types:
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in types:
             if layer == self.__layer:
                 return
 

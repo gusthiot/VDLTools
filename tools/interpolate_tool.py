@@ -32,7 +32,7 @@ from qgis.core import (QGis,
                        QgsSnappingUtils,
                        QgsTolerance,
                        QgsPointLocator,
-                       QgsVectorLayer,
+                       QgsMapLayer,
                        QgsFeature,
                        QgsGeometry,
                        QgsPointV2,
@@ -161,7 +161,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and isinstance(layer, QgsVectorLayer) and layer.geometryType() == QGis.Point:
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() == QGis.Point:
             if layer == self.__layer:
                 return
 
@@ -191,7 +191,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         """
         self.__layerList = []
         for layer in self.canvas().layers():
-            if isinstance(layer, QgsVectorLayer) and layer.hasGeometryType() \
+            if layer.type() == QgsMapLayer.VectorLayer and layer.hasGeometryType() \
                     and layer.geometryType() == QGis.Line:
                         self.__layerList.append(QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, 10,
                                                                              QgsTolerance.Pixels))

@@ -30,7 +30,7 @@ from qgis.core import (QGis,
                        QgsPointLocator,
                        QgsSnappingUtils,
                        QgsTolerance,
-                       QgsVectorLayer,
+                       QgsMapLayer,
                        QgsGeometry,
                        QgsWKBTypes)
 from PyQt4.QtCore import (Qt,
@@ -142,7 +142,7 @@ class ExtrapolateTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and isinstance(layer, QgsVectorLayer)\
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer\
                 and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
             if layer == self.__layer:
                 return

@@ -43,24 +43,16 @@ class ControlTool(AreaTool):
         :param iface: interface
         """
         AreaTool.__init__(self, iface)
-        self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/control_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Make control requests on selected area")
         self.releasedSignal.connect(self.__released)
         self.__chooseDlg = None
         self.__db = None
-        self.__ownSettings = None
+        self.ownSettings = None
         self.__requests = {
             "nom1": self.__request1
         }
         self.__crs = None
-
-    def setOwnSettings(self, settings):
-        """
-        To set the settings
-        :param settings: income settings
-        """
-        self.__ownSettings = settings
 
     def toolName(self):
         """
@@ -79,11 +71,11 @@ class ControlTool(AreaTool):
         """
         When selection is complete
         """
-        if self.__ownSettings is None:
+        if self.ownSettings is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
-        if self.__ownSettings.ctlDb() is None:
+        if self.ownSettings.ctlDb is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control db given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
@@ -105,7 +97,7 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg.accept()
 
-        self.__connector = DBConnector(self.__ownSettings.ctlDb(), self.__iface)
+        self.__connector = DBConnector(self.ownSettings.ctlDb, self.__iface)
         self.__db = self.__connector.setConnection()
 
         if self.__db is not None:
@@ -117,7 +109,7 @@ class ControlTool(AreaTool):
         """
         Request which can be choosed for control
         """
-        self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
+        self.__crs = self.canvas().mapSettings().destinationCrs().postgisSrid()
         layer_name = "request1"
         fNames = ["id", "fk_status"]
         select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""

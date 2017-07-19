@@ -38,7 +38,6 @@ class MultiAttributesTool(MultiselectTool):
         :param iface: interface
         """
         MultiselectTool.__init__(self, iface, True)
-        self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/select_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Select features on multiple layers")
         self.selectedSignal.connect(self.__selected)

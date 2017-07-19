@@ -66,12 +66,26 @@ class ShowSettings(object):
         """
         Get saved settings on load
         """
+
+        """ Url used to get mnt values on a line """
         self.__mntUrl = QgsProject.instance().readEntry("VDLTools", "mnt_url", "None")[0]
+
+        """ Config table in Database for importing new Lausanne data """
         self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
+
+        """ Database used for importing new Lausanne data """
         dbName = QgsProject.instance().readEntry("VDLTools", "db_name", None)[0]
+
+        """ Table in Database containing control values for importing new Lausanne data """
         ctlDbName = QgsProject.instance().readEntry("VDLTools", "ctl_db_name", None)[0]
+
+        """ Schema of the Database used for importing new Lausanne data """
         self.__schemaDb = QgsProject.instance().readEntry("VDLTools", "schema_db", None)[0]
+
+        """ Temporarly points layer for the project """
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
+
+        """ Temporarly lines layer for the project """
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
         if mpl_id != -1 or mll_id != -1:
             for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
@@ -107,13 +121,13 @@ class ShowSettings(object):
         When the Ok button in Show Settings Dialog is pushed
         """
         self.__showDlg.accept()
-        self.setLinesLayer(self.__showDlg.linesLayer())
-        self.setPointsLayer(self.__showDlg.pointsLayer())
-        self.setConfigTable(self.__showDlg.configTable())
-        self.setUriDb(self.__showDlg.uriDb())
-        self.setCtlDb(self.__showDlg.ctlDb())
-        self.setSchemaDb(self.__showDlg.schemaDb())
-        self.setMntUrl(self.__showDlg.mntUrl())
+        self.linesLayer = self.__showDlg.linesLayer()
+        self.pointsLayer = self.__showDlg.pointsLayer()
+        self.configTable = self.__showDlg.configTable()
+        self.uriDb = self.__showDlg.uriDb()
+        self.ctlDb = self.__showDlg.ctlDb()
+        self.schemaDb = self.__showDlg.schemaDb()
+        self.mntUrl = self.__showDlg.mntUrl()
 
     def __onCancel(self):
         """
@@ -135,6 +149,7 @@ class ShowSettings(object):
         self.__memoryPointsLayer = None
         QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", None)
 
+    @property
     def pointsLayer(self):
         """
         To get the saved memory points layer
@@ -142,6 +157,7 @@ class ShowSettings(object):
         """
         return self.__memoryPointsLayer
 
+    @property
     def linesLayer(self):
         """
         To get the saved memory lines layer
@@ -149,6 +165,7 @@ class ShowSettings(object):
         """
         return self.__memoryLinesLayer
 
+    @property
     def configTable(self):
         """
         To get the saved config table (for import tool)
@@ -156,6 +173,7 @@ class ShowSettings(object):
         """
         return self.__configTable
 
+    @property
     def mntUrl(self):
         """
         To get the saved mnt url
@@ -163,6 +181,7 @@ class ShowSettings(object):
         """
         return self.__mntUrl
 
+    @property
     def uriDb(self):
         """
         To get the saved uri import database
@@ -170,6 +189,7 @@ class ShowSettings(object):
         """
         return self.__uriDb
 
+    @property
     def ctlDb(self):
         """
         To get the saved uri control database
@@ -177,6 +197,7 @@ class ShowSettings(object):
         """
         return self.__ctlDb
 
+    @property
     def schemaDb(self):
         """
         To get the saved schema import database
@@ -184,7 +205,8 @@ class ShowSettings(object):
         """
         return self.__schemaDb
 
-    def setPointsLayer(self, pointsLayer):
+    @pointsLayer.setter
+    def pointsLayer(self, pointsLayer):
         """
         To set the saved memory points layer
         :param pointsLayer: memory points layer to save
@@ -196,7 +218,8 @@ class ShowSettings(object):
             self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", layer_id)
 
-    def setLinesLayer(self, linesLayer):
+    @linesLayer.setter
+    def linesLayer(self, linesLayer):
         """
         To set the saved memory lines layer, but first check layer fields
         :param linesLayer: memory lines layer to save
@@ -263,7 +286,8 @@ class ShowSettings(object):
         QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", layer_id)
         self.__cancel()
 
-    def setConfigTable(self, configTable):
+    @configTable.setter
+    def configTable(self, configTable):
         """
         To set the saved config table
         :param configTable: config table to save
@@ -272,7 +296,8 @@ class ShowSettings(object):
         if configTable is not None:
             QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
 
-    def setMntUrl(self, mntUrl):
+    @mntUrl.setter
+    def mntUrl(self, mntUrl):
         """
         To set the saved mnt url
         :param mntUrl: saved mnt url
@@ -281,7 +306,8 @@ class ShowSettings(object):
         if mntUrl is not None:
             QgsProject.instance().writeEntry("VDLTools", "mnt_url", mntUrl)
 
-    def setUriDb(self, uriDb):
+    @uriDb.setter
+    def uriDb(self, uriDb):
         """
         To set the saved uri import database
         :param uriDb: saved uri import database
@@ -290,7 +316,8 @@ class ShowSettings(object):
         if uriDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
 
-    def setCtlDb(self, ctlDb):
+    @ctlDb.setter
+    def ctlDb(self, ctlDb):
         """
         To set the saved uri control database
         :param ctlDb: saved uri control database
@@ -299,7 +326,8 @@ class ShowSettings(object):
         if ctlDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "ctl_db_name", ctlDb.database())
 
-    def setSchemaDb(self, schemaDb):
+    @schemaDb.setter
+    def schemaDb(self, schemaDb):
         """
         To set the saved schema import database
         :param schemaDb: saved schema import database
