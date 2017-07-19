@@ -24,8 +24,7 @@ from __future__ import division
 from PyQt4.QtCore import QCoreApplication
 from .multiselect_tool import MultiselectTool
 from ..ui.multi_confirm_dialog import MultiConfirmDialog
-from qgis.core import (QgsProject,
-                       QgsMapLayer)
+from qgis.core import QgsMapLayer
 
 
 class MultiAttributesTool(MultiselectTool):
@@ -38,7 +37,7 @@ class MultiAttributesTool(MultiselectTool):
         Constructor
         :param iface: interface
         """
-        MultiselectTool.__init__(self, iface)
+        MultiselectTool.__init__(self, iface, True)
         self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/select_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Select features on multiple layers")
@@ -78,11 +77,10 @@ class MultiAttributesTool(MultiselectTool):
         When the Yes button in Multi Confirm Dialog is pushed
         """
         self.__confDlg.accept()
-        disabled = QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
-        for layer in self.__iface.mapCanvas().layers():
+        for layer in self.canvas().layers():
             # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
-                if layer.selectedFeatureCount() > 0 and layer.id() not in disabled:
+                if layer.selectedFeatureCount() > 0 and layer.id() not in self.disabled:
                     ids = "("
                     c = False
                     for f in layer.selectedFeatures():

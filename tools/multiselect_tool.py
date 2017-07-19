@@ -23,7 +23,7 @@
 from __future__ import division
 from PyQt4.QtCore import pyqtSignal
 from qgis.core import (QGis,
-                       QgsWKBTypes,
+                       QgsProject,
                        QgsRectangle,
                        QgsMapLayer)
 from area_tool import AreaTool
@@ -36,7 +36,7 @@ class MultiselectTool(AreaTool):
 
     selectedSignal = pyqtSignal()
 
-    def __init__(self, iface):
+    def __init__(self, iface, identified=False):
         """
         Constructor
         :param iface: interface
@@ -46,6 +46,8 @@ class MultiselectTool(AreaTool):
         #               QgsWKBTypes.CompoundCurveZ, QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
         self.types = [QGis.Point, QGis.Line, QGis.Polygon]
         self.releasedSignal.connect(self.__select)
+        self.identified = identified
+        disabled = QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
 
     def __select(self):
         """
@@ -53,7 +55,8 @@ class MultiselectTool(AreaTool):
         """
         searchRect = QgsRectangle(self.first, self.last)
         for layer in self.canvas().layers():
-            # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
-            if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
-                layer.select(searchRect, False)
+            if not self.identified or layer.id() not in self.disabled:
+                # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
+                if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
+                    layer.select(searchRect, False)
         self.selectedSignal.emit()
