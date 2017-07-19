@@ -241,13 +241,13 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
                     else:
-                        intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self,
+                        intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                       self.__selectedFeature.id())
                         if intersection is not None:
                             self.__rubber.setIcon(1)
                             self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self,
+                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                   self.__selectedFeature.id())
                     if intersection is not None:
                         self.__rubber.setIcon(1)
@@ -289,13 +289,13 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                             and match.layer().id() == self.__lastLayer.id():
                         ok = True
                     else:
-                        intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self,
+                        intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                       self.__selectedFeature.id())
                         if intersection is not None:
                             point = intersection
                             ok = True
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self,
+                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                   self.__selectedFeature.id())
                     if intersection is not None:
                         point = intersection

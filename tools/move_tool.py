@@ -377,23 +377,21 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             self.__rubberSnap.setWidth(2)
             self.__rubberSnap.setIconSize(20)
             match = Finder.snap(map_point, self.canvas())
-            if match.hasVertex():
-                if match.layer() is not None:
-                    self.__rubberSnap.setIcon(4)
-                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
-                else:
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
+            if match.hasVertex() or match.hasEdge():
+                point = match.point()
+                if match.hasVertex():
+                    if match.layer():
+                        self.__rubberSnap.setIcon(4)
+                    else:
+                        self.__rubberSnap.setIcon(1)
+                if match.hasEdge():
+                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self)
                     if intersection is not None:
                         self.__rubberSnap.setIcon(1)
-                        self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
-            if match.hasEdge():
-                intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
-                if intersection is not None:
-                    self.__rubberSnap.setIcon(1)
-                    self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(intersection), None)
-                # elif self.__selectedFeature.id() == match.featureId():
-                self.__rubberSnap.setIcon(3)
-                self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(match.point()), None)
+                        point = intersection
+                    else:
+                        self.__rubberSnap.setIcon(3)
+                self.__rubberSnap.setToGeometry(QgsGeometry().fromPoint(point), None)
 
     def cadCanvasReleaseEvent(self, event):
         """
@@ -431,15 +429,9 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             match = Finder.snap(event.mapPoint(), self.canvas())
             if match.hasVertex() or match.hasEdge():
                 mapPoint = match.point()
-                if match.hasVertex():
-                    if match.layer() is None:
-                        intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
-                        if intersection is not None:
-                            mapPoint = intersection
-                if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
-                    if intersection is not None:
-                        mapPoint = intersection
+                intersection = Finder.snapCurvedIntersections(mapPoint, self.canvas(), self)
+                if intersection is not None:
+                    mapPoint = intersection
             self.__isEditing = True
             if self.__rubberBand is not None:
                 self.__rubberBand.reset()

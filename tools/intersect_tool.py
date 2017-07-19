@@ -181,7 +181,7 @@ class IntersectTool(QgsMapTool):
                     else:
                         self.__rubber.setIcon(1)
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
+                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self)
                     if intersection is not None:
                         self.__rubber.setIcon(1)
                         point = intersection
