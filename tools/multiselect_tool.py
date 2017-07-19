@@ -47,14 +47,18 @@ class MultiselectTool(AreaTool):
         self.types = [QGis.Point, QGis.Line, QGis.Polygon]
         self.releasedSignal.connect(self.__select)
         self.identified = identified
-        disabled = QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
+        self.disabled = QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
 
     def __select(self):
         """
         To select objects in multiples layers inside a selection rectangle
         """
         searchRect = QgsRectangle(self.first, self.last)
+        styles = self.canvas().layerStyleOverrides()
+        for s in styles:
+            print (s.key(), s.value())
         for layer in self.canvas().layers():
+            print(layer.id(), styles)
             if not self.identified or layer.id() not in self.disabled:
                 # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
                 if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
