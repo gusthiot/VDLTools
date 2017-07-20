@@ -43,6 +43,7 @@ class ControlTool(AreaTool):
         :param iface: interface
         """
         AreaTool.__init__(self, iface)
+        self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/control_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Make control requests on selected area")
         self.releasedSignal.connect(self.__released)
@@ -114,10 +115,10 @@ class ControlTool(AreaTool):
         fNames = ["id", "fk_status"]
         select_part = """SELECT GeometryType(geometry3d), ST_AsText(geometry3d)"""
         for f in fNames:
-            select_part += """, """ + f + """, pg_typeof(""" + f + """)"""
+            select_part += """, %s, pg_typeof(%s)""" % (f, f)
         from_part = """ FROM qwat_od.pipe """
-        where_part = """WHERE ST_Intersects(geometry3d,ST_GeomFromText('""" + self.geom().exportToWkt() + """',
-                        """ + str(self.__crs) + """))"""
+        where_part = """WHERE ST_Intersects(geometry3d,ST_GeomFromText('%s',%s))""" \
+                     % (self.geom().exportToWkt(), str(self.__crs))
         request = select_part + from_part + where_part
         print(request)
         self.__querying(request, layer_name, fNames)

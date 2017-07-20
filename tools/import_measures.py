@@ -87,8 +87,8 @@ class ImportMeasures(object):
         self.__connector = DBConnector(self.ownSettings.uriDb, self.__iface)
         self.__db = self.__connector.setConnection()
         if self.__db is not None:
-            query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM """ + self.__schemaDb + """.""" +
-                                    self.__configTable + """ WHERE sourcelayer_name IS NOT NULL""")
+            query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM %s.%s WHERE sourcelayer_name IS NOT NULL"""
+                                    % (self.__schemaDb, self.__configTable))
             if query.lastError().isValid():
                 self.__iface.messageBar().pushMessage(
                     query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -112,8 +112,8 @@ class ImportMeasures(object):
                             break
 
                 #  select jobs
-                query = self.__db.exec_("""SELECT DISTINCT usr_session_name FROM """ + self.__sourceTable + """ WHERE
-                    usr_valid = FALSE AND usr_session_name IS NOT NULL""")
+                query = self.__db.exec_(("""SELECT DISTINCT usr_session_name FROM %s WHERE """ % self.__sourceTable) +
+                                        """usr_valid = FALSE AND usr_session_name IS NOT NULL""")
                 if query.lastError().isValid():
                     self.__iface.messageBar().pushMessage(
                         query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -156,8 +156,7 @@ class ImportMeasures(object):
         self.__jobsDlg.accept()
 
         codes = []
-        query = self.__db.exec_("""SELECT DISTINCT code FROM """ + self.__schemaDb + """.""" +
-                                self.__configTable)
+        query = self.__db.exec_("""SELECT DISTINCT code FROM %s.%s""" % (self.__schemaDb, self.__configTable))
         if query.lastError().isValid():
             self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
             self.__cancel()
@@ -187,8 +186,8 @@ class ImportMeasures(object):
                         ids += ","
                     ids += "'" + str(selected) + "'"
                 condition = """id IN (""" + ids + """)"""
-            query = self.__db.exec_("""SELECT code,usr_fk_table,geometry,id,usr_session_name FROM """ +
-                                    self.__sourceTable + """ WHERE """ + condition + """ AND usr_valid = FALSE""")
+            query = self.__db.exec_("""SELECT code,usr_fk_table,geometry,id,usr_session_name FROM %s WHERE %s AND 
+                usr_valid = FALSE""" % (self.__sourceTable, condition))
             if query.lastError().isValid():
                 self.__iface.messageBar().pushMessage(
                     query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -200,8 +199,8 @@ class ImportMeasures(object):
                         data = {'code': code, 'id_table': query.value(1), 'geom': query.value(2),
                                 'id_survey': query.value(3), 'job': query.value(4)}
                         # select schema and id for insertion table
-                        query2 = self.__db.exec_(
-                            """SELECT schema, name FROM qwat_sys.doctables WHERE id = """ + str(data['id_table']))
+                        query2 = self.__db.exec_("""SELECT schema, name FROM qwat_sys.doctables WHERE id = %s"""
+                                                 % str(data['id_table']))
                         if query2.lastError().isValid():
                             self.__iface.messageBar().pushMessage(
                                 query2.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -225,8 +224,8 @@ class ImportMeasures(object):
 
             # check if already in table
             query = self.__db.exec_(
-                """SELECT ST_AsText(geometry3d) FROM """ + data['schema_table'] + """.""" + data['name_table'] +
-                """ WHERE st_dwithin('""" + data['geom'] + """', geometry3d, 0.03)""")
+                """SELECT ST_AsText(geometry3d) FROM %s.%s WHERE st_dwithin('%s', geometry3d, 0.03)"""
+                % (data['schema_table'], data['name_table'],data['geom']))
             if query.lastError().isValid():
                 self.__iface.messageBar().pushMessage(
                     query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -295,16 +294,15 @@ class ImportMeasures(object):
         for data in self.__data:
             if data['add']:
                 destLayer = ""
-                request = """INSERT INTO """ + data['schema_table'] + """.""" + data['name_table']
+                request = """INSERT INTO %s.%s""" % (data['schema_table'], data['name_table'])
                 columns = "(id,geometry3d"
-                values = "(nextval('" + data['schema_table'] + """.""" + data['name_table'] + \
-                         "_id_seq'::regclass),'" + data['geom'] + "'"
+                values = """(nextval('%s.%s_id_seq'::regclass),'%s'""" \
+                         % (data['schema_table'], data['name_table'], data['geom'])
 
                 #  select import data for insertion
-                query = self.__db.exec_(
-                    """SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
-                    self.__schemaDb + """.""" + self.__configTable + """ WHERE code = '""" + str(data['code']) +
-                    """' AND static_value IS NOT NULL""")
+                query = self.__db.exec_("""SELECT destinationlayer_name,destinationcolumn_name,static_value FROM """ +
+                                        """"%s.%s WHERE code = '%s' AND static_value IS NOT NULL"""
+                                        % (self.__schemaDb, self.__configTable, str(data['code'])))
                 if query.lastError().isValid():
                     self.__iface.messageBar().pushMessage(
                         query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
@@ -321,7 +319,7 @@ class ImportMeasures(object):
                         values += "," + query.value(2)
                     columns += ")"
                     values += ")"
-                    request += " " + columns + """ VALUES """ + values + """ RETURNING id"""
+                    request += """ %s VALUES %s RETURNING id""" % (columns, values)
                     #  insert data
                     query2 = self.__db.exec_(request)
                     if query2.lastError().isValid():
@@ -332,12 +330,11 @@ class ImportMeasures(object):
                         query2.first()
                         id_object = query2.value(0)
                         # update source table
-                        query3 = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
-                                                 str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
-                                                 """, usr_fk_network_element = """ + str(id_object) +
-                                                 """, usr_fk_table = """ + str(data['id_table']) +
-                                                 """, usr_import_user = '""" + self.__db.userName() +
-                                                 """' WHERE id = """ + str(data['id_survey']))
+                        query3 = self.__db.exec_(
+                            ("""UPDATE %s SET usr_valid_date = '%s', usr_valid = TRUE, usr_fk_network_element = %s,"""
+                             % (self.__sourceTable, str(datetime.date(datetime.now())), str(id_object))) +
+                            (""" usr_fk_table = %s, usr_import_user = '%s' WHERE id = %s"""
+                            % (str(data['id_table']), self.__db.userName(), str(data['id_survey']))))
                         if query3.lastError().isValid():
                             self.__iface.messageBar().pushMessage(query3.lastError().text(),
                                                                   level=QgsMessageBar.CRITICAL, duration=0)
@@ -393,10 +390,9 @@ class ImportMeasures(object):
         """
         To update data in source table and conclude
         """
-        query = self.__db.exec_("""UPDATE """ + self.__sourceTable + """ SET usr_valid_date = '""" +
-                                str(datetime.date(datetime.now())) + """', usr_valid = TRUE""" +
-                                """, usr_import_user = '""" + self.__db.userName() +
-                                """' WHERE id IN (""" + self.__ids() + """)""")
+        query = self.__db.exec_(
+            """UPDATE %s SET usr_valid_date = '%s', usr_valid = TRUE, usr_import_user = '%s' WHERE id IN (%s)"""
+            % (self.__sourceTable, str(datetime.date(datetime.now())), self.__db.userName(), self.__ids()))
         if query.lastError().isValid():
             self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
         self.__conclude()
@@ -405,8 +401,7 @@ class ImportMeasures(object):
         """
         To delete data in source table and conclude
         """
-        query = self.__db.exec_("""DELETE FROM """ + self.__sourceTable +
-                                """ WHERE id IN (""" + self.__ids() + """)""")
+        query = self.__db.exec_("""DELETE FROM %s WHERE id IN (%s)""" % (self.__sourceTable, self.__ids()))
         if query.lastError().isValid():
             self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
         self.__conclude()

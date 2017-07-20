@@ -45,7 +45,6 @@ class AreaTool(QgsMapTool):
         :param iface: interface
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
-        self.__iface = iface
         self.__clear()
 
 
