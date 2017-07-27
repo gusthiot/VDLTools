@@ -290,12 +290,12 @@ class ProfileDockWidget(QDockWidget):
         To get the MN data for the profile
         :param settings: settings containing MN url
         """
-        if settings is None or settings.mntUrl() is None or settings.mntUrl() == "None":
+        if settings is None or settings.mntUrl is None or settings.mntUrl == "None":
             url = 'http://map.lausanne.ch/main/wsgi/profile.json'
-        elif settings.mntUrl() == "":
+        elif settings.mntUrl == "":
             return
         else:
-            url = settings.mntUrl()
+            url = settings.mntUrl
         names = ['mnt', 'mns', 'toit_rocher']
         url += '?layers='
         pos = 0

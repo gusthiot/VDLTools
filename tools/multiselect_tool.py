@@ -43,7 +43,6 @@ class MultiselectTool(AreaTool):
         :param iface: interface
         """
         AreaTool.__init__(self, iface)
-        self.__iface = iface
         # self.types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ,
         #               QgsWKBTypes.CompoundCurveZ, QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
         self.types = [QGis.Point, QGis.Line, QGis.Polygon]
