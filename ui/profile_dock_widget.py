@@ -304,7 +304,7 @@ class ProfileDockWidget(QDockWidget):
                 url += ','
             pos += 1
             url += name
-        url += '&geom={"type":"LineString", "coordinates":['
+        url += '&geom={"type":"LineString","coordinates":['
         pos = 0
         for i in range(len(self.__profiles)):
             if pos > 0:
@@ -328,7 +328,10 @@ class ProfileDockWidget(QDockWidget):
                 mnt_l.append(float(pt['dist']))
                 values = pt['values']
                 for p in range(len(names)):
-                    mnt_z[p].append(float(values[names[p]]))
+                    if names[p] in values:
+                        mnt_z[p].append(float(values[names[p]]))
+                    else:
+                        mnt_z[p].append(None)
             self.__mntPoints.append(mnt_l)
             self.__mntPoints.append(mnt_z)
         except HTTPError as e:
