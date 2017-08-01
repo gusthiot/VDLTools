@@ -22,6 +22,8 @@
 """
 
 from PyQt4.QtGui import (QDialog,
+                         QWidget,
+                         QScrollArea,
                          QGridLayout,
                          QPushButton,
                          QLabel,
@@ -45,7 +47,6 @@ class ImportJobsDialog(QDialog):
         self.__jobs = jobs
         self.__selected = selected
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "What to process"))
-        self.resize(300, 100)
         self.__layout = QGridLayout()
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
@@ -70,16 +71,27 @@ class ImportJobsDialog(QDialog):
         self.__jobsLabels = []
         self.__jobsChecks = []
 
+        self.__scrollLayout = QGridLayout()
+
         for i in range(len(self.__jobs)):
             label = QLabel(self.__jobs[i])
             label.setMinimumHeight(20)
             label.setMinimumWidth(50)
             self.__jobsLabels.append(label)
-            self.__layout.addWidget(self.__jobsLabels[i], i+1, 1)
+            self.__scrollLayout.addWidget(self.__jobsLabels[i], i+1, 1)
             check = QCheckBox()
             check.setChecked(False)
             self.__jobsChecks.append(check)
-            self.__layout.addWidget(self.__jobsChecks[i], i+1, 2)
+            self.__scrollLayout.addWidget(self.__jobsChecks[i], i+1, 2)
+
+        widget = QWidget()
+        widget.setLayout(self.__scrollLayout)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        self.__layout.addWidget(scroll, 1, 0, 1, 2)
 
         self.__pointsButton = None
         if self.__selected:

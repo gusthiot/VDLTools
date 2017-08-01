@@ -24,6 +24,8 @@ from future.builtins import str
 from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
+                         QWidget,
+                         QScrollArea,
                          QGridLayout,
                          QPushButton,
                          QLabel,
@@ -42,13 +44,14 @@ class ProfileZerosDialog(QDialog):
         QDialog.__init__(self)
         self.__zeros = zeros
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Zeros"))
-        self.resize(300, 100)
         self.__layout = QGridLayout()
 
         self.__zeroLabels = []
         self.__zeroChecks = []
 
         displayButton = False
+
+        self.__scrollLayout = QGridLayout()
 
         for i in range(len(self.__zeros)):
             msg = "- vertex " + str(self.__zeros[i][0])
@@ -61,7 +64,7 @@ class ProfileZerosDialog(QDialog):
                 msgCheck = QCheckBox()
                 msgCheck.setChecked(True)
                 self.__zeroChecks.append(msgCheck)
-                self.__layout.addWidget(self.__zeroChecks[i], i+1, 2)
+                self.__scrollLayout.addWidget(self.__zeroChecks[i], i+1, 2)
                 displayButton = True
             else:
                 msg += QCoreApplication.translate("VDLTools", "no interpolated elevation")
@@ -69,7 +72,16 @@ class ProfileZerosDialog(QDialog):
 
             zeroLabel = QLabel(msg)
             self.__zeroLabels.append(zeroLabel)
-            self.__layout.addWidget(self.__zeroLabels[i], i+1, 0, 1, 2)
+            self.__scrollLayout.addWidget(self.__zeroLabels[i], i+1, 0, 1, 2)
+
+        widget = QWidget()
+        widget.setLayout(self.__scrollLayout)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        self.__layout.addWidget(scroll, 1, 0, 1, 2)
 
         self.__passButton = QPushButton(QCoreApplication.translate("VDLTools", "Pass"))
         self.__passButton.setMinimumHeight(20)

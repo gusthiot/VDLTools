@@ -22,6 +22,8 @@
 """
 
 from PyQt4.QtGui import (QDialog,
+                         QWidget,
+                         QScrollArea,
                          QButtonGroup,
                          QCheckBox,
                          QGridLayout,
@@ -42,7 +44,6 @@ class ChooseControlDialog(QDialog):
         QDialog.__init__(self)
         self.__names = names
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Choose Controls"))
-        self.resize(300, 100)
         self.__layout = QGridLayout()
 
         self.__confirmLabel = QLabel(
@@ -56,16 +57,27 @@ class ChooseControlDialog(QDialog):
         self.__controlsLabels = []
         self.__controlsChecks = []
 
+        self.__scrollLayout = QGridLayout()
+
         for i in range(len(self.__names)):
             label = QLabel(self.__names[i])
             label.setMinimumHeight(20)
             label.setMinimumWidth(50)
             self.__controlsLabels.append(label)
-            self.__layout.addWidget(self.__controlsLabels[i], i+1, 0)
+            self.__scrollLayout.addWidget(self.__controlsLabels[i], i+1, 0)
             check = QCheckBox()
             check.setChecked(False)
             self.__controlsChecks.append(check)
-            self.__layout.addWidget(self.__controlsChecks[i], i+1, 1)
+            self.__scrollLayout.addWidget(self.__controlsChecks[i], i+1, 1)
+
+        widget = QWidget()
+        widget.setLayout(self.__scrollLayout)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        self.__layout.addWidget(scroll, 1, 0, 1, 2)
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "Ok"))
         self.__okButton.setMinimumHeight(20)

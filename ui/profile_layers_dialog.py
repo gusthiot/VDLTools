@@ -23,6 +23,8 @@
 from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
+                         QWidget,
+                         QScrollArea,
                          QGridLayout,
                          QPushButton,
                          QLabel,
@@ -44,7 +46,6 @@ class ProfileLayersDialog(QDialog):
         self.__pointLayers = pointLayers
         self.__with_mnt = with_mnt
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Add Points Layers Profiles"))
-        self.resize(300, 100)
         self.__layout = QGridLayout()
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
@@ -63,16 +64,18 @@ class ProfileLayersDialog(QDialog):
         self.__layLabels = []
         self.__layChecks = []
 
+        self.__scrollLayout = QGridLayout()
+
         for i in range(len(self.__pointLayers)):
             label = QLabel(self.__pointLayers[i].name() + " :")
             label.setMinimumHeight(20)
             label.setMinimumWidth(50)
             self.__layLabels.append(label)
-            self.__layout.addWidget(self.__layLabels[i], i+1, 1)
+            self.__scrollLayout.addWidget(self.__layLabels[i], i+1, 1)
             check = QCheckBox()
             check.setChecked(True)
             self.__layChecks.append(check)
-            self.__layout.addWidget(self.__layChecks[i], i+1, 2)
+            self.__scrollLayout.addWidget(self.__layChecks[i], i+1, 2)
 
         self.__mntLabels = []
         self.__mntChecks = []
@@ -85,11 +88,20 @@ class ProfileLayersDialog(QDialog):
                 label.setMinimumHeight(20)
                 label.setMinimumWidth(50)
                 self.__mntLabels.append(label)
-                self.__layout.addWidget(self.__mntLabels[i], i+k+1, 1)
+                self.__scrollLayout.addWidget(self.__mntLabels[i], i+k+1, 1)
                 check = QCheckBox()
                 check.setChecked(False)
                 self.__mntChecks.append(check)
-                self.__layout.addWidget(self.__mntChecks[i], i+k+1, 2)
+                self.__scrollLayout.addWidget(self.__mntChecks[i], i+k+1, 2)
+
+        widget = QWidget()
+        widget.setLayout(self.__scrollLayout)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        self.__layout.addWidget(scroll, 1, 0, 1, 4)
 
         self.__layout.addWidget(self.__okButton, 100, 1)
         self.__layout.addWidget(self.__cancelButton, 100, 2)

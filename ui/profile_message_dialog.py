@@ -24,6 +24,8 @@ from future.builtins import str
 from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
+                         QWidget,
+                         QScrollArea,
                          QGridLayout,
                          QPushButton,
                          QLabel,
@@ -51,12 +53,13 @@ class ProfileMessageDialog(QDialog):
         num_lines = len(points[0]['z']) - len(names) + 1
         self.__points = points
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Elevations situations"))
-        self.resize(300, 100)
         self.__layout = QGridLayout()
 
         self.__msgLabels = []
         self.__msgChecks = []
         self.__difLabels = []
+
+        self.__scrollLayout = QGridLayout()
 
         for i in range(len(self.__situations)):
             line = self.__situations[i]
@@ -67,11 +70,11 @@ class ProfileMessageDialog(QDialog):
 
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
-            self.__layout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
+            self.__scrollLayout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
             msgCheck = QCheckBox()
             msgCheck.setChecked(True)
             self.__msgChecks.append(msgCheck)
-            self.__layout.addWidget(self.__msgChecks[i], i+1, 2)
+            self.__scrollLayout.addWidget(self.__msgChecks[i], i+1, 2)
 
         for i in range(len(self.__differences)):
             line = self.__differences[i]
@@ -80,7 +83,17 @@ class ProfileMessageDialog(QDialog):
                   str(line['v1']) + "m and" + str(line['v2']) + "m) \n"
             difLabel = QLabel(msg)
             self.__difLabels.append(difLabel)
-            self.__layout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)
+            self.__scrollLayout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)
+
+
+        widget = QWidget()
+        widget.setLayout(self.__scrollLayout)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setWidget(widget)
+
+        self.__layout.addWidget(scroll, 1, 0, 1, 3)
 
         self.__passButton = QPushButton(QCoreApplication.translate("VDLTools", "Pass"))
         self.__passButton.setMinimumHeight(20)
