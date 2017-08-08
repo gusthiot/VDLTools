@@ -23,7 +23,8 @@
 from __future__ import division
 from PyQt4.QtCore import pyqtSignal
 from qgis.core import (QGis,
-                       QgsVectorLayer,
+                       QgsFeatureRequest,
+                       QgsRenderContext,
                        QgsProject,
                        QgsRectangle,
                        QgsMapLayer)
@@ -59,7 +60,20 @@ class MultiselectTool(AreaTool):
         searchRect = QgsRectangle(self.first, self.last)
         for layer in self.canvas().layers():
             if not self.identified or layer.id() not in self.disabled():
-                # if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in self.types:
                 if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
-                    layer.selectByRect(searchRect, QgsVectorLayer.SetSelection)
+                    renderer = layer.rendererV2()
+                    context = QgsRenderContext()
+                    if renderer:
+                        renderer.startRender(context,layer.pendingFields())
+                        request = QgsFeatureRequest()
+                        request.setFilterRect(searchRect)
+                        request.setFlags(QgsFeatureRequest.ExactIntersect)
+                        fIds = []
+                        for feature in layer.getFeatures(request):
+                            will = renderer.willRenderFeature(feature, context)
+                            if will:
+                                fIds.append(feature.id())
+                        renderer.stopRender(context)
+                        layer.selectByIds(fIds)
+
         self.selectedSignal.emit()
