@@ -429,9 +429,10 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             match = Finder.snap(event.mapPoint(), self.canvas())
             if match.hasVertex() or match.hasEdge():
                 mapPoint = match.point()
-                intersection = Finder.snapCurvedIntersections(mapPoint, self.canvas(), self)
-                if intersection is not None:
-                    mapPoint = intersection
+                if match.hasEdge():
+                    intersection = Finder.snapCurvedIntersections(mapPoint, self.canvas(), self)
+                    if intersection is not None:
+                        mapPoint = intersection
             self.__isEditing = True
             if self.__rubberBand is not None:
                 self.__rubberBand.reset()

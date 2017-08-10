@@ -167,44 +167,62 @@ class Finder(object):
         return tolerance
 
     @staticmethod
-    def intersect(geometry1, geometry2, mousePoint):
+    def intersect(featureId, feature1, feature2, mousePoint):
         """
-        To check if there is an intersection between 2 geometries close to a given point
-        :param geometry1: the first geometry
-        :param geometry2: the second geometry
+        To check if there is an intersection between 2 features close to a given point
+        :param featureId: if we want to snap on a given feature
+        :param feature1: the first feature
+        :param feature2: the second feature
         :param mousePoint: the given point
         :return: the intersection as QgsPoint or none
         """
-        intersection = geometry1.intersection(geometry2)
-        if intersection.type() == 0:
-            intersectionP = intersection.asPoint()
-            #print("point", intersectionP)
-        elif intersection.type() == 1:
-            intersectionPL = intersection.asPolyline()
-            intersectionP = None
-            for point in intersectionPL:
-                if intersectionP is None:
-                    intersectionP = point
-                elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                    intersectionP = QgsPoint(point.x(), point.y())
-            #print("line", intersectionP)
-        elif intersection.type() == 2:
-            intersectionMPL = intersection.asMultiPolyline()
-            intersectionP = None
-            for line in intersectionMPL:
-                for point in line:
-                    if intersectionP is None:
-                        intersectionP = point
-                    elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                        intersectionP = QgsPoint(point.x(), point.y())
-            #print("polygon", intersectionP)
-        else:
-            return None
 
-        if intersectionP and intersectionP != QgsPoint(0, 0):
-            return intersectionP
-        else:
-            return None
+        if featureId is None or feature1.id() == featureId or feature2.id() == featureId:
+            geometry1 = feature1.geometry()
+            geometry2 = feature2.geometry()
+            intersection = geometry1.intersection(geometry2)
+            if intersection.type() == 0:
+                intersectionP = intersection.asPoint()
+                intersectionMP = intersection.asMultiPoint()
+                if intersectionMP is not None and len(intersectionMP) > 0:
+                    for point in intersectionMP:
+                        if intersectionP is None:
+                            intersectionP = point
+                        elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                            intersectionP = QgsPoint(point.x(), point.y())
+            elif intersection.type() == 1:
+                intersectionPL = intersection.asPolyline()
+                intersectionMPL = intersection.asMultiPolyline()
+                intersectionP = None
+                if intersectionMPL is not None and len(intersectionMPL) > 0:
+                    for line in intersectionMPL:
+                        for point in line:
+                            if intersectionP is None:
+                                intersectionP = point
+                            elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                                intersectionP = QgsPoint(point.x(), point.y())
+                else:
+                    for point in intersectionPL:
+                        if intersectionP is None:
+                            intersectionP = point
+                        elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                            intersectionP = QgsPoint(point.x(), point.y())
+            elif intersection.type() == 2:
+                intersectionMPL = intersection.asMultiPolyline()
+                intersectionP = None
+                for line in intersectionMPL:
+                    for point in line:
+                        if intersectionP is None:
+                            intersectionP = point
+                        elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                            intersectionP = QgsPoint(point.x(), point.y())
+            else:
+                return None
+
+            if intersectionP and intersectionP != QgsPoint(0, 0):
+                return intersectionP
+
+        return None
 
     @staticmethod
     def getLayersSettings(mapCanvas, types, snapType=None):
@@ -263,32 +281,16 @@ class Finder(object):
                     for j in range(i, len(features)):
                         feat1 = features[i]
                         feat2 = features[j]
-                        inter = Finder.intersection(featureId, feat1, feat2, mapPoint)
+                        inter = Finder.intersect(featureId, feat1, feat2, mapPoint)
                         if inter:
                             return inter
             else:
                 feat1 = features[0]
                 feat2 = features[1]
-                inter = Finder.intersection(featureId, feat1, feat2, mapPoint)
+                inter = Finder.intersect(featureId, feat1, feat2, mapPoint)
                 if inter:
                     return inter
         return None
-
-    @staticmethod
-    def intersection(featureId, feat1, feat2, mapPoint):
-        if featureId is None or feat1.id() == featureId or feat2.id() == featureId:
-            if feat1.geometry().type() == 2:
-                if feat2.geometry().type() == 2:
-                    print("polygon both")
-                else:
-                    print("polygon 1")
-            elif feat2.geometry().type() == 2:
-                print("polygon 2")
-            geom1 = feat1.geometry()
-            geom2 = feat2.geometry()
-            return Finder.intersect(geom1, geom2, mapPoint)
-        else:
-            return None
 
     @staticmethod
     def snap(mapPoint, mapCanvas, layersConfigs=None, mode=None):

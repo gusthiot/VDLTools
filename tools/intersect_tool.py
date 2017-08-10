@@ -191,9 +191,10 @@ class IntersectTool(QgsMapTool):
         match = Finder.snap(mouseEvent.mapPoint(), self.canvas())
         if match.hasVertex() or match.hasEdge():
             point = match.point()
-            intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
-            if intersection is not None:
-                point = intersection
+            if match.hasEdge():
+                intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
+                if intersection is not None:
+                    point = intersection
             self.__isEditing = True
             self.__setDistanceDialog(point)
 
