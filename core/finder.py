@@ -24,7 +24,7 @@ from future.builtins import range
 from future.builtins import object
 
 from PyQt4.QtCore import QPoint
-from qgis.core import (QgsPoint,
+from qgis.core import (QgsPoint,QgsGeometry,
                        QGis,
                        QgsMapLayer,
                        QgsTolerance,
@@ -124,7 +124,12 @@ class Finder(object):
         request.setFlags(QgsFeatureRequest.ExactIntersect)
         features = []
         for feature in layerConfig.layer.getFeatures(request):
-            features.append(QgsFeature(feature))
+            if layerConfig.layer.geometryType() == QGis.Polygon:
+                dist, nearest, vertex = feature.geometry().closestSegmentWithContext(mapPoint)
+                if QgsGeometry.fromPoint(nearest).intersects(searchRect):
+                    features.append(QgsFeature(feature))
+            else:
+                features.append(QgsFeature(feature))
         return features
 
     @staticmethod
@@ -171,18 +176,32 @@ class Finder(object):
         :return: the intersection as QgsPoint or none
         """
         intersection = geometry1.intersection(geometry2)
-        intersectionMP = intersection.asMultiPoint()
-        intersectionP = intersection.asPoint()
-        if len(intersectionMP) == 0:
-            intersectionMP = intersection.asPolyline()
-        if len(intersectionMP) == 0 and intersectionP == QgsPoint(0, 0):
-            return None
-        if len(intersectionMP) > 1:
-            intersectionP = intersectionMP[0]
-            for point in intersectionMP[1:]:
-                if mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+        if intersection.type() == 0:
+            intersectionP = intersection.asPoint()
+            #print("point", intersectionP)
+        elif intersection.type() == 1:
+            intersectionPL = intersection.asPolyline()
+            intersectionP = None
+            for point in intersectionPL:
+                if intersectionP is None:
+                    intersectionP = point
+                elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                     intersectionP = QgsPoint(point.x(), point.y())
-        if intersectionP != QgsPoint(0, 0):
+            #print("line", intersectionP)
+        elif intersection.type() == 2:
+            intersectionMPL = intersection.asMultiPolyline()
+            intersectionP = None
+            for line in intersectionMPL:
+                for point in line:
+                    if intersectionP is None:
+                        intersectionP = point
+                    elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                        intersectionP = QgsPoint(point.x(), point.y())
+            #print("polygon", intersectionP)
+        else:
+            return None
+
+        if intersectionP and intersectionP != QgsPoint(0, 0):
             return intersectionP
         else:
             return None
@@ -236,7 +255,7 @@ class Finder(object):
         :param featureId: if we want to snap on a given feature
         :return: intersection point
         """
-        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line])
+        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon])
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         if len(features) > 1:
             if len(features) > 2:
@@ -244,18 +263,30 @@ class Finder(object):
                     for j in range(i, len(features)):
                         feat1 = features[i]
                         feat2 = features[j]
-                        if featureId is None or feat1.id() == featureId or feat2.id() == featureId:
-                            intersect = Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
-                            if intersect is not None:
-                                return intersect
-                return None
+                        inter = Finder.intersection(featureId, feat1, feat2, mapPoint)
+                        if inter:
+                            return inter
             else:
                 feat1 = features[0]
                 feat2 = features[1]
-            if featureId is None or feat1.id() == featureId or feat2.id() == featureId:
-                return Finder.intersect(feat1.geometry(), feat2.geometry(), mapPoint)
-            else:
-                return None
+                inter = Finder.intersection(featureId, feat1, feat2, mapPoint)
+                if inter:
+                    return inter
+        return None
+
+    @staticmethod
+    def intersection(featureId, feat1, feat2, mapPoint):
+        if featureId is None or feat1.id() == featureId or feat2.id() == featureId:
+            if feat1.geometry().type() == 2:
+                if feat2.geometry().type() == 2:
+                    print("polygon both")
+                else:
+                    print("polygon 1")
+            elif feat2.geometry().type() == 2:
+                print("polygon 2")
+            geom1 = feat1.geometry()
+            geom2 = feat2.geometry()
+            return Finder.intersect(geom1, geom2, mapPoint)
         else:
             return None
 

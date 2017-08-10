@@ -21,7 +21,9 @@
  ***************************************************************************/
 """
 from __future__ import division
-from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtCore import (pyqtSignal,
+                          QCoreApplication)
+from qgis.gui import QgsMessageBar
 from qgis.core import (QGis,
                        QgsFeatureRequest,
                        QgsRenderContext,
@@ -70,7 +72,16 @@ class MultiselectTool(AreaTool):
                         request.setFlags(QgsFeatureRequest.ExactIntersect)
                         fIds = []
                         for feature in layer.getFeatures(request):
-                            will = renderer.willRenderFeature(feature, context)
+                            try:
+                                will = renderer.willRenderFeature(feature, context)
+                            except:
+                                try:
+                                    will = renderer.willRenderFeature(feature)
+                                except:
+                                    self.__iface.messageBar().pushMessage(
+                                        QCoreApplication.translate("VDLTools", "Error"),
+                                        "will renderer still not working", level=QgsMessageBar.CRITICAL, duration=0)
+                                    return
                             if will:
                                 fIds.append(feature.id())
                         renderer.stopRender(context)
