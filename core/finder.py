@@ -180,6 +180,15 @@ class Finder(object):
         if featureId is None or feature1.id() == featureId or feature2.id() == featureId:
             geometry1 = feature1.geometry()
             geometry2 = feature2.geometry()
+            if geometry1.type() == 2:
+                polygon = geometry1.geometry()
+                newG = polygon.boundary()
+                geometry1 = QgsGeometry(newG)
+            if geometry2.type() == 2:
+                polygon = geometry2.geometry()
+                newG = polygon.boundary()
+                geometry2 = QgsGeometry(newG)
+
             intersection = geometry1.intersection(geometry2)
             if intersection.type() == 0:
                 intersectionP = intersection.asPoint()
@@ -207,6 +216,7 @@ class Finder(object):
                             intersectionP = point
                         elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                             intersectionP = QgsPoint(point.x(), point.y())
+                print("line", intersectionP)
             elif intersection.type() == 2:
                 intersectionMPL = intersection.asMultiPolyline()
                 intersectionP = None
@@ -216,6 +226,7 @@ class Finder(object):
                             intersectionP = point
                         elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                             intersectionP = QgsPoint(point.x(), point.y())
+                print("polygon", intersectionP)
             else:
                 return None
 
