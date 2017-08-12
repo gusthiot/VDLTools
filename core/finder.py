@@ -84,38 +84,44 @@ class Finder(object):
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     @staticmethod
-    def findFeaturesLayersAt(mapPoint, layersConfig, mapTool):
+    def findFeaturesLayersAt(mapPoint, layersConfig, mapTool, pixTol):
         """
         To find features from a given position in given layers
         :param mapPoint: the map position
         :param layersConfig: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
+        :param pixTol: tolerance in pixels
         :return: features found in layers
         """
         features = []
         for layerConfig in layersConfig:
-            features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
+            features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool, pixTol)
         return features
 
     @staticmethod
-    def findFeaturesAt(mapPoint, layerConfig, mapTool):
+    def findFeaturesAt(mapPoint, layerConfig, mapTool, pixTol=None):
         """
         To find features from a given position in a given layer
         :param mapPoint: the map position
         :param layerConfig: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
+        :param pixTol: tolerance in pixels
         :return: features found in layer
         """
-        if layerConfig is None:
-            return None
-        tolerance = layerConfig.tolerance
-        if layerConfig.unit == QgsTolerance.Pixels:
+        if pixTol:
             layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool,
-                                                      tolerance)
-        elif layerConfig.unit == QgsTolerance.ProjectUnits:
-            layTolerance = Finder.calcMapTolerance(mapPoint, layerConfig.layer, mapTool, tolerance)
+                                                      pixTol)
         else:
-            layTolerance = tolerance
+            if layerConfig is None:
+                return None
+            tolerance = layerConfig.tolerance
+            if layerConfig.unit == QgsTolerance.Pixels:
+                layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool,
+                                                          tolerance)
+            elif layerConfig.unit == QgsTolerance.ProjectUnits:
+                layTolerance = Finder.calcMapTolerance(mapPoint, layerConfig.layer, mapTool, tolerance)
+            else:
+                layTolerance = tolerance
         layPoint = mapTool.toLayerCoordinates(layerConfig.layer, mapPoint)
         searchRect = QgsRectangle(layPoint.x() - layTolerance, layPoint.y() - layTolerance,
                                   layPoint.x() + layTolerance, layPoint.y() + layTolerance)
@@ -285,7 +291,7 @@ class Finder(object):
         :return: intersection point
         """
         snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon])
-        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
+        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, 15)
         if len(features) > 1:
             if len(features) > 2:
                 for i in range(len(features)):
