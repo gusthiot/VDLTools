@@ -291,7 +291,7 @@ class Finder(object):
         :return: intersection point
         """
         snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon])
-        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, 15)
+        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, 5)
         if len(features) > 1:
             if len(features) > 2:
                 for i in range(len(features)):
