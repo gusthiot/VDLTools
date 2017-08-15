@@ -109,8 +109,7 @@ class Finder(object):
         :return: features found in layer
         """
         if pixTol:
-            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool,
-                                                      pixTol)
+            layTolerance = pixTol
         else:
             if layerConfig is None:
                 return None
@@ -291,7 +290,7 @@ class Finder(object):
         :return: intersection point
         """
         snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon])
-        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, 5)
+        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, 1)
         if len(features) > 1:
             if len(features) > 2:
                 for i in range(len(features)):
