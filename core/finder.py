@@ -99,18 +99,16 @@ class Finder(object):
         return features
 
     @staticmethod
-    def findFeaturesAt(mapPoint, layerConfig, mapTool, pixTol=None):
+    def findFeaturesAt(mapPoint, layerConfig, mapTool, layTolerance=None):
         """
         To find features from a given position in a given layer
         :param mapPoint: the map position
         :param layerConfig: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
-        :param pixTol: tolerance in pixels
+        :param layTolerance: tolerance in layer units
         :return: features found in layer
         """
-        if pixTol:
-            layTolerance = pixTol
-        else:
+        if layTolerance is None:
             if layerConfig is None:
                 return None
             tolerance = layerConfig.tolerance
@@ -221,7 +219,6 @@ class Finder(object):
                             intersectionP = point
                         elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                             intersectionP = QgsPoint(point.x(), point.y())
-                print("line", intersectionP)
             elif intersection.type() == 2:
                 intersectionMPL = intersection.asMultiPolyline()
                 intersectionP = None
@@ -231,7 +228,6 @@ class Finder(object):
                             intersectionP = point
                         elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                             intersectionP = QgsPoint(point.x(), point.y())
-                print("polygon", intersectionP)
             else:
                 return None
 
@@ -289,24 +285,25 @@ class Finder(object):
         :param featureId: if we want to snap on a given feature
         :return: intersection point
         """
+        layerTolerance = 1
         snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon])
-        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, 1)
+        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool, layerTolerance)
+        inter = None
         if len(features) > 1:
             if len(features) > 2:
                 for i in range(len(features)):
                     for j in range(i, len(features)):
                         feat1 = features[i]
                         feat2 = features[j]
-                        inter = Finder.intersect(featureId, feat1, feat2, mapPoint)
-                        if inter:
-                            return inter
+                        if feat1 != feat2:
+                            interP = Finder.intersect(featureId, feat1, feat2, mapPoint)
+                            if inter is None or mapPoint.sqrDist(interP) < mapPoint.sqrDist(inter):
+                                inter = interP
             else:
                 feat1 = features[0]
                 feat2 = features[1]
                 inter = Finder.intersect(featureId, feat1, feat2, mapPoint)
-                if inter:
-                    return inter
-        return None
+        return inter
 
     @staticmethod
     def snap(mapPoint, mapCanvas, layersConfigs=None, mode=None):
