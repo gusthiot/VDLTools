@@ -297,8 +297,9 @@ class Finder(object):
                         feat2 = features[j]
                         if feat1 != feat2:
                             interP = Finder.intersect(featureId, feat1, feat2, mapPoint)
-                            if inter is None or mapPoint.sqrDist(interP) < mapPoint.sqrDist(inter):
-                                inter = interP
+                            if interP is not None:
+                                if inter is None or mapPoint.sqrDist(interP) < mapPoint.sqrDist(inter):
+                                    inter = interP
             else:
                 feat1 = features[0]
                 feat2 = features[1]
