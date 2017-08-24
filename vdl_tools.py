@@ -52,6 +52,7 @@ class VDLTools(object):
     """
     Main plugin class
     """
+    MORE_TOOLS = False
 
     def __init__(self, iface):
         """Constructor
@@ -69,10 +70,11 @@ class VDLTools(object):
         self.subProfileTool = None
         self.pointerTool = None
         self.moveTool = None
-        self.controlTool = None
         self.multiAttributesTool = None
         self.showSettings = None
-        self.importMeasures = None
+        if VDLTools.MORE_TOOLS:
+            self.importMeasures = None
+            self.controlTool = None
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -138,8 +140,6 @@ class VDLTools(object):
         self.add_action(self.intersectTool, self.iface.mainWindow())
         self.multiAttributesTool = MultiAttributesTool(self.iface)
         self.add_action(self.multiAttributesTool, self.iface.mainWindow())
-        self.controlTool = ControlTool(self.iface)
-        self.add_action(self.controlTool, self.iface.mainWindow())
         self.profileTool = ProfileTool(self.iface)
         self.add_action(self.profileTool, self.iface.mainWindow(), False)
         self.subProfileTool = SubProfileTool(self.iface)
@@ -152,8 +152,6 @@ class VDLTools(object):
         self.add_action(self.extrapolateTool, self.iface.mainWindow(), False)
         self.moveTool = MoveTool(self.iface)
         self.add_action(self.moveTool, self.iface.mainWindow(), False)
-        self.importMeasures = ImportMeasures(self.iface)
-        self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
 
         self.profileTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
@@ -167,10 +165,17 @@ class VDLTools(object):
         self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
 
         self.intersectTool.ownSettings = self.showSettings
-        self.importMeasures.ownSettings = self.showSettings
         self.profileTool.ownSettings = self.showSettings
         self.subProfileTool.ownSettings = self.showSettings
-        self.controlTool.ownSettings = self.showSettings
+
+        if VDLTools.MORE_TOOLS:
+            self.importMeasures = ImportMeasures(self.iface)
+            self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
+            self.controlTool = ControlTool(self.iface)
+            self.add_action(self.controlTool, self.iface.mainWindow())
+
+            self.importMeasures.ownSettings = self.showSettings
+            self.controlTool.ownSettings = self.showSettings
 
     def unload(self):
         """

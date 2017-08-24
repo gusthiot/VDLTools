@@ -90,6 +90,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         color.setAlphaF(0.78)
         self.__rubber.setColor(color)
         self.__rubber.setIcon(4)
+        self.__rubber.setWidth(2)
         self.__rubber.setIconSize(20)
         self.canvas().layersChanged.connect(self.__updateList)
         self.canvas().scaleChanged.connect(self.__updateList)
