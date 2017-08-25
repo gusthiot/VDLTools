@@ -285,10 +285,13 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             if match.hasVertex() or match.hasEdge():
                 point = match.point()
                 ok = False
+                noVertex = False
                 if match.hasVertex():
                     if match.layer() is not None and self.__selectedFeature.id() == match.featureId() \
                             and match.layer().id() == self.__lastLayer.id():
+
                         ok = True
+                        noVertex = True
                     else:
                         intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                       self.__selectedFeature.id())
@@ -308,7 +311,9 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     self.__isEditing = True
                     self.__findVertex = False
                     self.__mapPoint = point
-                    if not match.hasVertex() or match.featureId() == 0:
+                    if noVertex:
+                        self.__ok(False, True)
+                    else:
                         self.__confDlg = InterpolateConfirmDialog()
                         if self.__lastLayer.isEditable():
                             self.__confDlg.setMainLabel(QCoreApplication.translate("VDLTools", "What do you want to do ?"))
@@ -318,8 +323,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                         self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
                         self.__confDlg.cancelButton().clicked.connect(self.__onConfirmCancel)
                         self.__confDlg.show()
-                    else:
-                        self.__ok(False, True)
             else:
                 self.__done()
                 self.__cancel()
