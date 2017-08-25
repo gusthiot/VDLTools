@@ -53,7 +53,8 @@ class ProfileTool(QgsMapTool):
     Tool class for making a line elevation profile
     """
 
-    TOLERANCE = 0.0005
+    ALT_TOLERANCE = 0.0005
+    SEARCH_TOLERANCE = 0.001
 
     def __init__(self, iface):
         """
@@ -602,7 +603,7 @@ class ProfileTool(QgsMapTool):
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in availableLayers:
-                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03,
+                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
                                                                        QgsTolerance.LayerUnits)
                             f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
                                                               self.canvas(), [laySettings])
@@ -653,7 +654,7 @@ class ProfileTool(QgsMapTool):
             y = points['y']
             z = points['z']
             for layer in self.__layers:
-                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 0.03, QgsTolerance.LayerUnits)
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits)
                 f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.canvas(),
                                                   [laySettings])
                 if f_l is None:
@@ -860,17 +861,17 @@ class ProfileTool(QgsMapTool):
                 for i in range(num_lines, len(pt['z'])):
                     if pt['z'][i] is None:
                         continue
-                    if abs(pt['z'][i]-z0) > self.TOLERANCE:
+                    if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
                         situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             elif len(zz) == 2:
                 z0 = pt['z'][zz[0]]
-                if abs(pt['z'][zz[1]] - z0) > self.TOLERANCE:
+                if abs(pt['z'][zz[1]] - z0) > self.ALT_TOLERANCE:
                     differences.append({'point': p, 'v1': z0, 'v2': pt['z'][zz[1]]})
                 else:
                     for i in range(num_lines, len(pt['z'])):
                         if pt['z'][i] is None:
                             continue
-                        if abs(pt['z'][i]-z0) > self.TOLERANCE:
+                        if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
                             situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
                 self.__iface.messageBar().pushMessage(
