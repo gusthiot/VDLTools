@@ -41,7 +41,7 @@ class ShowSettings(object):
     Class to manage plugin settings
     """
 
-    def __init__(self, iface):
+    def __init__(self, iface, moreTools):
         """
         Constructor
         :param iface: interface
@@ -61,6 +61,7 @@ class ShowSettings(object):
         QgsProject.instance().readProject.connect(self.__project_loaded)
         self.__linesLayer = None
         self.__fieldnames = None
+        self.__moreTools = moreTools
 
     def __project_loaded(self):
         """
@@ -111,7 +112,7 @@ class ShowSettings(object):
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
                                             self.__ctlDb, self.__configTable, self.__uriDb, self.__schemaDb,
-                                            self.__mntUrl)
+                                            self.__mntUrl, self.__moreTools)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()

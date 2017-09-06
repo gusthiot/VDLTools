@@ -132,7 +132,7 @@ class VDLTools(object):
         Create the menu entries and toolbar icons inside the QGIS GUI
         """
 
-        self.showSettings = ShowSettings(self.iface)
+        self.showSettings = ShowSettings(self.iface, self.MORE_TOOLS)
         self.add_action(self.showSettings, self.iface.mainWindow(), True, False, False)
         self.duplicateTool = DuplicateTool(self.iface)
         self.add_action(self.duplicateTool, self.iface.mainWindow(), False)

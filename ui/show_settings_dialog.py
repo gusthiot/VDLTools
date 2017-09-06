@@ -43,7 +43,8 @@ class ShowSettingsDialog(QDialog):
     Dialog class for plugin settings
     """
 
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, ctllDb, configTable, uriDb, schemaDb, mntUrl):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, ctllDb, configTable, uriDb, schemaDb, mntUrl,
+                 moreTools):
         """
         Constructor
         :param iface: interface
@@ -110,45 +111,10 @@ class ShowSettingsDialog(QDialog):
             if self.__memoryLinesLayer in self.__linesLayers:
                 self.__lineCombo.setCurrentIndex(self.__linesLayers.index(self.__memoryLinesLayer)+1)
 
-        dbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
-        dbLabel.setMinimumHeight(20)
-        dbLabel.setMinimumWidth(50)
-        self.__layout.addWidget(dbLabel, 2, 1)
-
-        self.__dbCombo = QComboBox()
-        self.__dbCombo.setMinimumHeight(20)
-        self.__dbCombo.setMinimumWidth(50)
-        self.__dbCombo.addItem("")
-        for db in list(self.__dbs.keys()):
-            self.__dbCombo.addItem(db)
-        self.__layout.addWidget(self.__dbCombo, 2, 2)
-
-        schemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Database schema : "))
-        schemaLabel.setMinimumHeight(20)
-        schemaLabel.setMinimumWidth(50)
-        self.__layout.addWidget(schemaLabel, 3, 1)
-
-        self.__schemaCombo = QComboBox()
-        self.__schemaCombo.setMinimumHeight(20)
-        self.__schemaCombo.setMinimumWidth(50)
-        self.__schemaCombo.addItem("")
-        self.__layout.addWidget(self.__schemaCombo, 3, 2)
-
-        tableLabel = QLabel(QCoreApplication.translate("VDLTools", "Config table : "))
-        tableLabel.setMinimumHeight(20)
-        tableLabel.setMinimumWidth(50)
-        self.__layout.addWidget(tableLabel, 4, 1)
-
-        self.__tableCombo = QComboBox()
-        self.__tableCombo.setMinimumHeight(20)
-        self.__tableCombo.setMinimumWidth(50)
-        self.__tableCombo.addItem("")
-        self.__layout.addWidget(self.__tableCombo, 4, 2)
-
         mntLabel = QLabel(QCoreApplication.translate("VDLTools", "Url for MNT : "))
-        schemaLabel.setMinimumHeight(20)
-        schemaLabel.setMinimumWidth(50)
-        self.__layout.addWidget(mntLabel, 5, 1)
+        mntLabel.setMinimumHeight(20)
+        mntLabel.setMinimumWidth(50)
+        self.__layout.addWidget(mntLabel, 2, 1)
 
         self.__mntText = QLineEdit()
         if self.__mntUrl is None or self.__mntUrl == "None":
@@ -157,20 +123,70 @@ class ShowSettingsDialog(QDialog):
             self.__mntText.insert(self.__mntUrl)
         self.__mntText.setMinimumHeight(20)
         self.__mntText.setMinimumWidth(100)
-        self.__layout.addWidget(self.__mntText, 5, 2)
+        self.__layout.addWidget(self.__mntText, 2, 2)
 
-        ctlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database : "))
-        ctlLabel.setMinimumHeight(20)
-        ctlLabel.setMinimumWidth(50)
-        self.__layout.addWidget(ctlLabel, 6, 1)
+        if moreTools:
+            dbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
+            dbLabel.setMinimumHeight(20)
+            dbLabel.setMinimumWidth(50)
+            self.__layout.addWidget(dbLabel, 3, 1)
 
-        self.__ctlCombo = QComboBox()
-        self.__ctlCombo.setMinimumHeight(20)
-        self.__ctlCombo.setMinimumWidth(50)
-        self.__ctlCombo.addItem("")
-        for db in list(self.__dbs.keys()):
-            self.__ctlCombo.addItem(db)
-        self.__layout.addWidget(self.__ctlCombo, 6, 2)
+            self.__dbCombo = QComboBox()
+            self.__dbCombo.setMinimumHeight(20)
+            self.__dbCombo.setMinimumWidth(50)
+            self.__dbCombo.addItem("")
+            for db in list(self.__dbs.keys()):
+                self.__dbCombo.addItem(db)
+            self.__layout.addWidget(self.__dbCombo, 3, 2)
+
+            schemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Database schema : "))
+            schemaLabel.setMinimumHeight(20)
+            schemaLabel.setMinimumWidth(50)
+            self.__layout.addWidget(schemaLabel, 4, 1)
+
+            self.__schemaCombo = QComboBox()
+            self.__schemaCombo.setMinimumHeight(20)
+            self.__schemaCombo.setMinimumWidth(50)
+            self.__schemaCombo.addItem("")
+            self.__layout.addWidget(self.__schemaCombo, 4, 2)
+
+            tableLabel = QLabel(QCoreApplication.translate("VDLTools", "Config table : "))
+            tableLabel.setMinimumHeight(20)
+            tableLabel.setMinimumWidth(50)
+            self.__layout.addWidget(tableLabel, 5, 1)
+
+            self.__tableCombo = QComboBox()
+            self.__tableCombo.setMinimumHeight(20)
+            self.__tableCombo.setMinimumWidth(50)
+            self.__tableCombo.addItem("")
+            self.__layout.addWidget(self.__tableCombo, 5, 2)
+
+            ctlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database : "))
+            ctlLabel.setMinimumHeight(20)
+            ctlLabel.setMinimumWidth(50)
+            self.__layout.addWidget(ctlLabel, 6, 1)
+
+            self.__ctlCombo = QComboBox()
+            self.__ctlCombo.setMinimumHeight(20)
+            self.__ctlCombo.setMinimumWidth(50)
+            self.__ctlCombo.addItem("")
+            for db in list(self.__dbs.keys()):
+                self.__ctlCombo.addItem(db)
+            self.__layout.addWidget(self.__ctlCombo, 6, 2)
+
+            self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
+            self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
+            self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
+
+            self.__ctlCombo.currentIndexChanged.connect(self.__ctlComboChanged)
+
+            if self.__uriDb is not None:
+                if self.__uriDb.database() in list(self.__dbs.keys()):
+                    self.__dbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__uriDb.database()) + 1)
+
+            if self.__ctlDb is not None:
+                if self.__ctlDb.database() in list(self.__dbs.keys()):
+                    self.__ctlCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__ctlDb.database()) + 1)
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
@@ -183,20 +199,6 @@ class ShowSettingsDialog(QDialog):
         self.__layout.addWidget(self.__okButton, 100, 1)
         self.__layout.addWidget(self.__cancelButton, 100, 2)
         self.setLayout(self.__layout)
-
-        self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
-        self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
-        self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
-
-        self.__ctlCombo.currentIndexChanged.connect(self.__ctlComboChanged)
-
-        if self.__uriDb is not None:
-            if self.__uriDb.database() in list(self.__dbs.keys()):
-                self.__dbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__uriDb.database()) + 1)
-
-        if self.__ctlDb is not None:
-            if self.__ctlDb.database() in list(self.__dbs.keys()):
-                self.__ctlCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__ctlDb.database()) + 1)
 
     @staticmethod
     def __resetCombo(combo):
