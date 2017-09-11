@@ -168,7 +168,7 @@
         <location filename="../ui/intersect_distance_dialog.py" line="62"/>
         <location filename="../ui/profile_confirm_dialog.py" line="49"/>
         <location filename="../ui/profile_layers_dialog.py" line="50"/>
-        <location filename="../ui/show_settings_dialog.py" line="191"/>
+        <location filename="../ui/show_settings_dialog.py" line="196"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -198,7 +198,7 @@
         <location filename="../ui/move_confirm_dialog.py" line="58"/>
         <location filename="../ui/profile_confirm_dialog.py" line="53"/>
         <location filename="../ui/profile_layers_dialog.py" line="54"/>
-        <location filename="../ui/show_settings_dialog.py" line="195"/>
+        <location filename="../ui/show_settings_dialog.py" line="200"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
