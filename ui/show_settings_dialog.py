@@ -187,6 +187,11 @@ class ShowSettingsDialog(QDialog):
             if self.__ctlDb is not None:
                 if self.__ctlDb.database() in list(self.__dbs.keys()):
                     self.__ctlCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__ctlDb.database()) + 1)
+        else:
+            self.__dbCombo = None
+            self.__schemaCombo = None
+            self.__tableCombo = None
+            self.__ctlCombo = None
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
@@ -353,6 +358,8 @@ class ShowSettingsDialog(QDialog):
         To get the selected config table
         :return: selected config table, or none
         """
+        if self.__tableCombo is None:
+            return None
         index = self.__tableCombo.currentIndex()
         if self.__tableCombo.itemText(index) == "":
             return None
@@ -364,6 +371,8 @@ class ShowSettingsDialog(QDialog):
         To get selected import database uri
         :return: import database uri
         """
+        if self.__dbCombo is None:
+            return None
         index = self.__dbCombo.currentIndex()
         if self.__dbCombo.itemText(index) == "":
             return None
@@ -375,6 +384,8 @@ class ShowSettingsDialog(QDialog):
         To get selected import database schema
         :return: import database schema
         """
+        if self.__schemaCombo is None:
+            return None
         index = self.__schemaCombo.currentIndex()
         if self.__schemaCombo.itemText(index) == "":
             return None
@@ -393,6 +404,8 @@ class ShowSettingsDialog(QDialog):
         To get selected control database uri
         :return: control database uri
         """
+        if self.__ctlCombo is None:
+            return None
         index = self.__ctlCombo.currentIndex()
         if self.__ctlCombo.itemText(index) == "":
             return None
