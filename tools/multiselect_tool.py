@@ -74,9 +74,11 @@ class MultiselectTool(AreaTool):
                         for feature in layer.getFeatures(request):
                             try:
                                 will = renderer.willRenderFeature(feature, context)
+                                print("renderer ok ?")
                             except:
                                 try:
                                     will = renderer.willRenderFeature(feature)
+                                    print("renderer : still usin deprecated")
                                 except:
                                     self.__iface.messageBar().pushMessage(
                                         QCoreApplication.translate("VDLTools", "Error"),
