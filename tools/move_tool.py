@@ -337,7 +337,7 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
             f_l = Finder.findClosestFeatureAt(map_point, self.canvas(), [laySettings])
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 self.__lastFeatureId = f_l[0].id()
-                self.__layer.setSelectedFeatures([f_l[0].id()])
+                self.__layer.selectByIds([f_l[0].id()])
             if f_l is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
