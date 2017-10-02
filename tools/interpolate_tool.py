@@ -226,7 +226,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                 if self.__lastLayer is not None:
                     self.__lastLayer.removeSelection()
                 self.__lastLayer = f_l[1]
-                self.__lastLayer.selectByIds([f.id()])
+                self.__lastLayer.setSelectedFeatures([f.id()])
             if f_l is None and self.__lastLayer is not None:
                 self.__lastLayer.removeSelection()
                 self.__lastFeatureId = None

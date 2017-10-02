@@ -751,7 +751,7 @@ class ProfileTool(QgsMapTool):
                     if f_l is not None and self.__lastFeatureId != f_l[0].id():
                         self.__lastFeature = f_l[0]
                         self.__lastFeatureId = f_l[0].id()
-                        self.__lineLayer.selectByIds([f_l[0].id()])
+                        self.__lineLayer.setSelectedFeatures([f_l[0].id()])
                     if f_l is None:
                         self.__cancel()
                 else:
@@ -761,22 +761,22 @@ class ProfileTool(QgsMapTool):
                             self.__lastFeature = f_l[0]
                             self.__lastFeatureId = f_l[0].id()
                             features = self.__selectedIds + [f_l[0].id()]
-                            self.__lineLayer.selectByIds(features)
+                            self.__lineLayer.setSelectedFeatures(features)
 
                         elif self.__contains(line, self.__startVertex) > -1:
                             self.__lastFeature = f_l[0]
                             self.__lastFeatureId = f_l[0].id()
                             features = self.__selectedIds + [f_l[0].id()]
-                            self.__lineLayer.selectByIds(features)
+                            self.__lineLayer.setSelectedFeatures(features)
 
                         else:
-                            self.__lineLayer.selectByIds(self.__selectedIds)
+                            self.__lineLayer.setSelectedFeatures(self.__selectedIds)
                             self.__lastFeatureId = None
                             self.__lastFeature = None
 
                 if f_l is None:
                     if self.__selectedIds is not None:
-                        self.__lineLayer.selectByIds(self.__selectedIds)
+                        self.__lineLayer.setSelectedFeatures(self.__selectedIds)
                     self.__lastFeatureId = None
                     self.__lastFeature = None
 
@@ -829,7 +829,7 @@ class ProfileTool(QgsMapTool):
                             direction = False
                             self.__endVertex = line[0]
                         self.__selectedDirections.append(direction)
-                    self.__lineLayer.selectByIds(self.__selectedIds)
+                    self.__lineLayer.setSelectedFeatures(self.__selectedIds)
 
     def __calculateProfile(self, names):
         """
