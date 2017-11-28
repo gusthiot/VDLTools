@@ -451,15 +451,19 @@ class ProfileTool(QgsMapTool):
         """
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
-        points = []
+        points = {}
         for s in situations:
             if s['point'] not in points:
-                points.append(s['point'])
+                points[s['point']] = self.__points[s['point']]['z'][s['layer']+num_lines-1]
             else:
-                QMessageBox(
-                    QCoreApplication.translate("VDLTools", "There is more than one elevation for the point ") +
-                    str(s['point']))
-                return
+                diff = abs(self.__points[s['point']]['z'][s['layer']+num_lines-1] - points[s['point']])
+                if diff > 0.2:
+                    QMessageBox.information(
+                        None, QCoreApplication.translate("VDLTools", "Elevation"),
+                        QCoreApplication.translate("VDLTools", "There is more than one elevation for the point ") +
+                        str(s['point'])
+                    )
+                    return
         self.__msgDlg.accept()
         lines = []
         for iden in self.__selectedIds:
@@ -640,6 +644,7 @@ class ProfileTool(QgsMapTool):
         To create the profile
         """
         self.__createProfile()
+        self.__checkSituations()
         self.__isChoosed = False
 
     def __createProfile(self):
@@ -703,14 +708,16 @@ class ProfileTool(QgsMapTool):
                         else:
                             z.append(zp)
             self.__features.append(feat)
+        self.__calculateProfile()
 
+    def __getNames(self):
         names = [self.__lineLayer.name()]
         for layer in self.__layers:
             if layer.name() == self.__lineLayer.name():
                 names.append(layer.name() + QCoreApplication.translate("VDLTools", " connected"))
             else:
                 names.append(layer.name())
-        self.__calculateProfile(names)
+        return names
 
     @staticmethod
     def __contains(line, point):
@@ -831,10 +838,9 @@ class ProfileTool(QgsMapTool):
                         self.__selectedDirections.append(direction)
                     self.__lineLayer.setSelectedFeatures(self.__selectedIds)
 
-    def __calculateProfile(self, names):
+    def __calculateProfile(self):
         """
         To calculate the profile and display it
-        :param names: the names of the displayed layers
         """
         if self.__points is None:
             return
@@ -842,8 +848,9 @@ class ProfileTool(QgsMapTool):
         if len(self.__points) == 0:
             return
         self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
-        self.__dockWdg.attachCurves(names, self.ownSettings, self.__usedMnts)
+        self.__dockWdg.attachCurves(self.__getNames(), self.ownSettings, self.__usedMnts)
 
+    def __checkSituations(self):
         situations = []
         differences = []
         for p in range(len(self.__points)):
@@ -878,7 +885,7 @@ class ProfileTool(QgsMapTool):
                     QCoreApplication.translate("VDLTools", "More than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
 
         if (len(situations) > 0) or (len(differences) > 0):
-            self.__setMessageDialog(situations, differences, names)
+            self.__setMessageDialog(situations, differences, self.__getNames())
             self.__rubberSit.reset()
             self.__rubberDif.reset()
             for situation in situations:

@@ -116,32 +116,37 @@
         <translation>Voulez-vous vraiment éditer la (les) couches(s) Point ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="460"/>
-        <source>There is more than one elevation for the point </source>
-        <translation>Il y a plus qu&apos;une altitude pour ce point</translation>
+        <location filename="../tools/profile_tool.py" line="462"/>
+        <source>Elevation</source>
+        <translation>Altitude</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="576"/>
+        <location filename="../tools/profile_tool.py" line="463"/>
+        <source>There is more than one elevation for the point </source>
+        <translation>Il y a plus qu&apos;une altitude pour le point </translation>
+    </message>
+    <message>
+        <location filename="../tools/profile_tool.py" line="580"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="710"/>
+        <location filename="../tools/profile_tool.py" line="717"/>
         <source> connected</source>
         <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="800"/>
+        <location filename="../tools/profile_tool.py" line="807"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="858"/>
+        <location filename="../tools/profile_tool.py" line="865"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="878"/>
+        <location filename="../tools/profile_tool.py" line="885"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
