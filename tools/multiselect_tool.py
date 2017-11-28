@@ -31,6 +31,7 @@ from qgis.core import (QGis,
                        QgsRectangle,
                        QgsMapLayer)
 from area_tool import AreaTool
+import time
 
 
 class MultiselectTool(AreaTool):
@@ -46,8 +47,6 @@ class MultiselectTool(AreaTool):
         :param iface: interface
         """
         AreaTool.__init__(self, iface)
-        # self.types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ,
-        #               QgsWKBTypes.CompoundCurveZ, QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
         self.types = [QGis.Point, QGis.Line, QGis.Polygon]
         self.releasedSignal.connect(self.__select)
         self.identified = identified
@@ -61,6 +60,7 @@ class MultiselectTool(AreaTool):
         """
         searchRect = QgsRectangle(self.first, self.last)
         for layer in self.canvas().layers():
+            start = time.time()
             if not self.identified or layer.id() not in self.disabled():
                 if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
                     renderer = layer.rendererV2()
@@ -86,5 +86,5 @@ class MultiselectTool(AreaTool):
                                 fIds.append(feature.id())
                         renderer.stopRender(context)
                         layer.selectByIds(fIds)
-
+            print(" %s seconds to select %s" % (time.time() - start, layer.name()))
         self.selectedSignal.emit()

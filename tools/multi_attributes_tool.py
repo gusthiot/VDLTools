@@ -25,6 +25,7 @@ from PyQt4.QtCore import QCoreApplication
 from .multiselect_tool import MultiselectTool
 from ..ui.multi_confirm_dialog import MultiConfirmDialog
 from qgis.core import QgsMapLayer
+import time
 
 
 class MultiAttributesTool(MultiselectTool):
@@ -78,6 +79,7 @@ class MultiAttributesTool(MultiselectTool):
         """
         self.__confDlg.accept()
         for layer in self.canvas().layers():
+            start = time.time()
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
                 if layer.selectedFeatureCount() > 0 and layer.id() not in self.disabled():
                     ids = "("
@@ -90,3 +92,4 @@ class MultiAttributesTool(MultiselectTool):
                         ids += str(f.id())
                     ids += ")"
                     self.__iface.showAttributeTable(layer, "$id IN {}".format(ids))
+            print(" %s seconds to show %s" % (time.time() - start, layer.name()))
