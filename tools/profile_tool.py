@@ -457,7 +457,7 @@ class ProfileTool(QgsMapTool):
                 points[s['point']] = self.__points[s['point']]['z'][s['layer']+num_lines-1]
             else:
                 diff = abs(self.__points[s['point']]['z'][s['layer']+num_lines-1] - points[s['point']])
-                if diff > 0.2:
+                if diff > 0.001:
                     QMessageBox.information(
                         None, QCoreApplication.translate("VDLTools", "Elevation"),
                         QCoreApplication.translate("VDLTools", "There is more than one elevation for the point ") +
