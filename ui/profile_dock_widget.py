@@ -25,7 +25,7 @@ from __future__ import division
 from future import standard_library
 from future.builtins import str
 from future.builtins import range
-from math import sqrt
+from math import sqrt, ceil, floor
 from matplotlib import rc
 from past.utils import old_div
 from qgis.core import QgsPoint
@@ -473,8 +473,9 @@ class ProfileDockWidget(QDockWidget):
 
         maxi = 0
         for i in range(len(self.__profiles)):
-            if (int(self.__profiles[i]['l'])) > maxi:
-                maxi = int(self.__profiles[i]['l']) + 1
+            print(i, self.__profiles[i]['l'])
+            if (ceil(self.__profiles[i]['l'])) > maxi:
+                maxi = ceil(self.__profiles[i]['l'])
         if self.__lib == 'Qwt5':
             self.__plotWdg.setAxisScale(2, 0, maxi, 0)
         elif self.__lib == 'Matplotlib':
@@ -490,19 +491,19 @@ class ProfileDockWidget(QDockWidget):
             for i in range(len(self.__profiles)):
                 if 'z' in self.__profiles[i]:
                     mini = self.__minTab(self.__profiles[i]['z'])
-                    if int(mini) < minimumValue:
-                        minimumValue = int(mini) - 1
+                    if mini < minimumValue:
+                        minimumValue = ceil(mini) - 1
                     maxi = self.__maxTab(self.__profiles[i]['z'])
-                    if int(maxi) > maximumValue:
-                        maximumValue = int(maxi) + 1
+                    if maxi > maximumValue:
+                        maximumValue = floor(maxi) + 1
                 if self.__mntPoints is not None:
                     for pts in self.__mntPoints[2]:
                         miniMnt = self.__minTab(pts)
-                        if int(miniMnt) < minimumValue:
-                            minimumValue = int(miniMnt) - 1
+                        if miniMnt < minimumValue:
+                            minimumValue = ceil(miniMnt) - 1
                         maxiMnt = self.__maxTab(pts)
-                        if int(maxiMnt) > maximumValue:
-                            maximumValue = int(maxiMnt) + 1
+                        if maxiMnt > maximumValue:
+                            maximumValue = floor(maxiMnt) + 1
         self.__maxSpin.setValue(maximumValue)
         self.__minSpin.setValue(minimumValue)
         self.__maxSpin.setEnabled(True)
