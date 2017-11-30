@@ -473,7 +473,7 @@ class ProfileDockWidget(QDockWidget):
 
         maxi = 0
         for i in range(len(self.__profiles)):
-            print(i, self.__profiles[i]['l'])
+            # print(i, self.__profiles[i]['l'])
             if (ceil(self.__profiles[i]['l'])) > maxi:
                 maxi = ceil(self.__profiles[i]['l'])
         if self.__lib == 'Qwt5':
