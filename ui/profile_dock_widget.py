@@ -453,8 +453,7 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Rescale problem... (trace printed)"),
                 level=QgsMessageBar.CRITICAL, duration=0)
-            print(
-                QCoreApplication.translate("VDLTools", "rescale problem : "), sys.exc_info()[0], traceback.format_exc())
+            print(sys.exc_info()[0], traceback.format_exc())
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
@@ -466,6 +465,8 @@ class ProfileDockWidget(QDockWidget):
     def __reScalePlot(self, value=None, auto=False):
         """
         To rescale the profile plot depending to the bounds
+        :param value: juste because connections give value
+        :param auto: if automatic ranges calcul is wanted
         """
         if (self.__profiles is None) or (self.__profiles == 0):
             self.__plotWdg.replot()
