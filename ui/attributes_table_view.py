@@ -24,7 +24,7 @@
 from qgis.gui import (QgsAttributeTableModel,
                       QgsAttributeTableFilterModel,
                       QgsDualView)
-from qgis.core import QgsVectorLayerCache
+from qgis.core import QgsVectorLayerCache, QgsAttributeTableConfig
 
 
 class AttributesTableView(QgsDualView):
@@ -38,8 +38,7 @@ class AttributesTableView(QgsDualView):
         """
         QgsDualView.__init__(self)
         self.init(layer, canvas,request)
-        self.setView(QgsDualView.AttributeTable)
-        # self.__layer = layer
+        self.__layer = layer
         # self.__canvas = canvas
         self.setWindowTitle(self.__layer.name())
         # self.__layerCache = QgsVectorLayerCache(self.__layer, 10000)
@@ -48,3 +47,9 @@ class AttributesTableView(QgsDualView):
         # self.__tableFilterModel = QgsAttributeTableFilterModel(self.__canvas, self.__tableModel)
         # self.__tableFilterModel.setFilterMode(QgsAttributeTableFilterModel.ShowSelected)
         # self.setModel(self.__tableFilterModel)
+
+        config = QgsAttributeTableConfig()
+        config.setActionWidgetStyle(QgsAttributeTableConfig.ButtonList)
+        config.setActionWidgetVisible(True)
+        self.setAttributeTableConfig(config)
+        self.setView(QgsDualView.AttributeTable)
