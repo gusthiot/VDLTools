@@ -85,16 +85,16 @@ class MultiAttributesTool(MultiselectTool):
             start = time.time()
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
                 if layer.selectedFeatureCount() > 0 and layer.id() not in self.disabled():
-                    ids = "("
-                    c = False
-                    for f in layer.selectedFeatures():
-                        if c:
-                            ids += ","
-                        else:
-                            c = True
-                        ids += str(f.id())
-                    ids += ")"
-                    tableDlg = AttributesTableView(layer, self.canvas())
+                    # ids = "("
+                    # c = False
+                    # for f in layer.selectedFeatures():
+                    #     if c:
+                    #         ids += ","
+                    #     else:
+                    #         c = True
+                    #     ids += str(f.id())
+                    # ids += ")"
+                    tableDlg = AttributesTableView(layer, self.canvas(), len(layer.selectedFeatures()))
                     self.__tables.append(tableDlg)
                     self.__tables[i].show()
                     i += 1

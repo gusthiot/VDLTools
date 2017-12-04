@@ -32,7 +32,7 @@ class AttributesTableView(QgsAttributeTableView):
     AttributeTableView class to display filtered attributes table
     """
 
-    def __init__(self, layer, canvas):
+    def __init__(self, layer, canvas, nbSelected):
         """
         Constructor
         """
@@ -40,7 +40,7 @@ class AttributesTableView(QgsAttributeTableView):
         self.__layer = layer
         self.__canvas = canvas
         self.setWindowTitle(self.__layer.name())
-        self.__layerCache = QgsVectorLayerCache(self.__layer, 10000)
+        self.__layerCache = QgsVectorLayerCache(self.__layer, nbSelected)
         self.__tableModel = QgsAttributeTableModel(self.__layerCache)
         self.__tableModel.loadLayer()
         self.__tableFilterModel = QgsAttributeTableFilterModel(self.__canvas, self.__tableModel)
