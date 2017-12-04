@@ -23,26 +23,28 @@
 
 from qgis.gui import (QgsAttributeTableModel,
                       QgsAttributeTableFilterModel,
-                      QgsAttributeTableView)
+                      QgsDualView)
 from qgis.core import QgsVectorLayerCache
 
 
-class AttributesTableView(QgsAttributeTableView):
+class AttributesTableView(QgsDualView):
     """
     AttributeTableView class to display filtered attributes table
     """
 
-    def __init__(self, layer, canvas, nbSelected):
+    def __init__(self, layer, canvas, request):
         """
         Constructor
         """
-        QgsAttributeTableView.__init__(self)
-        self.__layer = layer
-        self.__canvas = canvas
+        QgsDualView.__init__(self)
+        self.init(layer, canvas,request)
+        self.setView(QgsDualView.AttributeTable)
+        # self.__layer = layer
+        # self.__canvas = canvas
         self.setWindowTitle(self.__layer.name())
-        self.__layerCache = QgsVectorLayerCache(self.__layer, nbSelected)
-        self.__tableModel = QgsAttributeTableModel(self.__layerCache)
-        self.__tableModel.loadLayer()
-        self.__tableFilterModel = QgsAttributeTableFilterModel(self.__canvas, self.__tableModel)
-        self.__tableFilterModel.setFilterMode(QgsAttributeTableFilterModel.ShowSelected)
-        self.setModel(self.__tableFilterModel)
+        # self.__layerCache = QgsVectorLayerCache(self.__layer, 10000)
+        # self.__tableModel = QgsAttributeTableModel(self.__layerCache)
+        # self.__tableModel.loadLayer()
+        # self.__tableFilterModel = QgsAttributeTableFilterModel(self.__canvas, self.__tableModel)
+        # self.__tableFilterModel.setFilterMode(QgsAttributeTableFilterModel.ShowSelected)
+        # self.setModel(self.__tableFilterModel)

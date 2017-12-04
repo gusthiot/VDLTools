@@ -94,7 +94,7 @@ class MultiAttributesTool(MultiselectTool):
                     #         c = True
                     #     ids += str(f.id())
                     # ids += ")"
-                    tableDlg = AttributesTableView(layer, self.canvas(), len(layer.selectedFeatures()))
+                    tableDlg = AttributesTableView(layer, self.canvas(), self.request)
                     self.__tables.append(tableDlg)
                     self.__tables[i].show()
                     i += 1

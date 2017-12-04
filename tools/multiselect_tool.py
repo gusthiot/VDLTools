@@ -49,6 +49,7 @@ class MultiselectTool(AreaTool):
         self.types = [QGis.Point, QGis.Line, QGis.Polygon]
         self.releasedSignal.connect(self.__select)
         self.identified = identified
+        self.request = None
 
     def disabled(self):
         return QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
@@ -65,11 +66,11 @@ class MultiselectTool(AreaTool):
                     context = QgsRenderContext()
                     if renderer:
                         renderer.startRender(context,layer.pendingFields())
-                        request = QgsFeatureRequest()
-                        request.setFilterRect(searchRect)
-                        request.setFlags(QgsFeatureRequest.ExactIntersect)
+                        self.request = QgsFeatureRequest()
+                        self.request.setFilterRect(searchRect)
+                        self.request.setFlags(QgsFeatureRequest.ExactIntersect)
                         fIds = []
-                        for feature in layer.getFeatures(request):
+                        for feature in layer.getFeatures(self.request):
                             try:
                                 will = renderer.willRenderFeature(feature, context)
                             except:
