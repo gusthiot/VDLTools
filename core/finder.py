@@ -180,6 +180,10 @@ class Finder(object):
         if featureId is None or feature1.id() == featureId or feature2.id() == featureId:
             geometry1 = feature1.geometry()
             geometry2 = feature2.geometry()
+            if geometry1.type() == 0:
+                return geometry1.asPoint()
+            if geometry2.type() == 0:
+                return geometry2.asPoint()
             if geometry1.type() == 2:
                 polygon = geometry1.geometry()
                 newG = polygon.boundary()
@@ -282,7 +286,7 @@ class Finder(object):
         :param featureId: if we want to snap on a given feature
         :return: intersection point
         """
-        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon])
+        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon, QGis.Point])
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         inter = None
         if len(features) > 1:

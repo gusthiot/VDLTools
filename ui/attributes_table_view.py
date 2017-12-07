@@ -21,13 +21,11 @@
  ***************************************************************************/
 """
 
-from qgis.gui import (QgsAttributeTableModel,
-                      QgsAttributeTableFilterModel,
-                      QgsDualView)
-from qgis.core import QgsVectorLayerCache, QgsAttributeTableConfig
+from qgis.gui import QgsDualView, QgsAttributeEditorContext
+from PyQt4.QtGui import QDialog, QVBoxLayout, QMenu
 
 
-class AttributesTableView(QgsDualView):
+class AttributesTableView(QDialog):
     """
     AttributeTableView class to display filtered attributes table
     """
@@ -36,20 +34,17 @@ class AttributesTableView(QgsDualView):
         """
         Constructor
         """
-        QgsDualView.__init__(self)
-        self.init(layer, canvas,request)
-        self.__layer = layer
-        # self.__canvas = canvas
-        self.setWindowTitle(self.__layer.name())
-        # self.__layerCache = QgsVectorLayerCache(self.__layer, 10000)
-        # self.__tableModel = QgsAttributeTableModel(self.__layerCache)
-        # self.__tableModel.loadLayer()
-        # self.__tableFilterModel = QgsAttributeTableFilterModel(self.__canvas, self.__tableModel)
-        # self.__tableFilterModel.setFilterMode(QgsAttributeTableFilterModel.ShowSelected)
-        # self.setModel(self.__tableFilterModel)
-
-        config = QgsAttributeTableConfig()
-        config.setActionWidgetStyle(QgsAttributeTableConfig.ButtonList)
-        config.setActionWidgetVisible(True)
-        self.setAttributeTableConfig(config)
-        self.setView(QgsDualView.AttributeTable)
+        QDialog.__init__(self)
+        self.setWindowTitle(layer.name())
+        self.__layout = QVBoxLayout()
+        self.__menu = QMenu()
+        print(len(layer.actions().listActions()))
+        for a in layer.actions().listActions():
+            self.__menu.addAction(a)
+        self.__layout.addWidget(self.__menu)
+        self.__dual = QgsDualView()
+        self.__context = QgsAttributeEditorContext()
+        self.__dual.init(layer, canvas,request, self.__context)
+        self.__dual.setView(QgsDualView.AttributeTable)
+        self.__layout.addWidget(self.__dual)
+        self.setLayout(self.__layout)
