@@ -711,6 +711,10 @@ class ProfileTool(QgsMapTool):
         self.__calculateProfile()
 
     def __getNames(self):
+        """
+        To get the names from connected lines layers
+        :return: the names list
+        """
         names = [self.__lineLayer.name()]
         for layer in self.__layers:
             if layer.name() == self.__lineLayer.name():
@@ -851,6 +855,10 @@ class ProfileTool(QgsMapTool):
         self.__dockWdg.attachCurves(self.__getNames(), self.ownSettings, self.__usedMnts)
 
     def __checkSituations(self):
+        """
+        To check if point with no elevation on line, and one or more elevation from other layers,
+        and if there are different elevations at the same point
+        """
         situations = []
         differences = []
         for p in range(len(self.__points)):

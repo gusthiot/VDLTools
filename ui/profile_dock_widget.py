@@ -239,7 +239,6 @@ class ProfileDockWidget(QDockWidget):
             self.__frameLayout.addWidget(self.__plotWdg)
 
         elif self.__lib == 'Matplotlib':
-            # __plotWdg.figure : matplotlib.figure.Figure
             fig = Figure((1.0, 1.0), linewidth=0.0, subplotpars=SubplotParams(left=0, bottom=0, right=1, top=1,
                                                                               wspace=0, hspace=0))
 
@@ -474,7 +473,6 @@ class ProfileDockWidget(QDockWidget):
 
         maxi = 0
         for i in range(len(self.__profiles)):
-            # print(i, self.__profiles[i]['l'])
             if (ceil(self.__profiles[i]['l'])) > maxi:
                 maxi = ceil(self.__profiles[i]['l'])
         if self.__lib == 'Qwt5':
@@ -622,14 +620,6 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.print_(printer)
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.savefig(str(fileName))
-            # printer = QPrinter()
-            # printer.setCreator(QCoreApplication.translate("VDLTools", "QGIS Profile Plugin"))
-            # printer.setOutputFileName(fileName)
-            # printer.setOutputFormat(QPrinter.PdfFormat)
-            # printer.setOrientation(QPrinter.Landscape)
-            # printer.setPaperSize(QSizeF(self.__printWdg.size()), QPrinter.Millimeter)
-            # printer.setFullPage(True)
-            # self.__printWdg.render(printer)
 
     def __outPNG(self):
         """

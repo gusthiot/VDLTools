@@ -131,22 +131,22 @@
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="717"/>
+        <location filename="../tools/profile_tool.py" line="721"/>
         <source> connected</source>
         <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="807"/>
+        <location filename="../tools/profile_tool.py" line="811"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="865"/>
+        <location filename="../tools/profile_tool.py" line="873"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="885"/>
+        <location filename="../tools/profile_tool.py" line="893"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
@@ -305,45 +305,40 @@
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="227"/>
-        <location filename="../ui/profile_dock_widget.py" line="679"/>
+        <location filename="../ui/profile_dock_widget.py" line="671"/>
         <source>Distance [m]</source>
         <translation>Distance [m]</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="230"/>
-        <location filename="../ui/profile_dock_widget.py" line="680"/>
+        <location filename="../ui/profile_dock_widget.py" line="672"/>
         <source>Elevation [m]</source>
         <translation>Altitude [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="339"/>
+        <location filename="../ui/profile_dock_widget.py" line="338"/>
         <source>HTTP Error</source>
         <translation>Erreur HTTP</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="344"/>
+        <location filename="../ui/profile_dock_widget.py" line="343"/>
         <source>URL Error</source>
         <translation>Erreur URL</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="454"/>
+        <location filename="../ui/profile_dock_widget.py" line="453"/>
         <source>Rescale problem... (trace printed)</source>
         <translation>Problème de rescale... (trace imrpimée dans la console)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="702"/>
+        <location filename="../ui/profile_dock_widget.py" line="694"/>
         <source>Tracking exception : </source>
         <translation>Exception de tracking : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="716"/>
+        <location filename="../ui/profile_dock_widget.py" line="708"/>
         <source>Mouse event exception : </source>
         <translation>Exception d&apos;évènement souris : </translation>
-    </message>
-    <message>
-        <location filename="../ui/profile_dock_widget.py" line="457"/>
-        <source>rescale problem : </source>
-        <translation>Problème de redimensionnement : </translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="603"/>
@@ -352,7 +347,7 @@
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="611"/>
-        <location filename="../ui/profile_dock_widget.py" line="637"/>
+        <location filename="../ui/profile_dock_widget.py" line="629"/>
         <source>Save As</source>
         <translation>Sauver sous</translation>
     </message>
@@ -362,7 +357,7 @@
         <translation>Profil.pdf</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="638"/>
+        <location filename="../ui/profile_dock_widget.py" line="630"/>
         <source>Profile.png</source>
         <translation>Profil.png</translation>
     </message>
@@ -590,12 +585,12 @@
         <translation>Appliquer l&apos;interpolation</translation>
     </message>
     <message>
-        <location filename="../tools/multi_attributes_tool.py" line="43"/>
+        <location filename="../tools/multi_attributes_tool.py" line="45"/>
         <source>Select features on multiple layers</source>
         <translation>Sélection d&apos;objets sur plusieurs couches</translation>
     </message>
     <message>
-        <location filename="../tools/multi_attributes_tool.py" line="52"/>
+        <location filename="../tools/multi_attributes_tool.py" line="55"/>
         <source>Multiselect</source>
         <translation>Sélection multiple</translation>
     </message>
@@ -647,7 +642,7 @@
         <translation>Cette géométrie n&apos;est pas encore implémentée</translation>
     </message>
     <message>
-        <location filename="../tools/multiselect_tool.py" line="82"/>
+        <location filename="../tools/multiselect_tool.py" line="81"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>

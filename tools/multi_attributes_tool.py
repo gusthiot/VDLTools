@@ -24,9 +24,9 @@ from __future__ import division
 from PyQt4.QtCore import QCoreApplication
 from .multiselect_tool import MultiselectTool
 from ..ui.multi_confirm_dialog import MultiConfirmDialog
-from ..ui.attributes_table_view import AttributesTableView
+# from ..ui.attributes_table_view import AttributesTableView
 from qgis.core import QgsMapLayer
-import time
+# import time
 
 
 class MultiAttributesTool(MultiselectTool):
@@ -45,7 +45,7 @@ class MultiAttributesTool(MultiselectTool):
         self.text = QCoreApplication.translate("VDLTools", "Select features on multiple layers")
         self.selectedSignal.connect(self.__selected)
         self.__confDlg = None
-        self.__tables = []
+        # self.__tables = []
 
     def toolName(self):
         """
@@ -80,23 +80,23 @@ class MultiAttributesTool(MultiselectTool):
         When the Yes button in Multi Confirm Dialog is pushed
         """
         self.__confDlg.accept()
-        i = 0
+        # i = 0
         for layer in self.canvas().layers():
-            start = time.time()
+            # start = time.time()
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in self.types:
                 if layer.selectedFeatureCount() > 0 and layer.id() not in self.disabled():
-                    # ids = "("
-                    # c = False
-                    # for f in layer.selectedFeatures():
-                    #     if c:
-                    #         ids += ","
-                    #     else:
-                    #         c = True
-                    #     ids += str(f.id())
-                    # ids += ")"
-                    tableDlg = AttributesTableView(layer, self.canvas(), self.request)
-                    self.__tables.append(tableDlg)
-                    self.__tables[i].show()
-                    i += 1
-                    # self.__iface.showAttributeTable(layer, "$id IN {}".format(ids))
-            print(" %s seconds to show %s" % (time.time() - start, layer.name()))
+                    ids = "("
+                    c = False
+                    for f in layer.selectedFeatures():
+                        if c:
+                            ids += ","
+                        else:
+                            c = True
+                        ids += str(f.id())
+                    ids += ")"
+                   #  tableDlg = AttributesTableView(layer, self.canvas(), self.request)
+                   #  self.__tables.append(tableDlg)
+                   #  self.__tables[i].show()
+                   #  i += 1
+                    self.__iface.showAttributeTable(layer, "$id IN {}".format(ids))
+            # print(" %s seconds to show %s" % (time.time() - start, layer.name()))
