@@ -556,7 +556,7 @@ class ProfileTool(QgsMapTool):
 
     def __lineVertices(self, checkLayers=False):
         """
-        To check if vertices of oter layers are crossing the displaying line
+        To check if vertices of others layers are crossing the displaying line
         :param checkLayers: if we want to get the list of the other layers in return
         :return: other layers list if requested
         """
@@ -607,10 +607,13 @@ class ProfileTool(QgsMapTool):
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in availableLayers:
+                            if layer in otherLayers:
+                                continue
                             laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
                                                                        QgsTolerance.LayerUnits)
                             f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
                                                               self.canvas(), [laySettings])
+
                             if f_l is not None:
                                 if layer == self.__lineLayer:
                                     other = False
@@ -620,8 +623,10 @@ class ProfileTool(QgsMapTool):
                                         fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                                         for f in fs:
                                             if f.id() not in self.__selectedIds:
-                                                other = True
-                                                break
+                                                vertex = f.geometry().closestVertex(QgsPoint(x, y))
+                                                if vertex[4] < self.SEARCH_TOLERANCE:
+                                                    other = True
+                                                    break
                                     if other and layer not in otherLayers:
                                         otherLayers.append(layer)
                                 elif layer not in otherLayers:
@@ -684,8 +689,10 @@ class ProfileTool(QgsMapTool):
                                 fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                                 for f in fs:
                                     if f.id() not in self.__selectedIds:
-                                        f_ok = f
-                                        break
+                                        vertex = f.geometry().closestVertex(QgsPoint(x, y))
+                                        if vertex[4] < self.SEARCH_TOLERANCE:
+                                            f_ok = f
+                                            break
                         else:
                             f_ok = f_l[0]
                         if f_ok is not None:
