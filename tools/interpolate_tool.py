@@ -245,7 +245,10 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                         intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                       self.__selectedFeature.id())
                         if intersection is not None:
-                            self.__rubber.setIcon(1)
+                            if self.__isVertexUnderPoint(intersection, snap_layers):
+                                self.__rubber.setIcon(4)
+                            else:
+                                self.__rubber.setIcon(1)
                             self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
@@ -257,6 +260,24 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                             and match.layer().id() == self.__lastLayer.id():
                         self.__rubber.setIcon(3)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(point), None)
+
+    def __isVertexUnderPoint(self, point, snap_layers):
+        """
+        When snapping find a point instead of line/polygon element, we nedd to check if there is a vertex under it
+        :param point: coordinates
+        :param snap_layers: layers configs
+        :return: True if there is a vertex, False otherwise
+        """
+        geom = self.__selectedFeature.geometry()
+        dist = geom.closestVertex(point)[4]
+        tolerance = 0
+        for config in snap_layers:
+            if config.layer.id() == self.__lastLayer.id():
+                tolerance = config.tolerance
+                break
+        if dist < (tolerance*tolerance):
+            return True
+        return False
 
     def cadCanvasReleaseEvent(self, event):
         """
@@ -298,6 +319,9 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                         if intersection is not None:
                             point = intersection
                             ok = True
+                            if self.__isVertexUnderPoint(intersection, snap_layers):
+                                noVertex = True
+
                 if match.hasEdge():
                     intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                   self.__selectedFeature.id())
