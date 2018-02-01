@@ -254,7 +254,10 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
                                                                   self.__selectedFeature.id())
                     if intersection is not None:
-                        self.__rubber.setIcon(1)
+                        if self.__isVertexUnderPoint(intersection, snap_layers):
+                            self.__rubber.setIcon(4)
+                        else:
+                            self.__rubber.setIcon(1)
                         self.__rubber.setToGeometry(QgsGeometry().fromPoint(intersection), None)
                     elif self.__selectedFeature.id() == match.featureId() \
                             and match.layer().id() == self.__lastLayer.id():
@@ -328,6 +331,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     if intersection is not None:
                         point = intersection
                         ok = True
+                        if self.__isVertexUnderPoint(intersection, snap_layers):
+                            noVertex = True
                     elif self.__selectedFeature.id() == match.featureId() \
                             and match.layer().id() == self.__lastLayer.id():
                         ok = True
