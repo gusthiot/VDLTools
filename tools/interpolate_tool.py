@@ -266,20 +266,24 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
 
     def __isVertexUnderPoint(self, point, snap_layers):
         """
-        When snapping find a point instead of line/polygon element, we nedd to check if there is a vertex under it
+        When snapping find a point instead of line/polygon element, we need to check if there is a vertex under it
         :param point: coordinates
         :param snap_layers: layers configs
         :return: True if there is a vertex, False otherwise
         """
-        geom = self.__selectedFeature.geometry()
-        dist = geom.closestVertex(point)[4]
-        tolerance = 0
         for config in snap_layers:
             if config.layer.id() == self.__lastLayer.id():
                 tolerance = config.tolerance
+                if config.unit == QgsTolerance.Pixels:
+                    tolerance = Finder.calcCanvasTolerance(self.toCanvasCoordinates(point), config.layer, self, tolerance)
+                elif config.unit == QgsTolerance.ProjectUnits:
+                    tolerance = Finder.calcMapTolerance(point, config.layer, self, tolerance)
+                layPoint = self.toLayerCoordinates(config.layer, point)
+                geom = self.__selectedFeature.geometry()
+                dist = geom.closestVertex(layPoint)[4]
+                if dist < (tolerance*tolerance):
+                    return True
                 break
-        if dist < (tolerance*tolerance):
-            return True
         return False
 
     def cadCanvasReleaseEvent(self, event):
