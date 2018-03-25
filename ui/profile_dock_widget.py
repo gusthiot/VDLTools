@@ -90,15 +90,16 @@ class ProfileDockWidget(QDockWidget):
 
     closeSignal = pyqtSignal()
 
-    def __init__(self, iface):
+    def __init__(self, iface, geometry):
         """
         Constructor
         :param iface: interface
+        :param width: dock widget geometry
         """
         QDockWidget.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Profile Tool"))
-        self.resize(1024, 400)
         self.__iface = iface
+        self.__geom = geometry
         self.__canvas = self.__iface.mapCanvas()
         self.__types = ['PDF', 'PNG']  # ], 'SVG', 'PS']
         self.__libs = []
@@ -125,6 +126,9 @@ class ProfileDockWidget(QDockWidget):
 
         self.__marker = None
         self.__tabmouseevent = None
+
+        if self.__geom is not None:
+            self.setGeometry(self.__geom)
 
         self.__contentWidget = QWidget()
         self.setWidget(self.__contentWidget)

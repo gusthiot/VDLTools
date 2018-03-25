@@ -88,6 +88,8 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif = None
         self.ownSettings = None
         self.__usedMnts = None
+        self.__isfloating = False
+        self.__dockGeom = None
 
     def setTool(self):
         """
@@ -100,8 +102,11 @@ class ProfileTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__dockWdg = ProfileDockWidget(self.__iface)
-        self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+        self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom)
+        if self.__isfloating:
+            self.__dockWdg.show()
+        else:
+           self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
         self.__rubberSit = QgsRubberBand(self.canvas(), QGis.Point)
         self.__rubberDif = QgsRubberBand(self.canvas(), QGis.Point)
@@ -118,6 +123,8 @@ class ProfileTool(QgsMapTool):
         """
         When the dock is closed
         """
+        self.__dockGeom = self.__dockWdg.geometry()
+        self.__isfloating = self.__dockWdg.isFloating()
         self.__cancel()
         self.__iface.actionPan().trigger()
 
