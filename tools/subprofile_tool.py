@@ -55,6 +55,8 @@ class SubProfileTool(QgsMapTool):
         self.ownSettings = None
         self.__line = None
         self.__startVertex = None
+        self.__isfloating = False
+        self.__dockGeom = None
 
     def setTool(self):
         """
@@ -67,8 +69,11 @@ class SubProfileTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__dockWdg = ProfileDockWidget(self.__iface)
-        self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+        self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom)
+        if self.__isfloating:
+            self.__dockWdg.show()
+        else:
+           self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
         self.__rubberLine = QgsRubberBand(self.canvas(), QGis.Line)
         color = QColor("red")
@@ -84,6 +89,8 @@ class SubProfileTool(QgsMapTool):
         """
         When the dock is closed
         """
+        self.__dockGeom = self.__dockWdg.geometry()
+        self.__isfloating = self.__dockWdg.isFloating()
         self.__cancel()
         self.__iface.actionPan().trigger()
 
