@@ -584,7 +584,9 @@ class ProfileTool(QgsMapTool):
                     break
             if selected is None:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools", "Error on selected"), level=QgsMessageBar.CRITICAL, duration=0)
+                    QCoreApplication.translate("VDLTools", "Error on selected"), level=QgsMessageBar.CRITICAL,
+                    duration=0
+                )
                 continue
             line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
             if direction:
@@ -598,7 +600,11 @@ class ProfileTool(QgsMapTool):
                 doublon = False
                 for item in self.__points:
                     if item['x'] == x and item['y'] == y:
-                        item['z'][num] = pt_v2.z()
+                        self.__iface.messageBar().pushMessage(
+                            QCoreApplication.translate("VDLTools",
+                                                       "Doublon at vertex " + str(i-1) + " from feature " + str(iden)),
+                            level=QgsMessageBar.CRITICAL, duration=0
+                        )
                         doublon = True
                         break
                 if not doublon:
@@ -611,6 +617,7 @@ class ProfileTool(QgsMapTool):
                                 z.append(0)
                         else:
                             z.append(None)
+                    print(x, y, z)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in availableLayers:
@@ -671,7 +678,8 @@ class ProfileTool(QgsMapTool):
             y = points['y']
             z = points['z']
             for layer in self.__layers:
-                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits)
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                                                           QgsTolerance.LayerUnits)
                 f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.canvas(),
                                                   [laySettings])
                 if f_l is None:

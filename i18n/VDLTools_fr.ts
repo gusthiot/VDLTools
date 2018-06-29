@@ -39,8 +39,8 @@
     <message>
         <location filename="../tools/duplicate_tool.py" line="394"/>
         <location filename="../tools/extrapolate_tool.py" line="202"/>
-        <location filename="../tools/interpolate_tool.py" line="270"/>
-        <location filename="../tools/interpolate_tool.py" line="401"/>
+        <location filename="../tools/interpolate_tool.py" line="298"/>
+        <location filename="../tools/interpolate_tool.py" line="434"/>
         <location filename="../tools/move_tool.py" line="406"/>
         <source>One feature at a time</source>
         <translation>Un objet à la fois</translation>
@@ -56,27 +56,27 @@
         <translation>Interpoler l&apos;altitude d&apos;un vertex et d&apos;un point au milieu d&apos;une ligne</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="276"/>
+        <location filename="../tools/interpolate_tool.py" line="304"/>
         <source>Select the position for interpolation (ESC to undo)</source>
         <translation>Sélectionner la position pour l&apos;interpolation (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="319"/>
+        <location filename="../tools/interpolate_tool.py" line="352"/>
         <source>What do you want to do ?</source>
         <translation>Que voulez-vous faire ?</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="320"/>
+        <location filename="../tools/interpolate_tool.py" line="353"/>
         <source>Create point and new vertex</source>
         <translation>Créer un point et un nouveau vertex</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="321"/>
+        <location filename="../tools/interpolate_tool.py" line="354"/>
         <source>Create only the vertex</source>
         <translation>Créer seulement le vertex</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="406"/>
+        <location filename="../tools/interpolate_tool.py" line="439"/>
         <source>No more feature selected</source>
         <translation>Plus d&apos;objet sélectionné</translation>
     </message>
@@ -106,47 +106,47 @@
         <translation>Profil d&apos;une ligne</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="211"/>
+        <location filename="../tools/profile_tool.py" line="218"/>
         <source>Do you really want to edit the LineString layer ?</source>
         <translation>Voulez-vous vraiment éditer la couche Ligne ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="226"/>
+        <location filename="../tools/profile_tool.py" line="233"/>
         <source>Do you really want to edit the Point layer(s) ?</source>
         <translation>Voulez-vous vraiment éditer la (les) couches(s) Point ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="462"/>
+        <location filename="../tools/profile_tool.py" line="469"/>
         <source>Elevation</source>
         <translation>Altitude</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="463"/>
+        <location filename="../tools/profile_tool.py" line="470"/>
         <source>There is more than one elevation for the point </source>
         <translation>Il y a plus qu&apos;une altitude pour le point </translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="580"/>
+        <location filename="../tools/profile_tool.py" line="587"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="721"/>
+        <location filename="../tools/profile_tool.py" line="743"/>
         <source> connected</source>
         <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="811"/>
+        <location filename="../tools/profile_tool.py" line="833"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="873"/>
+        <location filename="../tools/profile_tool.py" line="895"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="893"/>
+        <location filename="../tools/profile_tool.py" line="915"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
@@ -289,80 +289,80 @@
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="99"/>
+        <location filename="../ui/profile_dock_widget.py" line="100"/>
         <source>Profile Tool</source>
         <translation>Outil de profil</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="116"/>
+        <location filename="../ui/profile_dock_widget.py" line="117"/>
         <source>No graph lib available (qwt5 or matplotlib)</source>
         <translation>Librairie graphique non disponible (qwt5 ou matplotlib)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="187"/>
+        <location filename="../ui/profile_dock_widget.py" line="191"/>
         <source>Save</source>
         <translation>Sauver</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="227"/>
-        <location filename="../ui/profile_dock_widget.py" line="671"/>
+        <location filename="../ui/profile_dock_widget.py" line="231"/>
+        <location filename="../ui/profile_dock_widget.py" line="675"/>
         <source>Distance [m]</source>
         <translation>Distance [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="230"/>
-        <location filename="../ui/profile_dock_widget.py" line="672"/>
+        <location filename="../ui/profile_dock_widget.py" line="234"/>
+        <location filename="../ui/profile_dock_widget.py" line="676"/>
         <source>Elevation [m]</source>
         <translation>Altitude [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="338"/>
+        <location filename="../ui/profile_dock_widget.py" line="342"/>
         <source>HTTP Error</source>
         <translation>Erreur HTTP</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="343"/>
+        <location filename="../ui/profile_dock_widget.py" line="347"/>
         <source>URL Error</source>
         <translation>Erreur URL</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="453"/>
+        <location filename="../ui/profile_dock_widget.py" line="457"/>
         <source>Rescale problem... (trace printed)</source>
         <translation>Problème de rescale... (trace imrpimée dans la console)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="694"/>
+        <location filename="../ui/profile_dock_widget.py" line="698"/>
         <source>Tracking exception : </source>
         <translation>Exception de tracking : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="708"/>
+        <location filename="../ui/profile_dock_widget.py" line="712"/>
         <source>Mouse event exception : </source>
         <translation>Exception d&apos;évènement souris : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="603"/>
+        <location filename="../ui/profile_dock_widget.py" line="607"/>
         <source>Invalid index </source>
         <translation>Index invalide </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="611"/>
-        <location filename="../ui/profile_dock_widget.py" line="629"/>
+        <location filename="../ui/profile_dock_widget.py" line="615"/>
+        <location filename="../ui/profile_dock_widget.py" line="633"/>
         <source>Save As</source>
         <translation>Sauver sous</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="612"/>
+        <location filename="../ui/profile_dock_widget.py" line="616"/>
         <source>Profile.pdf</source>
         <translation>Profil.pdf</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="630"/>
+        <location filename="../ui/profile_dock_widget.py" line="634"/>
         <source>Profile.png</source>
         <translation>Profil.png</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="616"/>
+        <location filename="../ui/profile_dock_widget.py" line="620"/>
         <source>QGIS Profile Plugin</source>
         <translation>Pllugin QGIS de profil</translation>
     </message>
