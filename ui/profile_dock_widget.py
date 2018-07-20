@@ -340,7 +340,7 @@ class ProfileDockWidget(QDockWidget):
         except HTTPError as e:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "HTTP Error"),
-                QCoreApplication.translate("VDLTools", "status error [" + str(e.code) + "] : " + e.reason),
+                QCoreApplication.translate("VDLTools", "status error") + "[" + str(e.code) + "] : " + e.reason,
                 level=QgsMessageBar.CRITICAL, duration=0)
         except URLError as e:
             self.__iface.messageBar().pushMessage(

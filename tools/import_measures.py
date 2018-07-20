@@ -239,9 +239,9 @@ class ImportMeasures(object):
                     self.__data[self.__iter]['point'] = point
                     self.__confDlg = ImportConfirmDialog()
                     self.__confDlg.setMessage(
-                        QCoreApplication.translate("VDLTools", "There is already a " + point +
-                                                   " in table " + data['schema_table'] + """.""" +
-                                                   data['name_table'] + ".\n Would you like to add it anyway ? "))
+                        QCoreApplication.translate("VDLTools", "There is already a ") + point +
+                                                   QCoreApplication.translate("VDLTools", " in table ") + data['schema_table'] + """.""" +
+                                                   data['name_table'] + ".\n" + QCoreApplication.translate("VDLTools", "Would you like to add it anyway ? "))
                     self.__confDlg.rejected.connect(self.__cancelAndNext)
                     self.__confDlg.accepted.connect(self.__confirmAndNext)
                     self.__confDlg.okButton().clicked.connect(self.__onConfirmOk)
@@ -356,7 +356,7 @@ class ImportMeasures(object):
         """
         if self.__num > 0:
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", str(self.__num) + " points inserted !"),level=QgsMessageBar.INFO)
+                str(self.__num) + QCoreApplication.translate("VDLTools", " points inserted !"),level=QgsMessageBar.INFO)
         self.__cancel()
 
     def __onDeleteCancel(self):

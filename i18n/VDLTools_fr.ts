@@ -131,22 +131,37 @@
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="743"/>
+        <location filename="../tools/profile_tool.py" line="604"/>
+        <source>Beware! the line </source>
+        <translation>Attention ! La ligne </translation>
+    </message>
+    <message>
+        <location filename="../tools/profile_tool.py" line="605"/>
+        <source> has 2 identical summits on the vertex </source>
+        <translation> possède 2 sommets identiques sur le vertex</translation>
+    </message>
+    <message>
+        <location filename="../tools/profile_tool.py" line="606"/>
+        <source> same coordinates (X and Y). Please correct the line geometry.</source>
+        <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
+    </message>
+    <message>
+        <location filename="../tools/profile_tool.py" line="745"/>
         <source> connected</source>
         <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="833"/>
+        <location filename="../tools/profile_tool.py" line="835"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="895"/>
+        <location filename="../tools/profile_tool.py" line="897"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="915"/>
+        <location filename="../tools/profile_tool.py" line="917"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
@@ -319,6 +334,11 @@
         <location filename="../ui/profile_dock_widget.py" line="342"/>
         <source>HTTP Error</source>
         <translation>Erreur HTTP</translation>
+    </message>
+    <message>
+        <location filename="../ui/profile_dock_widget.py" line="343"/>
+        <source>status error</source>
+        <translation>erreur status</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="347"/>
@@ -530,9 +550,29 @@
         <translation>Code absent de la table de configuration, cette mesure ne sera pas traitée</translation>
     </message>
     <message>
+        <location filename="../tools/import_measures.py" line="242"/>
+        <source>There is already a </source>
+        <translation>Il y a déjà un </translation>
+    </message>
+    <message>
+        <location filename="../tools/import_measures.py" line="243"/>
+        <source> in table </source>
+        <translation> dans la table </translation>
+    </message>
+    <message>
+        <location filename="../tools/import_measures.py" line="244"/>
+        <source>Would you like to add it anyway ? </source>
+        <translation>Voulez-vous l&apos;ajouter malgré tout ? </translation>
+    </message>
+    <message>
         <location filename="../tools/import_measures.py" line="315"/>
         <source>different destination layer in config table ?!?</source>
         <translation>Couche de destination différente dans la table de configuration ?!?</translation>
+    </message>
+    <message>
+        <location filename="../tools/import_measures.py" line="359"/>
+        <source> points inserted !</source>
+        <translation>points insérées !</translation>
     </message>
     <message>
         <location filename="../tools/subprofile_tool.py" line="49"/>

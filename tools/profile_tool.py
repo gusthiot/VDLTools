@@ -601,8 +601,10 @@ class ProfileTool(QgsMapTool):
                 for item in self.__points:
                     if item['x'] == x and item['y'] == y:
                         self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools",
-                                                       "Doublon at vertex " + str(i-1) + " from feature " + str(iden)),
+                            QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
+                            QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
+                            str(i-1) + QCoreApplication.translate("VDLTools", " same coordinates (X and Y). "
+                                                                              "Please correct the line geometry."),
                             level=QgsMessageBar.CRITICAL, duration=0
                         )
                         doublon = True
