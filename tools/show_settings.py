@@ -29,6 +29,7 @@ from PyQt4.QtCore import (QCoreApplication,
                           QVariant)
 from qgis.core import (QgsProject,
                        QgsMapLayerRegistry,
+                       QgsWKBTypes,
                        edit,
                        QgsField,
                        QGis,
@@ -56,6 +57,8 @@ class ShowSettings(object):
         self.__schemaDb = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
+        self.__refLayers = []
+        self.__drawdownLayer = None
         self.__mntUrl = None
         self.__project_loaded()
         QgsProject.instance().readProject.connect(self.__project_loaded)
@@ -67,6 +70,21 @@ class ShowSettings(object):
         """
         Get saved settings on load
         """
+
+        """ Reference point layers for drawdown tool """
+        ref_ids = QgsProject.instance().readEntry("VDLTools", "ref_layers", "None")[0]
+
+        """ Level attribute for drawdown tool """
+        self.__levelAtt = QgsProject.instance().readEntry("VDLTools", "level_att", "None")[0]
+
+        """ Level value for drawdown tool """
+        self.__levelVal = QgsProject.instance().readEntry("VDLTools", "level_val", "None")[0]
+
+        """ Drawdown line layer """
+        dd_id = QgsProject.instance().readEntry("VDLTools", "drawdown_layer", "None")[0]
+
+        """ Pipe diameter attribute for drawdown line layer """
+        self.__pipeDiam = QgsProject.instance().readEntry("VDLTools", "pipe_diam", "None")[0]
 
         """ Url used to get mnt values on a line """
         self.__mntUrl = QgsProject.instance().readEntry("VDLTools", "mnt_url", "None")[0]
@@ -88,15 +106,23 @@ class ShowSettings(object):
 
         """ Temporarly lines layer for the project """
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
-        if mpl_id != -1 or mll_id != -1:
-            for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
-                if layer and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
+
+        for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
+            if layer and layer.type() == QgsMapLayer.VectorLayer:
+                if layer.providerType() == "memory":
                     if layer.geometryType() == QGis.Point:
                         if layer.id() == mpl_id:
                             self.__memoryPointsLayer = layer
                     if layer.geometryType() == QGis.Line:
                         if layer.id() == mll_id:
                             self.__memoryLinesLayer = layer
+                if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+                        if layer.id() == dd_id:
+                            self.__drawdownLayer = layer
+                if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+                        if layer.id() in ref_ids:
+                            self.__refLayers.append(layer)
+
         if dbName != "":
             usedDbs = DBConnector.getUsedDatabases()
             if dbName in list(usedDbs.keys()):
@@ -112,7 +138,8 @@ class ShowSettings(object):
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
                                             self.__ctlDb, self.__configTable, self.__uriDb, self.__schemaDb,
-                                            self.__mntUrl, self.__moreTools)
+                                            self.__mntUrl, self.__refLayers, self.__levelAtt, self.__levelVal,
+                                            self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -129,6 +156,11 @@ class ShowSettings(object):
         self.ctlDb = self.__showDlg.ctlDb()
         self.schemaDb = self.__showDlg.schemaDb()
         self.mntUrl = self.__showDlg.mntUrl()
+        self.refLayers = self.__showDlg.refLayers()
+        self.levelAtt = self.__showDlg.levelAtt()
+        self.levelVal = self.__showDlg.levelVal()
+        self.drawdownLayer = self.__showDlg.drawdownLayer()
+        self.pipeDiam = self.__showDlg.pipeDiam()
 
     def __onCancel(self):
         """
@@ -149,6 +181,13 @@ class ShowSettings(object):
         """
         self.__memoryPointsLayer = None
         QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", None)
+
+    def __drawdownLayerDeleted(self):
+        """
+        To delete the saved drawdown layer
+        """
+        self.__drawdownLayer = None
+        QgsProject.instance().writeEntry("VDLTools", "drawdown_layer", None)
 
     @property
     def pointsLayer(self):
@@ -181,6 +220,46 @@ class ShowSettings(object):
         :return: saved mnt url
         """
         return self.__mntUrl
+
+    @property
+    def refLayers(self):
+        """
+        To get the saved reference layers
+        :return: saved reference layers
+        """
+        return self.__refLayers
+
+    @property
+    def levelAtt(self):
+        """
+        To get the saved level attribute
+        :return: saved level attribute
+        """
+        return self.__levelAtt
+
+    @property
+    def levelVal(self):
+        """
+        To get the saved level value
+        :return: saved level value
+        """
+        return self.__levelVal
+
+    @property
+    def drawdownLayer(self):
+        """
+        To get the saved drawdown layer
+        :return: saved drawdown layer
+        """
+        return self.__drawdownLayer
+
+    @property
+    def pipeDiam(self):
+        """
+        To get the saved pipe diameter
+        :return: saved pipe diameter
+        """
+        return self.__pipeDiam
 
     @property
     def uriDb(self):
@@ -306,6 +385,63 @@ class ShowSettings(object):
         self.__mntUrl = mntUrl
         if mntUrl is not None:
             QgsProject.instance().writeEntry("VDLTools", "mnt_url", mntUrl)
+
+    @refLayers.setter
+    def refLayers(self, refLayers):
+        """
+        To set the saved reference layers
+        :param refLayers: saved reference layers
+        """
+        self.__refLayers = refLayers
+        ids = []
+        for layer in refLayers:
+            if layer:
+                ids.append(layer.id())
+                # layer.layerDeleted.connect(self.__refLayerDeleted)
+        QgsProject.instance().writeEntry("VDLTools", "ref_layers", ids)
+
+    @levelAtt.setter
+    def levelAtt(self, levelAtt):
+        """
+        To set the saved level attribute
+        :param levelAtt: saved level attribute
+        """
+        self.__levelAtt = levelAtt
+        if levelAtt is not None:
+            QgsProject.instance().writeEntry("VDLTools", "level_att", levelAtt)
+
+    @levelVal.setter
+    def levelVal(self, levelVal):
+        """
+        To set the saved level value
+        :param levelVal: saved level value
+        """
+        self.__levelVal = levelVal
+        if levelVal is not None:
+            QgsProject.instance().writeEntry("VDLTools", "level_val", levelVal)
+
+    @drawdownLayer.setter
+    def drawdownLayer(self, drawdownLayer):
+        """
+        To set the saved drawdown layer
+        :param drawdownLayer: saved drawdown layer
+        """
+        self.__drawdownLayer = drawdownLayer
+        layer_id = None
+        if drawdownLayer:
+            layer_id = drawdownLayer.id()
+            self.__drawdownLayer.layerDeleted.connect(self.__drawdownLayerDeleted)
+        QgsProject.instance().writeEntry("VDLTools", "drawdown_layer", layer_id)
+
+    @pipeDiam.setter
+    def pipeDiam(self, pipeDiam):
+        """
+        To set the saved pipe diameter
+        :param pipeDiam: saved pipe diameter
+        """
+        self.__pipeDiam = pipeDiam
+        if pipeDiam is not None:
+            QgsProject.instance().writeEntry("VDLTools", "pipe_diam", pipeDiam)
 
     @uriDb.setter
     def uriDb(self, uriDb):

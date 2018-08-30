@@ -23,7 +23,7 @@
 
 class Signal(object):
     """
-    Class for
+    Class for safely disconnect a signal
     """
 
     @staticmethod

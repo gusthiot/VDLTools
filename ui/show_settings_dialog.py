@@ -29,8 +29,12 @@ from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
                          QLabel,
+                         QListWidget,
+                         QListWidgetItem,
+                         QAbstractItemView,
                          QComboBox)
 from qgis.core import (QgsMapLayer,
+                       QgsWKBTypes,
                        QgsMapLayerRegistry,
                        QGis)
 from PyQt4.QtCore import QCoreApplication
@@ -44,7 +48,7 @@ class ShowSettingsDialog(QDialog):
     """
 
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, ctllDb, configTable, uriDb, schemaDb, mntUrl,
-                 moreTools):
+                 refLayers, levelAtt, levelVal, drawdowmLayer, pipeDiam, moreTools):
         """
         Constructor
         :param iface: interface
@@ -61,20 +65,35 @@ class ShowSettingsDialog(QDialog):
         self.__uriDb = uriDb
         self.__schemaDb = schemaDb
         self.__mntUrl = mntUrl
+        self.__refLayers = refLayers
+        self.__levelAtt = levelAtt
+        self.__levelVal = levelVal
+        self.__drawdowmLayer = drawdowmLayer
+        self.__pipeDiam = pipeDiam
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Settings"))
         self.__pointsLayers = []
         self.__linesLayers = []
+        self.__refAvailableLayers = []
+        self.__drawdownLayers = []
         self.__tables = []
         self.__schemas = []
+        self.__pipeDiamFields = []
+        self.__levelAttFields = []
         self.__dbs = DBConnector.getUsedDatabases()
 
         for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
-            if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "memory":
-                if layer.geometryType() == QGis.Point:
-                    self.__pointsLayers.append(layer)
-                if layer.geometryType() == QGis.Line:
-                    self.__linesLayers.append(layer)
-        self.resize(450, 200)
+            if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
+                if layer.providerType() == "memory":
+                    if layer.geometryType() == QGis.Point:
+                        self.__pointsLayers.append(layer)
+                    if layer.geometryType() == QGis.Line:
+                        self.__linesLayers.append(layer)
+                if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+                    self.__drawdownLayers.append(layer)
+                if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+                    self.__refAvailableLayers.append(layer)
+
+        self.resize(450, 400)
         self.__layout = QGridLayout()
 
         pointLabel = QLabel(QCoreApplication.translate("VDLTools", "Working points layer : "))
@@ -125,6 +144,80 @@ class ShowSettingsDialog(QDialog):
         self.__mntText.setMinimumWidth(100)
         self.__layout.addWidget(self.__mntText, 2, 2)
 
+        refLabel = QLabel(QCoreApplication.translate("VDLTools", "reference layers : "))
+        refLabel.setMinimumHeight(20)
+        refLabel.setMinimumWidth(50)
+        self.__layout.addWidget(refLabel, 3, 1)
+
+        self.__refList = QListWidget()
+        self.__refList.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.__refList.setMinimumHeight(20)
+        self.__refList.setMinimumWidth(50)
+        self.__layout.addWidget(self.__refList, 3, 2)
+
+        levelAttLabel = QLabel(QCoreApplication.translate("VDLTools", "Level attribute : "))
+        levelAttLabel.setMinimumHeight(20)
+        levelAttLabel.setMinimumWidth(50)
+        self.__layout.addWidget(levelAttLabel, 4, 1)
+
+        self.__levelAttCombo = QComboBox()
+        self.__levelAttCombo.setMinimumHeight(20)
+        self.__levelAttCombo.setMinimumWidth(50)
+        self.__levelAttCombo.addItem("")
+        self.__layout.addWidget(self.__levelAttCombo, 4, 2)
+
+        self.__refList.itemSelectionChanged.connect(self.__refListChanged)
+        self.__levelAttCombo.currentIndexChanged.connect(self.__levelAttComboChanged)
+        for layer in self.__refAvailableLayers:
+            item = QListWidgetItem(layer.name())
+            self.__refList.addItem(item)
+            if layer in self.__refLayers:
+                item.setSelected(True)
+
+        levelValLabel = QLabel(QCoreApplication.translate("VDLTools", "Level value : "))
+        levelValLabel.setMinimumHeight(20)
+        levelValLabel.setMinimumWidth(50)
+        self.__layout.addWidget(levelValLabel, 5, 1)
+
+        self.__levelValText = QLineEdit()
+        if self.__levelVal is not None and self.__levelVal != "None":
+            self.__levelValText.insert(self.__levelVal)
+        self.__levelValText.setMinimumHeight(20)
+        self.__levelValText.setMinimumWidth(100)
+        self.__layout.addWidget(self.__levelValText, 5, 2)
+
+        drawdownLabel = QLabel(QCoreApplication.translate("VDLTools", "drawdown layer : "))
+        drawdownLabel.setMinimumHeight(20)
+        drawdownLabel.setMinimumWidth(50)
+        self.__layout.addWidget(drawdownLabel, 6, 1)
+
+        self.__drawdownCombo = QComboBox()
+        self.__drawdownCombo.setMinimumHeight(20)
+        self.__drawdownCombo.setMinimumWidth(50)
+        self.__drawdownCombo.addItem("")
+        for layer in self.__drawdownLayers:
+            self.__drawdownCombo.addItem(layer.name())
+        self.__layout.addWidget(self.__drawdownCombo, 6, 2)
+
+        pipeDiamLabel = QLabel(QCoreApplication.translate("VDLTools", "Pipe diameter attribute : "))
+        pipeDiamLabel.setMinimumHeight(20)
+        pipeDiamLabel.setMinimumWidth(50)
+        self.__layout.addWidget(pipeDiamLabel, 7, 1)
+
+        self.__pipeDiamCombo = QComboBox()
+        self.__pipeDiamCombo.setMinimumHeight(20)
+        self.__pipeDiamCombo.setMinimumWidth(50)
+        self.__pipeDiamCombo.addItem("")
+        self.__layout.addWidget(self.__pipeDiamCombo, 7, 2)
+
+        self.__drawdownCombo.currentIndexChanged.connect(self.__drawdownComboChanged)
+        self.__pipeDiamCombo.currentIndexChanged.connect(self.__pipeDiamComboChanged)
+
+        if self.__drawdowmLayer is not None:
+            if self.__drawdowmLayer in self.__drawdownLayers:
+                self.__drawdownCombo.setCurrentIndex(self.__drawdownLayers.index(self.__drawdowmLayer)+1)
+
+        ### aligner les more tools !!!
         if moreTools:
             dbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
             dbLabel.setMinimumHeight(20)
@@ -271,6 +364,48 @@ class ShowSettingsDialog(QDialog):
                     if self.__configTable in self.__tables:
                         self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
 
+    def __setPipeDiamCombo(self, drawdownLayer):
+        Signal.safelyDisconnect(self.__pipeDiamCombo.currentIndexChanged, self.__pipeDiamComboChanged)
+        self.__resetCombo(self.__pipeDiamCombo)
+        self.__pipeDiamCombo.addItem("")
+        fields = drawdownLayer.fields()
+        self.__pipeDiamFields = []
+        for field in fields:
+            self.__pipeDiamFields.append(field.name())
+            self.__pipeDiamCombo.addItem(field.name())
+        self.__pipeDiamCombo.currentIndexChanged.connect(self.__pipeDiamComboChanged)
+        if self.__pipeDiam is not None:
+            if self.__pipeDiam in self.__pipeDiamFields:
+                self.__pipeDiamCombo.setCurrentIndex(self.__pipeDiamFields.index(self.__pipeDiam) + 1)
+
+    def __setLevelAttCombo(self, refLayers):
+        Signal.safelyDisconnect(self.__levelAttCombo.currentIndexChanged, self.__levelAttComboChanged)
+        self.__resetCombo(self.__levelAttCombo)
+        self.__levelAttCombo.addItem("")
+        self.__levelAttFields = []
+        num = 0
+        for layer in refLayers:
+            fields = layer.fields()
+            if num == 0:
+                for field in fields:
+                    self.__levelAttFields.append(field.name())
+            else:
+                names = []
+                for field in fields:
+                    names.append(field.name())
+                news = []
+                for name in self.__levelAttFields:
+                    if name in names:
+                        news.append(name)
+                self.__levelAttFields = news
+
+        for name in self.__levelAttFields:
+            self.__levelAttCombo.addItem(name)
+        self.__levelAttCombo.currentIndexChanged.connect(self.__levelAttComboChanged)
+        if self.__levelAtt is not None:
+            if self.__levelAtt in self.__levelAttFields:
+                self.__levelAttCombo.setCurrentIndex(self.__levelAttFields.index(self.__levelAtt) + 1)
+
     def __lineComboChanged(self):
         """
         To remove blank item when another one is selected
@@ -284,6 +419,19 @@ class ShowSettingsDialog(QDialog):
         """
         if self.__pointCombo.itemText(0) == "":
             self.__pointCombo.removeItem(0)
+
+    def __refListChanged(self):
+        if self.refLayers() is not None:
+            self.__setLevelAttCombo(self.refLayers())
+
+    def __drawdownComboChanged(self):
+        """
+        To remove blank item when another one is selected
+        """
+        if self.__drawdownCombo.itemText(0) == "":
+            self.__drawdownCombo.removeItem(0)
+        if self.drawdownLayer() is not None:
+            self.__setPipeDiamCombo(self.drawdownLayer())
 
     def __tableComboChanged(self):
         """
@@ -310,6 +458,20 @@ class ShowSettingsDialog(QDialog):
         if self.schemaDb() is not None:
             self.__setTableCombo(self.uriDb(), self.schemaDb())
 
+    def __pipeDiamComboChanged(self):
+        """
+        When the selection in schema combo has changed
+        """
+        if self.__pipeDiamCombo.itemText(0) == "":
+            self.__pipeDiamCombo.removeItem(0)
+
+    def __levelAttComboChanged(self):
+        """
+        When the selection in schema combo has changed
+        """
+        if self.__levelAttCombo.itemText(0) == "":
+            self.__levelAttCombo.removeItem(0)
+
     def __ctlComboChanged(self):
         """
         When the selection in ctl combo has changed
@@ -334,7 +496,7 @@ class ShowSettingsDialog(QDialog):
     def pointsLayer(self):
         """
         To get the selected memory points layer
-        :return: selected memeory points layer, or none
+        :return: selected memory points layer, or none
         """
         index = self.__pointCombo.currentIndex()
         if self.__pointCombo.itemText(index) == "":
@@ -352,6 +514,50 @@ class ShowSettingsDialog(QDialog):
             return None
         else:
             return self.__linesLayers[index]
+
+    def refLayers(self):
+        """
+        To get the selected reference layers
+        :return: selected reference layers, or none
+        """
+        layers = []
+        items = self.__refList.selectedItems()
+        for item in items:
+            index = self.__refList.row(item)
+            layers.append(self.__refAvailableLayers[index])
+        return layers
+
+    def levelAtt(self):
+        if self.__levelAttCombo is None:
+            return None
+        index = self.__levelAttCombo.currentIndex()
+        if self.__levelAttCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__levelAttFields[index]
+
+    def levelVal(self):
+        return self.__levelValText.text()
+
+    def drawdownLayer(self):
+        """
+        To get the selected drawdown layer
+        :return: selected drawdown layer, or none
+        """
+        index = self.__drawdownCombo.currentIndex()
+        if self.__drawdownCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__drawdownLayers[index]
+
+    def pipeDiam(self):
+        if self.__pipeDiamCombo is None:
+            return None
+        index = self.__pipeDiamCombo.currentIndex()
+        if self.__pipeDiamCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__pipeDiamFields[index]
 
     def configTable(self):
         """
