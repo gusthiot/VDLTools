@@ -250,7 +250,7 @@ class ProfileTool(QgsMapTool):
                  QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
         for layer in self.canvas().layers():
             if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
-                    layerList.append(layer)
+                layerList.append(layer)
         return layerList
 
     def __onMsgPass(self):
@@ -593,23 +593,30 @@ class ProfileTool(QgsMapTool):
                 rg = range(line_v2.numPoints())
             else:
                 rg = range(line_v2.numPoints()-1, -1, -1)
+            rg_positions = []
             for i in rg:
                 pt_v2 = line_v2.pointN(i)
                 x = pt_v2.x()
                 y = pt_v2.y()
                 doublon = False
-                for item in self.__points:
-                    if item['x'] == x and item['y'] == y:
+                for position in rg_positions:
+                    if position['x'] == x and position['y'] == y:
                         self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
-                            QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
-                            str(i-1) + QCoreApplication.translate("VDLTools", " same coordinates (X and Y). "
-                                                                              "Please correct the line geometry."),
-                            level=QgsMessageBar.CRITICAL, duration=0
+                           QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
+                           QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
+                           str(i-1) + QCoreApplication.translate("VDLTools", " same coordinates (X and Y). "
+                                                                             "Please correct the line geometry."),
+                           level=QgsMessageBar.CRITICAL, duration=0
                         )
                         doublon = True
                         break
+                for item in self.__points:
+                    if item['x'] == x and item['y'] == y:
+                        item['z'][num] = pt_v2.z()
+                        doublon = True
+                        break
                 if not doublon:
+                    rg_positions.append({'x': x, 'y': y})
                     z = []
                     for j in range(num_lines):
                         if j == num:

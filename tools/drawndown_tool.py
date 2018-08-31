@@ -21,32 +21,32 @@
  ***************************************************************************/
 """
 from __future__ import division
-# from future.builtins import str
-# from future.builtins import range
-# from past.utils import old_div
-from qgis.core import (# QgsMapLayer,
+from future.builtins import str
+from future.builtins import range
+from past.utils import old_div
+from qgis.core import (QgsMapLayer,
                        QgsPointLocator,
                        QgsSnappingUtils,
-                       # QgsGeometry,
+                       QgsGeometry,
                        QGis,
                        QgsTolerance,
-                       # QgsPoint,
-                       # QgsWKBTypes
+                       QgsPoint,
+                       QgsWKBTypes
     )
 from qgis.gui import (QgsMapTool,
                       QgsMessageBar,
                       QgsRubberBand)
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
-from PyQt4.QtGui import (# QMessageBox,
+from PyQt4.QtGui import (QMessageBox,
                          QColor)
 from ..core.finder import Finder
-# from ..core.geometry_v2 import GeometryV2
-# from ..ui.profile_layers_dialog import ProfileLayersDialog
+from ..core.geometry_v2 import GeometryV2
+from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
-# from ..ui.profile_message_dialog import ProfileMessageDialog
-# from ..ui.profile_confirm_dialog import ProfileConfirmDialog
-# from ..ui.profile_zeros_dialog import ProfileZerosDialog
+from ..ui.profile_message_dialog import ProfileMessageDialog
+from ..ui.profile_confirm_dialog import ProfileConfirmDialog
+from ..ui.profile_zeros_dialog import ProfileZerosDialog
 
 
 class DrawdownTool(QgsMapTool):
@@ -91,6 +91,10 @@ class DrawdownTool(QgsMapTool):
         self.__usedMnts = None
         self.__isfloating = False
         self.__dockGeom = None
+        self.__pipeDiam = None
+        self.__refLayers = None
+        self.__levelAtt = None
+        self.__leveVal = None
 
     def setTool(self):
         """
@@ -102,23 +106,55 @@ class DrawdownTool(QgsMapTool):
         """
         When the action is selected
         """
+        if self.ownSettings is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+        if self.ownSettings.refLayers is None or len(self.ownSettings.refLayers)==0:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No reference layers given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+        if self.ownSettings.levelAtt is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level attribute given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+        if self.ownSettings.levelVal is None or self.ownSettings.levelVal == "":
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level value given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+        print(self.ownSettings.drawdownLayer)
+        if self.ownSettings.drawdownLayer is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No drawdown layer given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+        print(self.ownSettings.pipeDiam)
+        if self.ownSettings.pipeDiam is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No pipe diameter given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom)
-        # if self.__isfloating:
-        #     self.__dockWdg.show()
-        # else:
-        #    self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
-        # self.__dockWdg.closeSignal.connect(self.__closed)
-        # self.__rubberSit = QgsRubberBand(self.canvas(), QGis.Point)
-        # self.__rubberDif = QgsRubberBand(self.canvas(), QGis.Point)
-        # color = QColor("red")
-        # color.setAlphaF(0.78)
-        # self.__rubberSit.setColor(color)
-        # self.__rubberSit.setIcon(4)
-        # self.__rubberSit.setIconSize(20)
-        # self.__rubberDif.setColor(color)
-        # self.__rubberDif.setIcon(2)
-        # self.__rubberDif.setIconSize(20)
+        if self.__isfloating:
+            self.__dockWdg.show()
+        else:
+           self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+        self.__dockWdg.closeSignal.connect(self.__closed)
+        self.__rubberSit = QgsRubberBand(self.canvas(), QGis.Point)
+        self.__rubberDif = QgsRubberBand(self.canvas(), QGis.Point)
+        color = QColor("red")
+        color.setAlphaF(0.78)
+        self.__rubberSit.setColor(color)
+        self.__rubberSit.setIcon(4)
+        self.__rubberSit.setIconSize(20)
+        self.__rubberDif.setColor(color)
+        self.__rubberDif.setIcon(2)
+        self.__rubberDif.setIconSize(20)
+        self.__lineLayer = self.ownSettings.drawdownLayer
+        self.__pipeDiam = self.ownSettings.pipeDiam
+        self.__refLayers = self.ownSettings.refLayers
+        self.__levelAtt = self.ownSettings.levelAtt
+        self.__leveVal = self.ownSettings.levelVal
 
     def __closed(self):
         """
@@ -158,44 +194,30 @@ class DrawdownTool(QgsMapTool):
         self.__msgDlg = None
         self.__confDlg = None
         self.__zeroDlg = None
+        self.__pipeDiam = None
+        self.__refLayers = None
+        self.__levelAtt = None
+        self.__leveVal = None
 
-    def setEnable(self, layer):
+    def __setLayerDialog(self):
         """
-        To check if we can enable the action for the selected layer
-        :param layer: selected layer
+        To create a Profile Layers Dialog
         """
-        # if layer is not None and layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) == \
-        #         QgsWKBTypes.LineStringZ:
-        #     self.__lineLayer = layer
-        #     self.action().setEnabled(True)
-        #     return
-        # self.action().setEnabled(False)
-        # if self.canvas().mapTool() == self:
-        #     self.__iface.actionPan().trigger()
-        # if self.__dockWdg is not None:
-        #     self.__dockWdg.close()
-        # self.__lineLayer = None
-# only for parametrized layer
+        otherLayers = self.__lineVertices(True)
+        with_mnt = True
+        if self.ownSettings is None or self.ownSettings.mntUrl is None \
+                or self.ownSettings.mntUrl == "":
+            with_mnt = False
+        if not with_mnt and len(otherLayers) == 0:
+            self.__layers = []
+            self.__layOk()
+        else:
+            self.__layDlg = ProfileLayersDialog(otherLayers, with_mnt)
+            self.__layDlg.rejected.connect(self.__cancel)
+            self.__layDlg.okButton().clicked.connect(self.__onLayOk)
+            self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
+            self.__layDlg.show()
 
-    # def __setLayerDialog(self):
-    #     """
-    #     To create a Profile Layers Dialog
-    #     """
-    #     otherLayers = self.__lineVertices(True)
-    #     with_mnt = True
-    #     if self.ownSettings is None or self.ownSettings.mntUrl is None \
-    #             or self.ownSettings.mntUrl == "":
-    #         with_mnt = False
-    #     if not with_mnt and len(otherLayers) == 0:
-    #         self.__layers = []
-    #         self.__layOk()
-    #     else:
-    #         self.__layDlg = ProfileLayersDialog(otherLayers, with_mnt)
-    #         self.__layDlg.rejected.connect(self.__cancel)
-    #         self.__layDlg.okButton().clicked.connect(self.__onLayOk)
-    #         self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
-    #         self.__layDlg.show()
-    #
     # def __setMessageDialog(self, situations, differences, names):
     #     """
     #     To create a Profile Message Dialog
@@ -241,20 +263,21 @@ class DrawdownTool(QgsMapTool):
     #             self.__confirmPoints()
     #     else:
     #         self.__confirmLine()
-    #
-    # def __getOtherLayers(self):
-    #     """
-    #     To get all points layers that can be used
-    #     :return: layers list
-    #     """
-    #     layerList = []
-    #     types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
-    #              QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
-    #     for layer in self.canvas().layers():
-    #         if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
-    #                 layerList.append(layer)
-    #     return layerList
-    #
+
+    def __getOtherLayers(self):
+        """
+        To get all points layers that can be used
+        :return: layers list
+        """
+        layerList = []
+        types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
+                 QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
+        for layer in self.canvas().layers():
+            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
+                # except ref layers or not
+                layerList.append(layer)
+        return layerList
+
     # def __onMsgPass(self):
     #     """
     #     When the Pass button in Profile Message Dialog is pushed
@@ -555,113 +578,113 @@ class DrawdownTool(QgsMapTool):
     #     if not layer.isEditable():
     #         layer.startEditing()
     #     layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
-    #
-    # def __onLayCancel(self):
-    #     """
-    #     When the Cancel button in Profile Layers Dialog is pushed
-    #     """
-    #     self.__layDlg.reject()
-    #     self.__isChoosed = False
-    #
-    # def __lineVertices(self, checkLayers=False):
-    #     """
-    #     To check if vertices of others layers are crossing the displaying line
-    #     :param checkLayers: if we want to get the list of the other layers in return
-    #     :return: other layers list if requested
-    #     """
-    #     if checkLayers:
-    #         availableLayers = self.__getOtherLayers()
-    #         otherLayers = []
-    #     self.__points = []
-    #     self.__selectedStarts = []
-    #     num = 0
-    #     num_lines = len(self.__selectedIds)
-    #     for iden in self.__selectedIds:
-    #         self.__selectedStarts.append(max(0, len(self.__points)-1))
-    #         direction = self.__selectedDirections[num]
-    #         selected = None
-    #         for f in self.__lineLayer.selectedFeatures():
-    #             if f.id() == iden:
-    #                 selected = f
-    #                 break
-    #         if selected is None:
-    #             self.__iface.messageBar().pushMessage(
-    #                 QCoreApplication.translate("VDLTools", "Error on selected"), level=QgsMessageBar.CRITICAL,
-    #                 duration=0
-    #             )
-    #             continue
-    #         line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
-    #         if direction:
-    #             rg = range(line_v2.numPoints())
-    #         else:
-    #             rg = range(line_v2.numPoints()-1, -1, -1)
-    #         for i in rg:
-    #             pt_v2 = line_v2.pointN(i)
-    #             x = pt_v2.x()
-    #             y = pt_v2.y()
-    #             doublon = False
-    #             for item in self.__points:
-    #                 if item['x'] == x and item['y'] == y:
-    #                     self.__iface.messageBar().pushMessage(
-    #                         QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
-    #                         QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
-    #                         str(i-1) + QCoreApplication.translate("VDLTools", " same coordinates (X and Y). "
-    #                                                                           "Please correct the line geometry."),
-    #                         level=QgsMessageBar.CRITICAL, duration=0
-    #                     )
-    #                     doublon = True
-    #                     break
-    #             if not doublon:
-    #                 z = []
-    #                 for j in range(num_lines):
-    #                     if j == num:
-    #                         if pt_v2.z() == pt_v2.z():
-    #                             z.append(pt_v2.z())
-    #                         else:
-    #                             z.append(0)
-    #                     else:
-    #                         z.append(None)
-    #                 print(x, y, z)
-    #                 self.__points.append({'x': x, 'y': y, 'z': z})
-    #                 if checkLayers:
-    #                     for layer in availableLayers:
-    #                         if layer in otherLayers:
-    #                             continue
-    #                         laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
-    #                                                                    QgsTolerance.LayerUnits)
-    #                         f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-    #                                                           self.canvas(), [laySettings])
-    #
-    #                         if f_l is not None:
-    #                             if layer == self.__lineLayer:
-    #                                 other = False
-    #                                 if f_l[0].id() not in self.__selectedIds:
-    #                                     other = True
-    #                                 else:
-    #                                     fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
-    #                                     for f in fs:
-    #                                         if f.id() not in self.__selectedIds:
-    #                                             vertex = f.geometry().closestVertex(QgsPoint(x, y))
-    #                                             if vertex[4] < self.SEARCH_TOLERANCE:
-    #                                                 other = True
-    #                                                 break
-    #                                 if other and layer not in otherLayers:
-    #                                     otherLayers.append(layer)
-    #                             elif layer not in otherLayers:
-    #                                 otherLayers.append(layer)
-    #         num += 1
-    #     if checkLayers:
-    #         return otherLayers
-    #
-    # def __onLayOk(self):
-    #     """
-    #     When the Ok button in Profile Layers Dialog is pushed
-    #     """
-    #     self.__layDlg.accept()
-    #     self.__layers = self.__layDlg.getLayers()
-    #     self.__usedMnts = self.__layDlg.getUsedMnts()
-    #     self.__layOk()
-    #
+
+    def __onLayCancel(self):
+        """
+        When the Cancel button in Profile Layers Dialog is pushed
+        """
+        self.__layDlg.reject()
+        self.__isChoosed = False
+
+    def __lineVertices(self, checkLayers=False):
+        """
+        To check if vertices of others layers are crossing the displaying line
+        :param checkLayers: if we want to get the list of the other layers in return
+        :return: other layers list if requested
+        """
+        if checkLayers:
+            availableLayers = self.__getOtherLayers()
+            otherLayers = []
+        self.__points = []
+        self.__selectedStarts = []
+        num = 0
+        num_lines = len(self.__selectedIds)
+        for iden in self.__selectedIds:
+            self.__selectedStarts.append(max(0, len(self.__points)-1))
+            direction = self.__selectedDirections[num]
+            selected = None
+            for f in self.__lineLayer.selectedFeatures():
+                if f.id() == iden:
+                    selected = f
+                    break
+            if selected is None:
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "Error on selected"), level=QgsMessageBar.CRITICAL,
+                    duration=0
+                )
+                continue
+            line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
+            if direction:
+                rg = range(line_v2.numPoints())
+            else:
+                rg = range(line_v2.numPoints()-1, -1, -1)
+            for i in rg:
+                pt_v2 = line_v2.pointN(i)
+                x = pt_v2.x()
+                y = pt_v2.y()
+                doublon = False
+                for item in self.__points:
+                    if item['x'] == x and item['y'] == y:
+                        self.__iface.messageBar().pushMessage(
+                            QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
+                            QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
+                            str(i-1) + QCoreApplication.translate("VDLTools", " same coordinates (X and Y). "
+                                                                              "Please correct the line geometry."),
+                            level=QgsMessageBar.CRITICAL, duration=0
+                        )
+                        doublon = True
+                        break
+                if not doublon:
+                    z = []
+                    for j in range(num_lines):
+                        if j == num:
+                            if pt_v2.z() == pt_v2.z():
+                                z.append(pt_v2.z())
+                            else:
+                                z.append(0)
+                        else:
+                            z.append(None)
+                    print(x, y, z)
+                    self.__points.append({'x': x, 'y': y, 'z': z})
+                    if checkLayers:
+                        for layer in availableLayers:
+                            if layer in otherLayers:
+                                continue
+                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                                                                       QgsTolerance.LayerUnits)
+                            f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
+                                                              self.canvas(), [laySettings])
+
+                            if f_l is not None:
+                                if layer == self.__lineLayer:
+                                    other = False
+                                    if f_l[0].id() not in self.__selectedIds:
+                                        other = True
+                                    else:
+                                        fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
+                                        for f in fs:
+                                            if f.id() not in self.__selectedIds:
+                                                vertex = f.geometry().closestVertex(QgsPoint(x, y))
+                                                if vertex[4] < self.SEARCH_TOLERANCE:
+                                                    other = True
+                                                    break
+                                    if other and layer not in otherLayers:
+                                        otherLayers.append(layer)
+                                elif layer not in otherLayers:
+                                    otherLayers.append(layer)
+            num += 1
+        if checkLayers:
+            return otherLayers
+
+    def __onLayOk(self):
+        """
+        When the Ok button in Profile Layers Dialog is pushed
+        """
+        self.__layDlg.accept()
+        self.__layers = self.__layDlg.getLayers()
+        self.__usedMnts = self.__layDlg.getUsedMnts()
+        # self.__layOk()
+
     # def __layOk(self):
     #     """
     #     To create the profile
@@ -748,23 +771,23 @@ class DrawdownTool(QgsMapTool):
     #         else:
     #             names.append(layer.name())
     #     return names
-    #
-    # @staticmethod
-    # def __contains(line, point):
-    #     """
-    #     To check if a position is a line vertex
-    #     :param line: the line
-    #     :param point: the position
-    #     :return: the vertex id in the line, or -1
-    #     """
-    #     pos = 0
-    #     if point is None:
-    #         return -1
-    #     for pt in line:
-    #         if pt.x() == point.x() and pt.y() == point.y():
-    #             return pos
-    #         pos += 1
-    #     return -1
+
+    @staticmethod
+    def __contains(line, point):
+        """
+        To check if a position is a line vertex
+        :param line: the line
+        :param point: the position
+        :return: the vertex id in the line, or -1
+        """
+        pos = 0
+        if point is None:
+            return -1
+        for pt in line:
+            if pt.x() == point.x() and pt.y() == point.y():
+                return pos
+            pos += 1
+        return -1
 
     def keyReleaseEvent(self, event):
         """
