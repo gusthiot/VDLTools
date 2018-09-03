@@ -626,7 +626,7 @@ class ProfileTool(QgsMapTool):
                                 z.append(0)
                         else:
                             z.append(None)
-                    print(x, y, z)
+                    # print(x, y, z)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in availableLayers:

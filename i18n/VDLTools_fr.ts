@@ -138,7 +138,7 @@
     <message>
         <location filename="../tools/profile_tool.py" line="605"/>
         <source> has 2 identical summits on the vertex </source>
-        <translation> possède 2 sommets identiques sur le vertex</translation>
+        <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
         <location filename="../tools/profile_tool.py" line="606"/>

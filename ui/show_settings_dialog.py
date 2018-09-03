@@ -389,6 +389,7 @@ class ShowSettingsDialog(QDialog):
             if num == 0:
                 for field in fields:
                     self.__levelAttFields.append(field.name())
+                num = 1
             else:
                 names = []
                 for field in fields:
