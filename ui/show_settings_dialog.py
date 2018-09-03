@@ -29,9 +29,8 @@ from PyQt4.QtGui import (QDialog,
                          QGridLayout,
                          QPushButton,
                          QLabel,
-                         QListWidget,
-                         QListWidgetItem,
-                         QAbstractItemView,
+                         QCheckBox,
+                         QWidget,
                          QComboBox)
 from qgis.core import (QgsMapLayer,
                        QgsWKBTypes,
@@ -80,6 +79,9 @@ class ShowSettingsDialog(QDialog):
         self.__pipeDiamFields = []
         self.__levelAttFields = []
         self.__dbs = DBConnector.getUsedDatabases()
+
+        self.__refLabels = []
+        self.__refChecks = []
 
         for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
@@ -149,11 +151,23 @@ class ShowSettingsDialog(QDialog):
         refLabel.setMinimumWidth(50)
         self.__layout.addWidget(refLabel, 3, 1)
 
-        self.__refList = QListWidget()
-        self.__refList.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.__refList.setMinimumHeight(20)
-        self.__refList.setMinimumWidth(50)
-        self.__layout.addWidget(self.__refList, 3, 2)
+        self.__refLayout = QGridLayout()
+        self.__refWidget = QWidget()
+        i = 0
+        for layer in self.__refAvailableLayers:
+            refLabel = QLabel(layer.name())
+            self.__refLabels.append(refLabel)
+            self.__refLayout.addWidget(refLabel, i, 0)
+
+            refCheck = QCheckBox()
+            self.__refChecks.append(refCheck)
+            refCheck.stateChanged.connect(self.__refBoxesChanged)
+            self.__refLayout.addWidget(refCheck, i, 1)
+
+            i += 1
+
+        self.__refWidget.setLayout(self.__refLayout)
+        self.__layout.addWidget(self.__refWidget, 3, 2)
 
         levelAttLabel = QLabel(QCoreApplication.translate("VDLTools", "Level attribute : "))
         levelAttLabel.setMinimumHeight(20)
@@ -166,13 +180,14 @@ class ShowSettingsDialog(QDialog):
         self.__levelAttCombo.addItem("")
         self.__layout.addWidget(self.__levelAttCombo, 4, 2)
 
-        self.__refList.itemSelectionChanged.connect(self.__refListChanged)
         self.__levelAttCombo.currentIndexChanged.connect(self.__levelAttComboChanged)
+
+        i = 0
         for layer in self.__refAvailableLayers:
-            item = QListWidgetItem(layer.name())
-            self.__refList.addItem(item)
             if layer in self.__refLayers:
-                item.setSelected(True)
+                self.__refChecks[i].setChecked(True)
+            i += 1
+
 
         levelValLabel = QLabel(QCoreApplication.translate("VDLTools", "Level value : "))
         levelValLabel.setMinimumHeight(20)
@@ -217,12 +232,11 @@ class ShowSettingsDialog(QDialog):
             if self.__drawdowmLayer in self.__drawdownLayers:
                 self.__drawdownCombo.setCurrentIndex(self.__drawdownLayers.index(self.__drawdowmLayer)+1)
 
-        ### aligner les more tools !!!
         if moreTools:
             dbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
             dbLabel.setMinimumHeight(20)
             dbLabel.setMinimumWidth(50)
-            self.__layout.addWidget(dbLabel, 3, 1)
+            self.__layout.addWidget(dbLabel, 8, 1)
 
             self.__dbCombo = QComboBox()
             self.__dbCombo.setMinimumHeight(20)
@@ -230,34 +244,34 @@ class ShowSettingsDialog(QDialog):
             self.__dbCombo.addItem("")
             for db in list(self.__dbs.keys()):
                 self.__dbCombo.addItem(db)
-            self.__layout.addWidget(self.__dbCombo, 3, 2)
+            self.__layout.addWidget(self.__dbCombo, 8, 2)
 
             schemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Database schema : "))
             schemaLabel.setMinimumHeight(20)
             schemaLabel.setMinimumWidth(50)
-            self.__layout.addWidget(schemaLabel, 4, 1)
+            self.__layout.addWidget(schemaLabel, 9, 1)
 
             self.__schemaCombo = QComboBox()
             self.__schemaCombo.setMinimumHeight(20)
             self.__schemaCombo.setMinimumWidth(50)
             self.__schemaCombo.addItem("")
-            self.__layout.addWidget(self.__schemaCombo, 4, 2)
+            self.__layout.addWidget(self.__schemaCombo, 9, 2)
 
             tableLabel = QLabel(QCoreApplication.translate("VDLTools", "Config table : "))
             tableLabel.setMinimumHeight(20)
             tableLabel.setMinimumWidth(50)
-            self.__layout.addWidget(tableLabel, 5, 1)
+            self.__layout.addWidget(tableLabel, 10, 1)
 
             self.__tableCombo = QComboBox()
             self.__tableCombo.setMinimumHeight(20)
             self.__tableCombo.setMinimumWidth(50)
             self.__tableCombo.addItem("")
-            self.__layout.addWidget(self.__tableCombo, 5, 2)
+            self.__layout.addWidget(self.__tableCombo, 10, 2)
 
             ctlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database : "))
             ctlLabel.setMinimumHeight(20)
             ctlLabel.setMinimumWidth(50)
-            self.__layout.addWidget(ctlLabel, 6, 1)
+            self.__layout.addWidget(ctlLabel, 11, 1)
 
             self.__ctlCombo = QComboBox()
             self.__ctlCombo.setMinimumHeight(20)
@@ -265,7 +279,7 @@ class ShowSettingsDialog(QDialog):
             self.__ctlCombo.addItem("")
             for db in list(self.__dbs.keys()):
                 self.__ctlCombo.addItem(db)
-            self.__layout.addWidget(self.__ctlCombo, 6, 2)
+            self.__layout.addWidget(self.__ctlCombo, 11, 2)
 
             self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
             self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
@@ -421,7 +435,7 @@ class ShowSettingsDialog(QDialog):
         if self.__pointCombo.itemText(0) == "":
             self.__pointCombo.removeItem(0)
 
-    def __refListChanged(self):
+    def __refBoxesChanged(self):
         if self.refLayers() is not None:
             self.__setLevelAttCombo(self.refLayers())
 
@@ -522,10 +536,11 @@ class ShowSettingsDialog(QDialog):
         :return: selected reference layers, or none
         """
         layers = []
-        items = self.__refList.selectedItems()
-        for item in items:
-            index = self.__refList.row(item)
-            layers.append(self.__refAvailableLayers[index])
+        i = 0
+        for check in self.__refChecks:
+            if check.isChecked():
+                layers.append(self.__refAvailableLayers[i])
+            i += 1
         return layers
 
     def levelAtt(self):

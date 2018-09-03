@@ -598,6 +598,7 @@ class ProfileTool(QgsMapTool):
                 pt_v2 = line_v2.pointN(i)
                 x = pt_v2.x()
                 y = pt_v2.y()
+                print(x, y)
                 doublon = False
                 for position in rg_positions:
                     if position['x'] == x and position['y'] == y:
