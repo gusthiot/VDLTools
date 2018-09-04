@@ -21,11 +21,12 @@
  ***************************************************************************/
 """
 from future.builtins import range
-from future.builtins import object
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
 from ..ui.fields_settings_dialog import FieldsSettingsDialog
 from PyQt4.QtCore import (QCoreApplication,
+                          QObject,
+                          pyqtSignal,
                           QVariant)
 from qgis.core import (QgsProject,
                        QgsMapLayerRegistry,
@@ -37,16 +38,19 @@ from qgis.core import (QgsProject,
 from ..core.db_connector import DBConnector
 
 
-class ShowSettings(object):
+class ShowSettings(QObject):
     """
     Class to manage plugin settings
     """
+
+    changedSignal = pyqtSignal()
 
     def __init__(self, iface, moreTools):
         """
         Constructor
         :param iface: interface
         """
+        QObject.__init__(self)
         self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Settings")
@@ -161,6 +165,7 @@ class ShowSettings(object):
         self.levelVal = self.__showDlg.levelVal()
         self.drawdownLayer = self.__showDlg.drawdownLayer()
         self.pipeDiam = self.__showDlg.pipeDiam()
+        self.changedSignal.emit()
 
     def __onCancel(self):
         """

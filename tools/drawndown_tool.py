@@ -29,6 +29,8 @@ from qgis.core import (QgsMapLayer,
                        QgsSnappingUtils,
                        QgsGeometry,
                        QGis,
+                       QgsFeatureRequest,
+                       QgsFeature,
                        QgsTolerance,
                        QgsPoint,
                        QgsWKBTypes
@@ -47,6 +49,7 @@ from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
 from ..ui.profile_confirm_dialog import ProfileConfirmDialog
 from ..ui.profile_zeros_dialog import ProfileZerosDialog
+from ..ui.drawdown_message_dialog import DrawdownMessageDialog
 
 
 class DrawdownTool(QgsMapTool):
@@ -106,31 +109,6 @@ class DrawdownTool(QgsMapTool):
         """
         When the action is selected
         """
-        if self.ownSettings is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
-            return
-        if self.ownSettings.refLayers is None or len(self.ownSettings.refLayers)==0:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No reference layers given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
-            return
-        if self.ownSettings.levelAtt is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level attribute given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
-            return
-        if self.ownSettings.levelVal is None or self.ownSettings.levelVal == "":
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level value given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
-            return
-        if self.ownSettings.drawdownLayer is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No drawdown layer given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
-            return
-        if self.ownSettings.pipeDiam is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No pipe diameter given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
-            return
-
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom)
         if self.__isfloating:
@@ -193,24 +171,128 @@ class DrawdownTool(QgsMapTool):
         self.__confDlg = None
         self.__zeroDlg = None
 
+    def setEnable(self):
+        """
+        To check if we can enable the action for the selected layer
+        :param layer: selected layer
+        """
+        enable = True
+        if self.ownSettings is None:
+            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
+            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+            enable = False
+        if self.ownSettings.refLayers is None or len(self.ownSettings.refLayers)==0:
+            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No reference layers given !!"),
+            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+            enable = False
+        if self.ownSettings.levelAtt is None:
+            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level attribute given !!"),
+            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+            enable = False
+        if self.ownSettings.levelVal is None or self.ownSettings.levelVal == "":
+            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level value given !!"),
+            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+            enable = False
+        if self.ownSettings.drawdownLayer is None:
+            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No drawdown layer given !!"),
+            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+            enable = False
+        if self.ownSettings.pipeDiam is None:
+            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No pipe diameter given !!"),
+            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+            enable = False
+
+        if enable:
+            self.action().setEnabled(True)
+        else:
+            self.action().setEnabled(False)
+            if self.canvas().mapTool() == self:
+                self.__iface.actionPan().trigger()
+            if self.__dockWdg is not None:
+                self.__dockWdg.close()
+            self.__lineLayer = None
+        return
+
+    def __adjust(self):
+        print("adjust")
+        adjustments = []
+        for p in range(len(self.__points)):
+            pt = self.__points[p]
+            num_lines = len(self.__selectedIds)
+            drawdown = False
+            level = None
+            for layer in self.__refLayers:
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                                                           QgsTolerance.LayerUnits)
+                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(pt['x'], pt['y'])),
+                                                  self.canvas(), [laySettings])
+                if f_l is not None:
+                    if level is not None:
+                        self.__iface.messageBar().pushMessage(
+                            QCoreApplication.translate("VDLTools", "More than one reference point !!"),
+                            level=QgsMessageBar.CRITICAL, duration=0)
+                    feature = f_l[0]
+                    layer = f_l[1]
+                    point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
+                    level = point_v2.z()
+                    if str(feature.attribute(self.__levelAtt)) == self.__leveVal:
+                        drawdown = True
+                    # print(layer.name(), level, drawdown)
+            diam = 0
+            for i in range(num_lines):
+                if pt['z'][i] is None:
+                    continue
+                id = self.__selectedIds[i]
+                feature = QgsFeature()
+                self.__lineLayer.getFeatures(QgsFeatureRequest().setFilterFid(id)).nextFeature(feature)
+                dtemp = feature.attribute(self.__pipeDiam)/1000
+                if dtemp > diam:
+                    diam = dtemp
+
+            for i in range(num_lines):
+                if pt['z'][i] is None:
+                    continue
+                if level is not None:
+                    if drawdown:
+                        alt = level - diam
+                    else:
+                        alt = level
+                else:
+                    alt = None
+                # print(pt['z'][i], feature.attribute(self.__pipeDiam), alt)
+                adjustments.append("point " + str(p) + " : previous alt : " + str(pt['z'][i]) + ", max high : " +
+                                   str(diam) + ", drawdown : " +
+                                   str(drawdown) + ", new alt : " + str(alt))
+
+        self.__adjDlg = DrawdownMessageDialog(adjustments)
+        self.__adjDlg.rejected.connect(self.__cancel)
+        self.__adjDlg.okButton().clicked.connect(self.__onAdjOk)
+        # self.__adjDlg.cancelButton().clicked.connect(self.__onLayCancel)
+        self.__adjDlg.show()
+
+    def __onAdjOk(self):
+        self.__adjDlg.accept()
+        self.__cancel
+
     def __setLayerDialog(self):
         """
         To create a Profile Layers Dialog
         """
         otherLayers = self.__lineVertices(True)
-        with_mnt = True
-        if self.ownSettings is None or self.ownSettings.mntUrl is None \
-                or self.ownSettings.mntUrl == "":
-            with_mnt = False
-        if not with_mnt and len(otherLayers) == 0:
-            self.__layers = []
-            self.__layOk()
-        else:
-            self.__layDlg = ProfileLayersDialog(otherLayers, with_mnt)
-            self.__layDlg.rejected.connect(self.__cancel)
-            self.__layDlg.okButton().clicked.connect(self.__onLayOk)
-            self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
-            self.__layDlg.show()
+        self.__adjust()
+        # with_mnt = True
+        # if self.ownSettings is None or self.ownSettings.mntUrl is None \
+        #         or self.ownSettings.mntUrl == "":
+        #     with_mnt = False
+        # if not with_mnt and len(otherLayers) == 0:
+        #     self.__layers = []
+        #     self.__layOk()
+        # else:
+        #     self.__layDlg = ProfileLayersDialog(otherLayers, with_mnt)
+        #     self.__layDlg.rejected.connect(self.__cancel)
+        #     self.__layDlg.okButton().clicked.connect(self.__onLayOk)
+        #     self.__layDlg.cancelButton().clicked.connect(self.__onLayCancel)
+        #     self.__layDlg.show()
 
     # def __setMessageDialog(self, situations, differences, names):
     #     """
@@ -645,7 +727,6 @@ class DrawdownTool(QgsMapTool):
                                 z.append(0)
                         else:
                             z.append(None)
-                    # print(x, y, z)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in availableLayers:

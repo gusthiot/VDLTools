@@ -156,6 +156,11 @@ class VDLTools(object):
         self.drawdownTool = DrawdownTool(self.iface)
         self.add_action(self.drawdownTool, self.iface.mainWindow())
 
+        self.intersectTool.ownSettings = self.showSettings
+        self.profileTool.ownSettings = self.showSettings
+        self.subProfileTool.ownSettings = self.showSettings
+        self.drawdownTool.ownSettings = self.showSettings
+
         self.profileTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
         self.interpolateTool.setEnable(self.iface.activeLayer())
@@ -166,20 +171,17 @@ class VDLTools(object):
         self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
         self.moveTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
-
-        self.intersectTool.ownSettings = self.showSettings
-        self.profileTool.ownSettings = self.showSettings
-        self.subProfileTool.ownSettings = self.showSettings
-        self.drawdownTool.ownSettings = self.showSettings
+        self.drawdownTool.setEnable()
+        self.showSettings.changedSignal.connect(self.drawdownTool.setEnable)
 
         if VDLTools.MORE_TOOLS:
+            self.importMeasures.ownSettings = self.showSettings
+            self.controlTool.ownSettings = self.showSettings
+
             self.importMeasures = ImportMeasures(self.iface)
             self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
             self.controlTool = ControlTool(self.iface)
             self.add_action(self.controlTool, self.iface.mainWindow())
-
-            self.importMeasures.ownSettings = self.showSettings
-            self.controlTool.ownSettings = self.showSettings
 
     def unload(self):
         """
