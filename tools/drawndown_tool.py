@@ -260,9 +260,51 @@ class DrawdownTool(QgsMapTool):
                 else:
                     alt = None
                 # print(pt['z'][i], feature.attribute(self.__pipeDiam), alt)
-                adjustments.append("point " + str(p) + " : previous alt : " + str(pt['z'][i]) + ", max high : " +
-                                   str(diam) + ", drawdown : " +
-                                   str(drawdown) + ", new alt : " + str(alt))
+                adjustments.append({'point': p, 'previous': pt['z'][i], 'diam': diam, 'drawdown': drawdown,
+                                    'alt': alt})
+        last = len(adjustments)-1
+        for i in range(len(adjustments)):
+            if adjustments[i]['alt'] is None:
+                if 0 < i < last:
+                    prev_alt = adjustments[i-1]['alt']
+                    next_alt = adjustments[i+1]['alt']
+                    if prev_alt is not None and next_alt is not None:
+                        prev_pt = self.__points[adjustments[i-1]['point']]
+                        next_pt = self.__points[adjustments[i+1]['point']]
+                        pt = self.__points[adjustments[i]['point']]
+                        d0 = Finder.sqrDistForCoords(pt['x'], prev_pt['x'], pt['y'], prev_pt['y'])
+                        d1 = Finder.sqrDistForCoords(next_pt['x'], pt['x'], next_pt['x'], pt['x'])
+                        inter_alt = old_div((d0*next_alt + d1*prev_alt), (d0 + d1))
+                        adjustments[i]['alt'] = inter_alt
+                        adjustments[i]['drawdown'] = "interpolated"
+                elif i == 0 and len(adjustments) > 2:
+                    alt1 = adjustments[1]['alt']
+                    alt2 = adjustments[2]['alt']
+                    if alt1 is not None and alt2 is not None:
+                        pt2 = self.__points[adjustments[2]['point']]
+                        pt1 = self.__points[adjustments[1]['point']]
+                        pt = self.__points[adjustments[0]['point']]
+                        big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
+                        small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
+                        if small_d < (old_div(big_d, 4)):
+                            adjustments[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                            adjustments[i]['drawdown'] = "extrapolated"
+                        else:
+                            adjustments[i]['drawdown'] = "cannot be extrapolated"
+                elif i == last and len(adjustments) > 2:
+                    alt1 = adjustments[i-1]['alt']
+                    alt2 = adjustments[i-2]['alt']
+                    if alt1 is not None and alt2 is not None:
+                        pt2 = self.__points[adjustments[i-2]['point']]
+                        pt1 = self.__points[adjustments[i-1]['point']]
+                        pt = self.__points[adjustments[i]['point']]
+                        big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
+                        small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
+                        if small_d < (old_div(big_d, 4)):
+                            adjustments[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                            adjustments[i]['drawdown'] = "extrapolated"
+                        else:
+                            adjustments[i]['drawdown'] = "cannot be extrapolated"
 
         self.__adjDlg = DrawdownMessageDialog(adjustments)
         self.__adjDlg.rejected.connect(self.__cancel)

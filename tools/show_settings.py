@@ -76,10 +76,13 @@ class ShowSettings(QObject):
         """
 
         """ Reference point layers for drawdown tool """
-        ref_ids = QgsProject.instance().readEntry("VDLTools", "ref_layers", "None")[0]
+        str_ids = QgsProject.instance().readEntry("VDLTools", "ref_layers", "None")[0]
+        ref_ids = str_ids.split(',')
 
         """ Level attribute for drawdown tool """
         self.__levelAtt = QgsProject.instance().readEntry("VDLTools", "level_att", "None")[0]
+
+        print(self.__levelAtt)
 
         """ Level value for drawdown tool """
         self.__levelVal = QgsProject.instance().readEntry("VDLTools", "level_val", "None")[0]
@@ -398,10 +401,12 @@ class ShowSettings(QObject):
         :param refLayers: saved reference layers
         """
         self.__refLayers = refLayers
-        ids = []
+        ids = ""
         for layer in refLayers:
             if layer:
-                ids.append(layer.id())
+                if ids != "":
+                    ids += ","
+                ids += str(layer.id())
                 # layer.layerDeleted.connect(self.__refLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "ref_layers", ids)
 
@@ -413,6 +418,7 @@ class ShowSettings(QObject):
         """
         self.__levelAtt = levelAtt
         if levelAtt is not None:
+            print(levelAtt)
             QgsProject.instance().writeEntry("VDLTools", "level_att", levelAtt)
 
     @levelVal.setter

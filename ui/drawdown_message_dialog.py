@@ -52,7 +52,10 @@ class DrawdownMessageDialog(QDialog):
         self.__scrollLayout = QGridLayout()
 
         for i in range(len(self.__adjustements)):
-            msgLabel = QLabel(self.__adjustements[i])
+            adj = self.__adjustements[i]
+            msg = "point " + str(adj['point']) + " : previous alt : " + str(adj['previous']) + ", max high : "
+            msg += str(adj['diam']) + ", drawdown : " + str(adj['drawdown']) + ", new alt : " + str(adj['alt'])
+            msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
 
