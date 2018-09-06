@@ -62,7 +62,10 @@ class ShowSettings(QObject):
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
         self.__refLayers = []
+        self.__levelAtt = None
+        self.__levelVal = None
         self.__drawdownLayer = None
+        self.__pipeDiam = None
         self.__mntUrl = None
         self.__project_loaded()
         QgsProject.instance().readProject.connect(self.__project_loaded)
@@ -81,8 +84,6 @@ class ShowSettings(QObject):
 
         """ Level attribute for drawdown tool """
         self.__levelAtt = QgsProject.instance().readEntry("VDLTools", "level_att", "None")[0]
-
-        print(self.__levelAtt)
 
         """ Level value for drawdown tool """
         self.__levelVal = QgsProject.instance().readEntry("VDLTools", "level_val", "None")[0]
@@ -138,6 +139,8 @@ class ShowSettings(QObject):
             usedDbs = DBConnector.getUsedDatabases()
             if ctlDbName in list(usedDbs.keys()):
                 self.__ctlDb = usedDbs[ctlDbName]
+
+        self.changedSignal.emit()
 
     def start(self):
         """

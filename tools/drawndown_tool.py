@@ -97,7 +97,7 @@ class DrawdownTool(QgsMapTool):
         self.__pipeDiam = None
         self.__refLayers = None
         self.__levelAtt = None
-        self.__leveVal = None
+        self.__levelVal = None
 
     def setTool(self):
         """
@@ -130,7 +130,7 @@ class DrawdownTool(QgsMapTool):
         self.__pipeDiam = self.ownSettings.pipeDiam
         self.__refLayers = self.ownSettings.refLayers
         self.__levelAtt = self.ownSettings.levelAtt
-        self.__leveVal = self.ownSettings.levelVal
+        self.__levelVal = self.ownSettings.levelVal
 
     def __closed(self):
         """
@@ -235,7 +235,7 @@ class DrawdownTool(QgsMapTool):
                     layer = f_l[1]
                     point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
                     level = point_v2.z()
-                    if str(feature.attribute(self.__levelAtt)) == self.__leveVal:
+                    if str(feature.attribute(self.__levelAtt)) == self.__levelVal:
                         drawdown = True
                     # print(layer.name(), level, drawdown)
             diam = 0
