@@ -68,7 +68,7 @@ class DrawdownTool(QgsMapTool):
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
-        self.text = QCoreApplication.translate("VDLTools", "Rabattement")
+        self.text = QCoreApplication.translate("VDLTools", "Drawdown")
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)
         self.__isChoosed = False
@@ -104,6 +104,10 @@ class DrawdownTool(QgsMapTool):
         To set the current tool as this one
         """
         self.canvas().setMapTool(self)
+        QMessageBox.information(
+            None, QCoreApplication.translate("VDLTools", "Drawdown"),
+            QCoreApplication.translate("VDLTools", "This tool is not yet finished, are you here to test it ?")
+        )
 
     def activate(self):
         """

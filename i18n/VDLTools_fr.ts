@@ -126,42 +126,67 @@
         <translation>Il y a plus qu&apos;une altitude pour le point </translation>
     </message>
     <message>
+        <location filename="../tools/drawndown_tool.py" line="71"/>
+        <source>Rabattement</source>
+        <translation>Rabattement</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="108"/>
+        <source>Drawdown</source>
+        <translation>Rabattement</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="109"/>
+        <source>This tool is not yet finished, are you here to test it ?</source>
+        <translation>Cet outil n&apos;est pas encore terminé, êtes-vous là pour le tester ?</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="236"/>
+        <source>More than one reference point !!</source>
+        <translation>Plus d&apos;un point de référence !!</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="734"/>
         <location filename="../tools/profile_tool.py" line="587"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="604"/>
+        <location filename="../tools/drawndown_tool.py" line="752"/>
+        <location filename="../tools/profile_tool.py" line="606"/>
         <source>Beware! the line </source>
         <translation>Attention ! La ligne </translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="605"/>
+        <location filename="../tools/drawndown_tool.py" line="753"/>
+        <location filename="../tools/profile_tool.py" line="607"/>
         <source> has 2 identical summits on the vertex </source>
         <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="606"/>
+        <location filename="../tools/drawndown_tool.py" line="754"/>
+        <location filename="../tools/profile_tool.py" line="608"/>
         <source> same coordinates (X and Y). Please correct the line geometry.</source>
         <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="745"/>
+        <location filename="../tools/profile_tool.py" line="753"/>
         <source> connected</source>
         <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="835"/>
+        <location filename="../tools/drawndown_tool.py" line="988"/>
+        <location filename="../tools/profile_tool.py" line="843"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="897"/>
+        <location filename="../tools/profile_tool.py" line="905"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="917"/>
+        <location filename="../tools/profile_tool.py" line="925"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
@@ -181,6 +206,12 @@
         <translation>Aperçu</translation>
     </message>
     <message>
+        <location filename="../ui/drawdown_message_dialog.py" line="47"/>
+        <source>Elevations adjustments</source>
+        <translation>Ajustement des altitudes</translation>
+    </message>
+    <message>
+        <location filename="../ui/drawdown_message_dialog.py" line="71"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="65"/>
         <location filename="../ui/import_confirm_dialog.py" line="49"/>
         <location filename="../ui/import_jobs_dialog.py" line="51"/>
@@ -188,7 +219,7 @@
         <location filename="../ui/intersect_distance_dialog.py" line="62"/>
         <location filename="../ui/profile_confirm_dialog.py" line="49"/>
         <location filename="../ui/profile_layers_dialog.py" line="50"/>
-        <location filename="../ui/show_settings_dialog.py" line="196"/>
+        <location filename="../ui/show_settings_dialog.py" line="303"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -218,7 +249,7 @@
         <location filename="../ui/move_confirm_dialog.py" line="58"/>
         <location filename="../ui/profile_confirm_dialog.py" line="53"/>
         <location filename="../ui/profile_layers_dialog.py" line="54"/>
-        <location filename="../ui/show_settings_dialog.py" line="200"/>
+        <location filename="../ui/show_settings_dialog.py" line="307"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -433,43 +464,68 @@
         <translation>Appliquer l&apos;altitude des points à la ligne</translation>
     </message>
     <message>
-        <location filename="../tools/show_settings.py" line="51"/>
-        <location filename="../ui/show_settings_dialog.py" line="64"/>
+        <location filename="../tools/show_settings.py" line="56"/>
+        <location filename="../ui/show_settings_dialog.py" line="72"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="80"/>
+        <location filename="../ui/show_settings_dialog.py" line="101"/>
         <source>Working points layer : </source>
         <translation>Couche de points de travail : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="97"/>
+        <location filename="../ui/show_settings_dialog.py" line="118"/>
         <source>Working lines layer : </source>
         <translation>Couche de lignes de travail : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="129"/>
+        <location filename="../ui/show_settings_dialog.py" line="149"/>
+        <source>reference layers : </source>
+        <translation>Couches de référence : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="172"/>
+        <source>Level attribute : </source>
+        <translation>Attribut de niveau : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="192"/>
+        <source>Level value : </source>
+        <translation>Valeur de nveau : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="204"/>
+        <source>drawdown layer : </source>
+        <translation>Couche à rabattre : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="217"/>
+        <source>Pipe diameter attribute : </source>
+        <translation>Attribut de diamètre de conduite : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="236"/>
         <source>Import database : </source>
         <translation>Import base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="142"/>
+        <location filename="../ui/show_settings_dialog.py" line="249"/>
         <source>Database schema : </source>
         <translation>Schéma base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="153"/>
+        <location filename="../ui/show_settings_dialog.py" line="260"/>
         <source>Config table : </source>
         <translation>Table de configuration : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="114"/>
+        <location filename="../ui/show_settings_dialog.py" line="135"/>
         <source>Url for MNT : </source>
         <translation>Url pour MNT : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="164"/>
+        <location filename="../ui/show_settings_dialog.py" line="271"/>
         <source>Control database : </source>
         <translation>Base de données à contrôler : </translation>
     </message>
