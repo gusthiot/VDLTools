@@ -98,10 +98,15 @@ class ShowSettingsDialog(QDialog):
         self.resize(450, 400)
         self.__layout = QGridLayout()
 
+        line = 0
+
+        intersectLabel = QLabel(QCoreApplication.translate("VDLTools", "Intersect "))
+        self.__layout.addWidget(intersectLabel, line, 0)
+
+        line += 1
+
         pointLabel = QLabel(QCoreApplication.translate("VDLTools", "Working points layer : "))
-        pointLabel.setMinimumHeight(20)
-        pointLabel.setMinimumWidth(50)
-        self.__layout.addWidget(pointLabel, 0, 1)
+        self.__layout.addWidget(pointLabel, line, 1)
 
         self.__pointCombo = QComboBox()
         self.__pointCombo.setMinimumHeight(20)
@@ -109,16 +114,16 @@ class ShowSettingsDialog(QDialog):
         self.__pointCombo.addItem("")
         for layer in self.__pointsLayers:
             self.__pointCombo.addItem(layer.name())
-        self.__layout.addWidget(self.__pointCombo, 0, 2)
+        self.__layout.addWidget(self.__pointCombo, line, 2)
         self.__pointCombo.currentIndexChanged.connect(self.__pointComboChanged)
         if self.__memoryPointsLayer is not None:
             if self.__memoryPointsLayer in self.__pointsLayers:
                 self.__pointCombo.setCurrentIndex(self.__pointsLayers.index(self.__memoryPointsLayer)+1)
 
+        line += 1
+
         lineLabel = QLabel(QCoreApplication.translate("VDLTools", "Working lines layer : "))
-        lineLabel.setMinimumHeight(20)
-        lineLabel.setMinimumWidth(50)
-        self.__layout.addWidget(lineLabel, 1, 1)
+        self.__layout.addWidget(lineLabel, line, 1)
 
         self.__lineCombo = QComboBox()
         self.__lineCombo.setMinimumHeight(20)
@@ -126,16 +131,21 @@ class ShowSettingsDialog(QDialog):
         self.__lineCombo.addItem("")
         for layer in self.__linesLayers:
             self.__lineCombo.addItem(layer.name())
-        self.__layout.addWidget(self.__lineCombo, 1, 2)
+        self.__layout.addWidget(self.__lineCombo, line, 2)
         self.__lineCombo.currentIndexChanged.connect(self.__lineComboChanged)
         if self.__memoryLinesLayer is not None:
             if self.__memoryLinesLayer in self.__linesLayers:
                 self.__lineCombo.setCurrentIndex(self.__linesLayers.index(self.__memoryLinesLayer)+1)
 
+        line += 1
+
+        profilesLabel = QLabel(QCoreApplication.translate("VDLTools", "Profiles "))
+        self.__layout.addWidget(profilesLabel, line, 0)
+
+        line += 1
+
         mntLabel = QLabel(QCoreApplication.translate("VDLTools", "Url for MNT : "))
-        mntLabel.setMinimumHeight(20)
-        mntLabel.setMinimumWidth(50)
-        self.__layout.addWidget(mntLabel, 2, 1)
+        self.__layout.addWidget(mntLabel, line, 1)
 
         self.__mntText = QLineEdit()
         if self.__mntUrl is None or self.__mntUrl == "None":
@@ -144,12 +154,17 @@ class ShowSettingsDialog(QDialog):
             self.__mntText.insert(self.__mntUrl)
         self.__mntText.setMinimumHeight(20)
         self.__mntText.setMinimumWidth(100)
-        self.__layout.addWidget(self.__mntText, 2, 2)
+        self.__layout.addWidget(self.__mntText, line, 2)
+
+        line += 1
+
+        ddLabel = QLabel(QCoreApplication.translate("VDLTools", "Drawdown "))
+        self.__layout.addWidget(ddLabel, line, 0)
+
+        line += 1
 
         refLabel = QLabel(QCoreApplication.translate("VDLTools", "reference layers : "))
-        refLabel.setMinimumHeight(20)
-        refLabel.setMinimumWidth(50)
-        self.__layout.addWidget(refLabel, 3, 1)
+        self.__layout.addWidget(refLabel, line, 1)
 
         self.__refLayout = QGridLayout()
         self.__refWidget = QWidget()
@@ -167,18 +182,18 @@ class ShowSettingsDialog(QDialog):
             i += 1
 
         self.__refWidget.setLayout(self.__refLayout)
-        self.__layout.addWidget(self.__refWidget, 3, 2)
+        self.__layout.addWidget(self.__refWidget, line, 2)
+
+        line += 1
 
         levelAttLabel = QLabel(QCoreApplication.translate("VDLTools", "Level attribute : "))
-        levelAttLabel.setMinimumHeight(20)
-        levelAttLabel.setMinimumWidth(50)
-        self.__layout.addWidget(levelAttLabel, 4, 1)
+        self.__layout.addWidget(levelAttLabel, line, 1)
 
         self.__levelAttCombo = QComboBox()
         self.__levelAttCombo.setMinimumHeight(20)
         self.__levelAttCombo.setMinimumWidth(50)
         self.__levelAttCombo.addItem("")
-        self.__layout.addWidget(self.__levelAttCombo, 4, 2)
+        self.__layout.addWidget(self.__levelAttCombo, line, 2)
 
         self.__levelAttCombo.currentIndexChanged.connect(self.__levelAttComboChanged)
 
@@ -188,23 +203,22 @@ class ShowSettingsDialog(QDialog):
                 self.__refChecks[i].setChecked(True)
             i += 1
 
+        line += 1
 
         levelValLabel = QLabel(QCoreApplication.translate("VDLTools", "Level value : "))
-        levelValLabel.setMinimumHeight(20)
-        levelValLabel.setMinimumWidth(50)
-        self.__layout.addWidget(levelValLabel, 5, 1)
+        self.__layout.addWidget(levelValLabel, line, 1)
 
         self.__levelValText = QLineEdit()
         if self.__levelVal is not None and self.__levelVal != "None":
             self.__levelValText.insert(self.__levelVal)
         self.__levelValText.setMinimumHeight(20)
         self.__levelValText.setMinimumWidth(100)
-        self.__layout.addWidget(self.__levelValText, 5, 2)
+        self.__layout.addWidget(self.__levelValText, line, 2)
+
+        line += 1
 
         drawdownLabel = QLabel(QCoreApplication.translate("VDLTools", "drawdown layer : "))
-        drawdownLabel.setMinimumHeight(20)
-        drawdownLabel.setMinimumWidth(50)
-        self.__layout.addWidget(drawdownLabel, 6, 1)
+        self.__layout.addWidget(drawdownLabel, line, 1)
 
         self.__drawdownCombo = QComboBox()
         self.__drawdownCombo.setMinimumHeight(20)
@@ -212,18 +226,18 @@ class ShowSettingsDialog(QDialog):
         self.__drawdownCombo.addItem("")
         for layer in self.__drawdownLayers:
             self.__drawdownCombo.addItem(layer.name())
-        self.__layout.addWidget(self.__drawdownCombo, 6, 2)
+        self.__layout.addWidget(self.__drawdownCombo, line, 2)
+
+        line += 1
 
         pipeDiamLabel = QLabel(QCoreApplication.translate("VDLTools", "Pipe diameter attribute : "))
-        pipeDiamLabel.setMinimumHeight(20)
-        pipeDiamLabel.setMinimumWidth(50)
-        self.__layout.addWidget(pipeDiamLabel, 7, 1)
+        self.__layout.addWidget(pipeDiamLabel, line, 1)
 
         self.__pipeDiamCombo = QComboBox()
         self.__pipeDiamCombo.setMinimumHeight(20)
         self.__pipeDiamCombo.setMinimumWidth(50)
         self.__pipeDiamCombo.addItem("")
-        self.__layout.addWidget(self.__pipeDiamCombo, 7, 2)
+        self.__layout.addWidget(self.__pipeDiamCombo, line, 2)
 
         self.__drawdownCombo.currentIndexChanged.connect(self.__drawdownComboChanged)
         self.__pipeDiamCombo.currentIndexChanged.connect(self.__pipeDiamComboChanged)
@@ -232,11 +246,16 @@ class ShowSettingsDialog(QDialog):
             if self.__drawdowmLayer in self.__drawdownLayers:
                 self.__drawdownCombo.setCurrentIndex(self.__drawdownLayers.index(self.__drawdowmLayer)+1)
 
-        if moreTools:
+        # if moreTools:
+            line += 1
+
+            importLabel = QLabel(QCoreApplication.translate("VDLTools", "Import "))
+            self.__layout.addWidget(importLabel, line, 0)
+
+            line += 1
+
             dbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
-            dbLabel.setMinimumHeight(20)
-            dbLabel.setMinimumWidth(50)
-            self.__layout.addWidget(dbLabel, 8, 1)
+            self.__layout.addWidget(dbLabel, line, 1)
 
             self.__dbCombo = QComboBox()
             self.__dbCombo.setMinimumHeight(20)
@@ -244,34 +263,39 @@ class ShowSettingsDialog(QDialog):
             self.__dbCombo.addItem("")
             for db in list(self.__dbs.keys()):
                 self.__dbCombo.addItem(db)
-            self.__layout.addWidget(self.__dbCombo, 8, 2)
+            self.__layout.addWidget(self.__dbCombo, line, 2)
+
+            line += 1
 
             schemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Database schema : "))
-            schemaLabel.setMinimumHeight(20)
-            schemaLabel.setMinimumWidth(50)
-            self.__layout.addWidget(schemaLabel, 9, 1)
+            self.__layout.addWidget(schemaLabel, line, 1)
 
             self.__schemaCombo = QComboBox()
             self.__schemaCombo.setMinimumHeight(20)
             self.__schemaCombo.setMinimumWidth(50)
             self.__schemaCombo.addItem("")
-            self.__layout.addWidget(self.__schemaCombo, 9, 2)
+            self.__layout.addWidget(self.__schemaCombo, line, 2)
+
+            line += 1
 
             tableLabel = QLabel(QCoreApplication.translate("VDLTools", "Config table : "))
-            tableLabel.setMinimumHeight(20)
-            tableLabel.setMinimumWidth(50)
-            self.__layout.addWidget(tableLabel, 10, 1)
+            self.__layout.addWidget(tableLabel, line, 1)
 
             self.__tableCombo = QComboBox()
             self.__tableCombo.setMinimumHeight(20)
             self.__tableCombo.setMinimumWidth(50)
             self.__tableCombo.addItem("")
-            self.__layout.addWidget(self.__tableCombo, 10, 2)
+            self.__layout.addWidget(self.__tableCombo, line, 2)
+
+            line += 1
+
+            controlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control "))
+            self.__layout.addWidget(controlLabel, line, 0)
+
+            line += 1
 
             ctlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database : "))
-            ctlLabel.setMinimumHeight(20)
-            ctlLabel.setMinimumWidth(50)
-            self.__layout.addWidget(ctlLabel, 11, 1)
+            self.__layout.addWidget(ctlLabel, line, 1)
 
             self.__ctlCombo = QComboBox()
             self.__ctlCombo.setMinimumHeight(20)
@@ -279,7 +303,7 @@ class ShowSettingsDialog(QDialog):
             self.__ctlCombo.addItem("")
             for db in list(self.__dbs.keys()):
                 self.__ctlCombo.addItem(db)
-            self.__layout.addWidget(self.__ctlCombo, 11, 2)
+            self.__layout.addWidget(self.__ctlCombo, line, 2)
 
             self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
             self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
