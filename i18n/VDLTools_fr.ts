@@ -506,11 +506,6 @@
         <translation>Couche à rabattre : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="233"/>
-        <source>Pipe diameter attribute : </source>
-        <translation>Attribut de diamètre de conduite : </translation>
-    </message>
-    <message>
         <location filename="../ui/show_settings_dialog.py" line="252"/>
         <source>Import </source>
         <translation>Import</translation>
@@ -539,6 +534,11 @@
         <location filename="../ui/show_settings_dialog.py" line="103"/>
         <source>Intersect </source>
         <translation>Intersection</translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="233"/>
+        <source>Pipe diameter attribute [cm] : </source>
+        <translation>Attribut de diamètre de conduite [cm] : </translation>
     </message>
     <message>
         <location filename="../ui/show_settings_dialog.py" line="292"/>

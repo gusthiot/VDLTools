@@ -230,7 +230,7 @@ class ShowSettingsDialog(QDialog):
 
         line += 1
 
-        pipeDiamLabel = QLabel(QCoreApplication.translate("VDLTools", "Pipe diameter attribute : "))
+        pipeDiamLabel = QLabel(QCoreApplication.translate("VDLTools", "Pipe diameter attribute [cm] : "))
         self.__layout.addWidget(pipeDiamLabel, line, 1)
 
         self.__pipeDiamCombo = QComboBox()
