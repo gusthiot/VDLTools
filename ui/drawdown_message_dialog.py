@@ -48,16 +48,28 @@ class DrawdownMessageDialog(QDialog):
         self.__layout = QGridLayout()
 
         self.__msgLabels = []
+        self.__msgChecks = []
+
+        displayButton = False
 
         self.__scrollLayout = QGridLayout()
 
         for i in range(len(self.__adjustements)):
             adj = self.__adjustements[i]
-            msg = "point " + str(adj['point']) + " : previous alt : " + str(adj['previous']) + ", max high : "
-            msg += str(adj['diam']) + ", drawdown : " + str(adj['drawdown']) + ", new alt : " + str(adj['alt'])
+            msg = "vertex " + str(adj['point']) + " : previous alt : " + str(adj['previous']) + ", max high : "
+            msg += str(adj['diam']) + ", drawdown : " + str(adj['drawdown'])
+            if adj['alt'] is not None:
+                msg += ", new alt : " + str(adj['alt'])
+            if adj['layer'] is not None:
+                msg += " from " + adj['layer']
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
+            msgCheck = QCheckBox()
+            msgCheck.setChecked(True)
+            self.__msgChecks.append(msgCheck)
+            self.__scrollLayout.addWidget(self.__msgChecks[i], i+1, 2)
+            displayButton = True
 
         widget = QWidget()
         widget.setLayout(self.__scrollLayout)
@@ -68,18 +80,44 @@ class DrawdownMessageDialog(QDialog):
 
         self.__layout.addWidget(scroll, 1, 0, 1, 3)
 
-        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
-        self.__okButton.setMinimumHeight(20)
-        self.__okButton.setMinimumWidth(100)
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
+        self.__cancelButton.setMinimumHeight(20)
+        self.__cancelButton.setMinimumWidth(100)
 
         pos = len(self.__adjustements) + 1
-        self.__layout.addWidget(self.__okButton, pos, 0)
+        self.__layout.addWidget(self.__cancelButton, pos, 0)
+
+        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply drawdown"))
+        self.__applyButton.setMinimumHeight(20)
+        self.__applyButton.setMinimumWidth(100)
+        if displayButton:
+            self.__layout.addWidget(self.__applyButton, pos, 1)
+
 
         self.setLayout(self.__layout)
 
-    def okButton(self):
+
+    def getAdjusts(self):
         """
-        To get the pass button instance
-        :return: pass button instance
+        To get selected adjustments to apply
+        :return: adjustments list
         """
-        return self.__okButton
+        adjusts = []
+        for i in range(len(self.__adjustements)):
+            if self.__msgChecks[i] is not None and self.__msgChecks[i].isChecked():
+                adjusts.append(self.__adjustements[i])
+        return adjusts
+
+    def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
+        return self.__cancelButton
+
+    def applyButton(self):
+        """
+        To get the apply button instance
+        :return: apply button instance
+        """
+        return self.__applyButton

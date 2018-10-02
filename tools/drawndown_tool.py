@@ -163,6 +163,7 @@ class DrawdownTool(QgsMapTool):
         """
         if self.__lineLayer is not None:
             self.__lineLayer.removeSelection()
+        self.__isChoosed = False
         self.__lastFeatureId = None
         self.__lastFeature = None
         self.__selectedIds = None
@@ -225,6 +226,7 @@ class DrawdownTool(QgsMapTool):
             num_lines = len(self.__selectedIds)
             drawdown = False
             level = None
+            lay_name = None
             for layer in self.__refLayers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
@@ -236,12 +238,12 @@ class DrawdownTool(QgsMapTool):
                             QCoreApplication.translate("VDLTools", "More than one reference point !!"),
                             level=QgsMessageBar.CRITICAL, duration=0)
                     feature = f_l[0]
-                    layer = f_l[1]
+                    lay_name = f_l[1].name()
                     point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
                     level = point_v2.z()
                     if str(feature.attribute(self.__levelAtt)) == self.__levelVal:
                         drawdown = True
-                    # print(layer.name(), level, drawdown)
+                    # print(lay_name, level, drawdown)
             diam = 0
             for i in range(num_lines):
                 if pt['z'][i] is None:
@@ -265,7 +267,7 @@ class DrawdownTool(QgsMapTool):
                     alt = None
                 # print(pt['z'][i], feature.attribute(self.__pipeDiam), alt)
                 adjustments.append({'point': p, 'previous': pt['z'][i], 'diam': diam, 'drawdown': drawdown,
-                                    'alt': alt})
+                                    'alt': alt, 'layer': lay_name})
         last = len(adjustments)-1
         for i in range(len(adjustments)):
             if adjustments[i]['alt'] is None:
@@ -312,13 +314,17 @@ class DrawdownTool(QgsMapTool):
 
         self.__adjDlg = DrawdownMessageDialog(adjustments)
         self.__adjDlg.rejected.connect(self.__cancel)
-        self.__adjDlg.okButton().clicked.connect(self.__onAdjOk)
-        # self.__adjDlg.cancelButton().clicked.connect(self.__onLayCancel)
+        self.__adjDlg.cancelButton().clicked.connect(self.__onAdjCancel)
+        self.__adjDlg.applyButton().clicked.connect(self.__onAdjOk)
         self.__adjDlg.show()
 
     def __onAdjOk(self):
         self.__adjDlg.accept()
-        self.__cancel
+        self.__cancel()
+
+    def __onAdjCancel(self):
+        self.__adjDlg.reject()
+        self.__cancel()
 
     def __setLayerDialog(self):
         """

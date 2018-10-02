@@ -100,7 +100,7 @@ class ProfileZerosDialog(QDialog):
 
     def getZeros(self):
         """
-        To get selected zeros to interolate
+        To get selected zeros to interpolate
         :return: zeros list
         """
         zeros = []

@@ -157,6 +157,7 @@ class ProfileTool(QgsMapTool):
         self.__msgDlg = None
         self.__confDlg = None
         self.__zeroDlg = None
+        self.__isChoosed = False
 
     def setEnable(self, layer):
         """
