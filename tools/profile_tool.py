@@ -599,10 +599,11 @@ class ProfileTool(QgsMapTool):
                 pt_v2 = line_v2.pointN(i)
                 x = pt_v2.x()
                 y = pt_v2.y()
-                print(x, y, iden)
+                # print(x, y, iden)
                 doublon = False
                 for position in rg_positions:
-                    if position['x'] == x and position['y'] == y:
+                    # print(position)
+                    if position['x'] == x and position['y'] == y and position['iden'] == iden:
                         self.__iface.messageBar().pushMessage(
                            QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
                            QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
@@ -610,15 +611,19 @@ class ProfileTool(QgsMapTool):
                                                                              "Please correct the line geometry."),
                            level=QgsMessageBar.CRITICAL, duration=0
                         )
+                        # print("doublon rg")
                         doublon = True
                         break
                 for item in self.__points:
                     if item['x'] == x and item['y'] == y:
                         item['z'][num] = pt_v2.z()
+                        # print("doublon item")
+                        rg_positions.append({'x': x, 'y': y, 'iden': iden})
                         doublon = True
                         break
                 if not doublon:
-                    rg_positions.append({'x': x, 'y': y})
+                    # print("append")
+                    rg_positions.append({'x': x, 'y': y, 'iden': iden})
                     z = []
                     for j in range(num_lines):
                         if j == num:

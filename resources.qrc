@@ -35,4 +35,7 @@
     <qresource prefix="/plugins/VDLTools" >
         <file>icons/control_icon.png</file>
     </qresource>
+    <qresource prefix="/plugins/VDLTools" >
+        <file>icons/drawdown_icon.png</file>
+    </qresource>
 </RCC>

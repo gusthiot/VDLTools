@@ -67,7 +67,7 @@ class DrawdownTool(QgsMapTool):
         """
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__iface = iface
-        self.icon_path = ':/plugins/VDLTools/icons/profile_icon.png'
+        self.icon_path = ':/plugins/VDLTools/icons/drawdown_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Drawdown")
         self.__lineLayer = None
         self.setCursor(Qt.ArrowCursor)

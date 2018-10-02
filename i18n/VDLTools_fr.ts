@@ -106,22 +106,22 @@
         <translation>Profil d&apos;une ligne</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="218"/>
+        <location filename="../tools/profile_tool.py" line="219"/>
         <source>Do you really want to edit the LineString layer ?</source>
         <translation>Voulez-vous vraiment éditer la couche Ligne ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="233"/>
+        <location filename="../tools/profile_tool.py" line="234"/>
         <source>Do you really want to edit the Point layer(s) ?</source>
         <translation>Voulez-vous vraiment éditer la (les) couches(s) Point ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="469"/>
+        <location filename="../tools/profile_tool.py" line="470"/>
         <source>Elevation</source>
         <translation>Altitude</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="470"/>
+        <location filename="../tools/profile_tool.py" line="471"/>
         <source>There is more than one elevation for the point </source>
         <translation>Il y a plus qu&apos;une altitude pour le point </translation>
     </message>
@@ -137,52 +137,52 @@
         <translation>Cet outil n&apos;est pas encore terminé, êtes-vous là pour le tester ?</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="236"/>
+        <location filename="../tools/drawndown_tool.py" line="238"/>
         <source>More than one reference point !!</source>
         <translation>Plus d&apos;un point de référence !!</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="734"/>
-        <location filename="../tools/profile_tool.py" line="587"/>
+        <location filename="../tools/drawndown_tool.py" line="740"/>
+        <location filename="../tools/profile_tool.py" line="588"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="752"/>
-        <location filename="../tools/profile_tool.py" line="606"/>
+        <location filename="../tools/drawndown_tool.py" line="758"/>
+        <location filename="../tools/profile_tool.py" line="607"/>
         <source>Beware! the line </source>
         <translation>Attention ! La ligne </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="753"/>
-        <location filename="../tools/profile_tool.py" line="607"/>
+        <location filename="../tools/drawndown_tool.py" line="759"/>
+        <location filename="../tools/profile_tool.py" line="608"/>
         <source> has 2 identical summits on the vertex </source>
         <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="754"/>
-        <location filename="../tools/profile_tool.py" line="608"/>
+        <location filename="../tools/drawndown_tool.py" line="760"/>
+        <location filename="../tools/profile_tool.py" line="609"/>
         <source> same coordinates (X and Y). Please correct the line geometry.</source>
         <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="753"/>
+        <location filename="../tools/profile_tool.py" line="754"/>
         <source> connected</source>
         <translation> connectées</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="988"/>
-        <location filename="../tools/profile_tool.py" line="843"/>
+        <location filename="../tools/drawndown_tool.py" line="994"/>
+        <location filename="../tools/profile_tool.py" line="844"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="905"/>
+        <location filename="../tools/profile_tool.py" line="906"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="925"/>
+        <location filename="../tools/profile_tool.py" line="926"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
@@ -207,7 +207,11 @@
         <translation>Ajustement des altitudes</translation>
     </message>
     <message>
-        <location filename="../ui/drawdown_message_dialog.py" line="71"/>
+        <location filename="../ui/drawdown_message_dialog.py" line="90"/>
+        <source>Apply drawdown</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <location filename="../ui/duplicate_distance_dialog.py" line="65"/>
         <location filename="../ui/import_confirm_dialog.py" line="49"/>
         <location filename="../ui/import_jobs_dialog.py" line="51"/>
@@ -236,6 +240,7 @@
     </message>
     <message>
         <location filename="../ui/choose_control_dialog.py" line="86"/>
+        <location filename="../ui/drawdown_message_dialog.py" line="83"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="69"/>
         <location filename="../ui/fields_settings_dialog.py" line="67"/>
         <location filename="../ui/import_confirm_dialog.py" line="53"/>
