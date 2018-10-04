@@ -62,6 +62,7 @@ class ShowSettings(QObject):
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
         self.__refLayers = []
+        self.__adjLayers = []
         self.__levelAtt = None
         self.__levelVal = None
         self.__drawdownLayer = None
@@ -81,6 +82,10 @@ class ShowSettings(QObject):
         """ Reference point layers for drawdown tool """
         str_ids = QgsProject.instance().readEntry("VDLTools", "ref_layers", "None")[0]
         ref_ids = str_ids.split(',')
+
+        """ Adjustable point layers for drawdown tool """
+        str_ids = QgsProject.instance().readEntry("VDLTools", "adj_layers", "None")[0]
+        adj_ids = str_ids.split(',')
 
         """ Level attribute for drawdown tool """
         self.__levelAtt = QgsProject.instance().readEntry("VDLTools", "level_att", "None")[0]
@@ -130,6 +135,8 @@ class ShowSettings(QObject):
                 if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                         if layer.id() in ref_ids:
                             self.__refLayers.append(layer)
+                        if layer.id() in adj_ids:
+                            self.__adjLayers.append(layer)
 
         if dbName != "":
             usedDbs = DBConnector.getUsedDatabases()
@@ -148,8 +155,8 @@ class ShowSettings(QObject):
         """
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
                                             self.__ctlDb, self.__configTable, self.__uriDb, self.__schemaDb,
-                                            self.__mntUrl, self.__refLayers, self.__levelAtt, self.__levelVal,
-                                            self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
+                                            self.__mntUrl, self.__refLayers, self.__adjLayers, self.__levelAtt,
+                                            self.__levelVal, self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -167,6 +174,7 @@ class ShowSettings(QObject):
         self.schemaDb = self.__showDlg.schemaDb()
         self.mntUrl = self.__showDlg.mntUrl()
         self.refLayers = self.__showDlg.refLayers()
+        self.adjLayers = self.__showDlg.adjLayers()
         self.levelAtt = self.__showDlg.levelAtt()
         self.levelVal = self.__showDlg.levelVal()
         self.drawdownLayer = self.__showDlg.drawdownLayer()
@@ -239,6 +247,14 @@ class ShowSettings(QObject):
         :return: saved reference layers
         """
         return self.__refLayers
+
+    @property
+    def adjLayers(self):
+        """
+        To get the saved adjustable layers
+        :return: saved adjustable layers
+        """
+        return self.__adjLayers
 
     @property
     def levelAtt(self):
@@ -412,6 +428,21 @@ class ShowSettings(QObject):
                 ids += str(layer.id())
                 # layer.layerDeleted.connect(self.__refLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "ref_layers", ids)
+
+    @adjLayers.setter
+    def adjLayers(self, adjLayers):
+        """
+        To set the saved adjustable layers
+        :param adjLayers: saved adjustable layers
+        """
+        self.__adjLayers = adjLayers
+        ids = ""
+        for layer in adjLayers:
+            if layer:
+                if ids != "":
+                    ids += ","
+                ids += str(layer.id())
+        QgsProject.instance().writeEntry("VDLTools", "adj_layers", ids)
 
     @levelAtt.setter
     def levelAtt(self, levelAtt):

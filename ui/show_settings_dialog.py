@@ -47,7 +47,7 @@ class ShowSettingsDialog(QDialog):
     """
 
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, ctllDb, configTable, uriDb, schemaDb, mntUrl,
-                 refLayers, levelAtt, levelVal, drawdowmLayer, pipeDiam, moreTools):
+                 refLayers, adjLayers, levelAtt, levelVal, drawdowmLayer, pipeDiam, moreTools):
         """
         Constructor
         :param iface: interface
@@ -65,6 +65,7 @@ class ShowSettingsDialog(QDialog):
         self.__schemaDb = schemaDb
         self.__mntUrl = mntUrl
         self.__refLayers = refLayers
+        self.__adjLayers = adjLayers
         self.__levelAtt = levelAtt
         self.__levelVal = levelVal
         self.__drawdowmLayer = drawdowmLayer
@@ -82,6 +83,7 @@ class ShowSettingsDialog(QDialog):
 
         self.__refLabels = []
         self.__refChecks = []
+        self.__adjChecks = []
 
         for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer:
@@ -163,23 +165,39 @@ class ShowSettingsDialog(QDialog):
 
         line += 1
 
-        refLabel = QLabel(QCoreApplication.translate("VDLTools", "reference layers : "))
-        self.__layout.addWidget(refLabel, line, 1)
+        # refLabel = QLabel(QCoreApplication.translate("VDLTools", "reference layers : "))
+        # self.__layout.addWidget(refLabel, line, 1)
+
+        self.__labelLayout = QGridLayout()
+        self.__labelWidget = QWidget()
 
         self.__refLayout = QGridLayout()
         self.__refWidget = QWidget()
-        i = 0
+
+        self.__labelLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Layer")), 0, 0)
+        self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Reference")), 0, 0)
+        self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Adjustable")), 0, 1)
+
+        i = 1
+
         for layer in self.__refAvailableLayers:
-            refLabel = QLabel(layer.name())
+            refLabel = QLabel("  - " + layer.name())
             self.__refLabels.append(refLabel)
-            self.__refLayout.addWidget(refLabel, i, 0)
+            self.__labelLayout.addWidget(refLabel, i, 0)
 
             refCheck = QCheckBox()
             self.__refChecks.append(refCheck)
             refCheck.stateChanged.connect(self.__refBoxesChanged)
-            self.__refLayout.addWidget(refCheck, i, 1)
+            self.__refLayout.addWidget(refCheck, i, 0)
+
+            adjCheck = QCheckBox()
+            self.__adjChecks.append(adjCheck)
+            self.__refLayout.addWidget(adjCheck, i, 1)
 
             i += 1
+
+        self.__labelWidget.setLayout(self.__labelLayout)
+        self.__layout.addWidget(self.__labelWidget, line, 1)
 
         self.__refWidget.setLayout(self.__refLayout)
         self.__layout.addWidget(self.__refWidget, line, 2)
@@ -201,6 +219,8 @@ class ShowSettingsDialog(QDialog):
         for layer in self.__refAvailableLayers:
             if layer in self.__refLayers:
                 self.__refChecks[i].setChecked(True)
+            if layer in self.__adjLayers:
+                self.__adjChecks[i].setChecked(True)
             i += 1
 
         line += 1
@@ -246,7 +266,7 @@ class ShowSettingsDialog(QDialog):
             if self.__drawdowmLayer in self.__drawdownLayers:
                 self.__drawdownCombo.setCurrentIndex(self.__drawdownLayers.index(self.__drawdowmLayer)+1)
 
-        # if moreTools:
+        if moreTools:
             line += 1
 
             importLabel = QLabel(QCoreApplication.translate("VDLTools", "Import "))
@@ -562,6 +582,19 @@ class ShowSettingsDialog(QDialog):
         layers = []
         i = 0
         for check in self.__refChecks:
+            if check.isChecked():
+                layers.append(self.__refAvailableLayers[i])
+            i += 1
+        return layers
+
+    def adjLayers(self):
+        """
+        To get the selected ajustable layers
+        :return: selected adjustable layers, or none
+        """
+        layers = []
+        i = 0
+        for check in self.__adjChecks:
             if check.isChecked():
                 layers.append(self.__refAvailableLayers[i])
             i += 1
