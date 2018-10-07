@@ -133,6 +133,7 @@ class DrawdownTool(QgsMapTool):
         self.__lineLayer = self.ownSettings.drawdownLayer
         self.__pipeDiam = self.ownSettings.pipeDiam
         self.__refLayers = self.ownSettings.refLayers
+        self.__adjLayers = self.ownSettings.adjLayers
         self.__levelAtt = self.ownSettings.levelAtt
         self.__levelVal = self.ownSettings.levelVal
 
@@ -219,10 +220,15 @@ class DrawdownTool(QgsMapTool):
         return
 
     def __adjust(self):
-        print("adjust")
+        self.__layers = self.__lineVertices(True)
         adjustments = []
+        self__altitudes = []
+        self.__features = []
+
         for p in range(len(self.__points)):
+            feat = []
             pt = self.__points[p]
+            print(pt)
             num_lines = len(self.__selectedIds)
             drawdown = False
             level = None
@@ -254,65 +260,85 @@ class DrawdownTool(QgsMapTool):
                 dtemp = feature.attribute(self.__pipeDiam)/1000
                 if dtemp > diam:
                     diam = dtemp
+                adjustments.append({'point': p, 'previous': pt['z'][i], 'self': 1,
+                                    'type': self.__lineLayer.name() + " " + str(id)})
 
-            for i in range(num_lines):
-                if pt['z'][i] is None:
-                    continue
-                if level is not None:
-                    if drawdown:
-                        alt = level - diam
-                    else:
-                        alt = level
+            for layer in self.__layers:
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                                                           QgsTolerance.LayerUnits)
+                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(pt['x'], pt['y'])),
+                                                  self.canvas(), [laySettings])
+
+                z = pt['z']
+                if f_l is None:
+                    feat.append(None)
+                    z.append(None)
                 else:
-                    alt = None
-                # print(pt['z'][i], feature.attribute(self.__pipeDiam), alt)
-                adjustments.append({'point': p, 'previous': pt['z'][i], 'diam': diam, 'drawdown': drawdown,
-                                    'alt': alt, 'layer': lay_name})
-        last = len(adjustments)-1
-        for i in range(len(adjustments)):
-            if adjustments[i]['alt'] is None:
+                    zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                    feat.append(f_l[0])
+                    if zp is None or zp != zp:
+                        zp = 0
+                    z.append(zp)
+                    adjustments.append({'point': p, 'previous': zp, 'self': 0,
+                                        'type': f_l[1].name() + " " + str(f_l[0].id())})
+
+            self.__features.append(feat)
+
+            if level is not None:
+                if drawdown:
+                    alt = level - diam
+                else:
+                    alt = level
+            else:
+                alt = None
+
+            self__altitudes.append({'diam': diam, 'drawdown': drawdown, 'alt': alt, 'layer': lay_name})
+
+        last = len(self__altitudes)-1
+        for i in range(len(self__altitudes)):
+            if self__altitudes[i]['alt'] is None:
                 if 0 < i < last:
-                    prev_alt = adjustments[i-1]['alt']
-                    next_alt = adjustments[i+1]['alt']
+                    prev_alt = self__altitudes[i-1]['alt']
+                    next_alt = self__altitudes[i+1]['alt']
                     if prev_alt is not None and next_alt is not None:
-                        prev_pt = self.__points[adjustments[i-1]['point']]
-                        next_pt = self.__points[adjustments[i+1]['point']]
-                        pt = self.__points[adjustments[i]['point']]
+                        prev_pt = self.__points[i-1]
+                        next_pt = self.__points[i+1]
+                        pt = self.__points[i]
                         d0 = Finder.sqrDistForCoords(pt['x'], prev_pt['x'], pt['y'], prev_pt['y'])
                         d1 = Finder.sqrDistForCoords(next_pt['x'], pt['x'], next_pt['x'], pt['x'])
                         inter_alt = old_div((d0*next_alt + d1*prev_alt), (d0 + d1))
-                        adjustments[i]['alt'] = inter_alt
-                        adjustments[i]['drawdown'] = "interpolated"
-                elif i == 0 and len(adjustments) > 2:
-                    alt1 = adjustments[1]['alt']
-                    alt2 = adjustments[2]['alt']
+                        self__altitudes[i]['alt'] = inter_alt
+                        self__altitudes[i]['drawdown'] = "interpolated"
+                elif i == 0 and len(self__altitudes) > 2:
+                    alt1 = self__altitudes[1]['alt']
+                    alt2 = self__altitudes[2]['alt']
                     if alt1 is not None and alt2 is not None:
-                        pt2 = self.__points[adjustments[2]['point']]
-                        pt1 = self.__points[adjustments[1]['point']]
-                        pt = self.__points[adjustments[0]['point']]
+                        pt2 = self.__points[2]
+                        pt1 = self.__points[1]
+                        pt = self.__points[0]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
                         if small_d < (old_div(big_d, 4)):
-                            adjustments[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
-                            adjustments[i]['drawdown'] = "extrapolated"
+                            self__altitudes[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                            self__altitudes[i]['drawdown'] = "extrapolated"
                         else:
-                            adjustments[i]['drawdown'] = "cannot be extrapolated"
-                elif i == last and len(adjustments) > 2:
-                    alt1 = adjustments[i-1]['alt']
-                    alt2 = adjustments[i-2]['alt']
+                            self__altitudes[i]['drawdown'] = "cannot be extrapolated"
+                elif i == last and len(self__altitudes) > 2:
+                    alt1 = self__altitudes[i-1]['alt']
+                    alt2 = self__altitudes[i-2]['alt']
                     if alt1 is not None and alt2 is not None:
-                        pt2 = self.__points[adjustments[i-2]['point']]
-                        pt1 = self.__points[adjustments[i-1]['point']]
-                        pt = self.__points[adjustments[i]['point']]
+                        pt2 = self.__points[i-2]
+                        pt1 = self.__points[i-1]
+                        pt = self.__points[i]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
                         if small_d < (old_div(big_d, 4)):
-                            adjustments[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
-                            adjustments[i]['drawdown'] = "extrapolated"
+                            self__altitudes[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                            self__altitudes[i]['drawdown'] = "extrapolated"
                         else:
-                            adjustments[i]['drawdown'] = "cannot be extrapolated"
+                            self__altitudes[i]['drawdown'] = "cannot be extrapolated"
 
-        self.__adjDlg = DrawdownMessageDialog(adjustments)
+        self.__adjDlg = DrawdownMessageDialog(adjustments, self__altitudes)
         self.__adjDlg.rejected.connect(self.__cancel)
         self.__adjDlg.cancelButton().clicked.connect(self.__onAdjCancel)
         self.__adjDlg.applyButton().clicked.connect(self.__onAdjOk)
@@ -320,18 +346,25 @@ class DrawdownTool(QgsMapTool):
 
     def __onAdjOk(self):
         self.__adjDlg.accept()
+        adjustements  = self.__adjDlg.getAdjusts()
+        for adj in adjustements:
+            if adj['self']:
+                pass
+            else:
+                pass
+
         self.__cancel()
+
 
     def __onAdjCancel(self):
         self.__adjDlg.reject()
         self.__cancel()
 
-    def __setLayerDialog(self):
-        """
-        To create a Profile Layers Dialog
-        """
-        otherLayers = self.__lineVertices(True)
-        self.__adjust()
+    # def __setLayerDialog(self):
+    #     """
+    #     To create a Profile Layers Dialog
+    #     """
+    #     otherLayers = self.__lineVertices(True)
         # with_mnt = True
         # if self.ownSettings is None or self.ownSettings.mntUrl is None \
         #         or self.ownSettings.mntUrl == "":
@@ -392,19 +425,19 @@ class DrawdownTool(QgsMapTool):
     #     else:
     #         self.__confirmLine()
 
-    def __getOtherLayers(self):
-        """
-        To get all points layers that can be used
-        :return: layers list
-        """
-        layerList = []
-        types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
-                 QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
-        for layer in self.canvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
-                if layer not in self.__refLayers:
-                    layerList.append(layer)
-        return layerList
+    # def __getOtherLayers(self):
+    #     """
+    #     To get all points layers that can be used
+    #     :return: layers list
+    #     """
+    #     layerList = []
+    #     types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
+    #              QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
+    #     for layer in self.canvas().layers():
+    #         if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
+    #             if layer not in self.__refLayers:
+    #                 layerList.append(layer)
+    #     return layerList
 
     # def __onMsgPass(self):
     #     """
@@ -707,12 +740,12 @@ class DrawdownTool(QgsMapTool):
     #         layer.startEditing()
     #     layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
 
-    def __onLayCancel(self):
-        """
-        When the Cancel button in Profile Layers Dialog is pushed
-        """
-        self.__layDlg.reject()
-        self.__isChoosed = False
+    # def __onLayCancel(self):
+    #     """
+    #     When the Cancel button in Profile Layers Dialog is pushed
+    #     """
+    #     self.__layDlg.reject()
+    #     self.__isChoosed = False
 
     def __lineVertices(self, checkLayers=False):
         """
@@ -721,7 +754,7 @@ class DrawdownTool(QgsMapTool):
         :return: other layers list if requested
         """
         if checkLayers:
-            availableLayers = self.__getOtherLayers()
+            # availableLayers = self.__getOtherLayers()
             otherLayers = []
         self.__points = []
         self.__selectedStarts = []
@@ -781,7 +814,8 @@ class DrawdownTool(QgsMapTool):
                             z.append(None)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
-                        for layer in availableLayers:
+                        for layer in self.__adjLayers:
+                            print(layer.name())
                             if layer in otherLayers:
                                 continue
                             laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
@@ -810,14 +844,14 @@ class DrawdownTool(QgsMapTool):
         if checkLayers:
             return otherLayers
 
-    def __onLayOk(self):
-        """
-        When the Ok button in Profile Layers Dialog is pushed
-        """
-        self.__layDlg.accept()
-        self.__layers = self.__layDlg.getLayers()
-        self.__usedMnts = self.__layDlg.getUsedMnts()
-        # self.__layOk()
+    # def __onLayOk(self):
+    #     """
+    #     When the Ok button in Profile Layers Dialog is pushed
+    #     """
+    #     self.__layDlg.accept()
+    #     self.__layers = self.__layDlg.getLayers()
+    #     self.__usedMnts = self.__layDlg.getUsedMnts()
+    #     self.__layOk()
 
     # def __layOk(self):
     #     """
@@ -984,7 +1018,8 @@ class DrawdownTool(QgsMapTool):
         if event.button() == Qt.RightButton:
             if self.__lineLayer.selectedFeatures() is not None and self.__selectedIds is not None:
                 self.__isChoosed = True
-                self.__setLayerDialog()
+                self.__adjust()
+                # self.__setLayerDialog()
         elif event.button() == Qt.LeftButton:
             if self.__lastFeature is not None and \
                     (self.__selectedIds is None or self.__lastFeature.id() not in self.__selectedIds):

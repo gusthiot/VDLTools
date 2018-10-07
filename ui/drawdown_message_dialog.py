@@ -38,12 +38,13 @@ class DrawdownMessageDialog(QDialog):
     Dialog class to display the issues in the profile
     """
 
-    def __init__(self, adjustments):
+    def __init__(self, adjustments, altitudes):
         """
         Constructor
         """
         QDialog.__init__(self)
         self.__adjustements = adjustments
+        self.__altitudes = altitudes
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Elevations adjustments"))
         self.__layout = QGridLayout()
 
@@ -54,21 +55,34 @@ class DrawdownMessageDialog(QDialog):
 
         self.__scrollLayout = QGridLayout()
 
+        pt_last = -1
+        pos = 0
         for i in range(len(self.__adjustements)):
             adj = self.__adjustements[i]
-            msg = "vertex " + str(adj['point']) + " : previous alt : " + str(adj['previous']) + ", max high : "
-            msg += str(adj['diam']) + ", drawdown : " + str(adj['drawdown'])
-            if adj['alt'] is not None:
-                msg += ", new alt : " + str(adj['alt'])
-            if adj['layer'] is not None:
-                msg += " from " + adj['layer']
+            pt = adj['point']
+            alti = self.__altitudes[pt]
+            if pt > pt_last:
+                msg = "vertex " + str(pt) + ") max high : " + str(alti['diam']) + "m, drawdown : "
+                msg += str(alti['drawdown'])
+                if alti['alt'] is not None:
+                    msg += ", new alt : " + str(alti['alt']) + "m"
+                if alti['layer'] is not None:
+                    msg += ", from " + alti['layer']
+                pt_last = pt
+                msgLabel = QLabel(msg)
+                self.__msgLabels.append(msgLabel)
+                self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
+                pos += 1
+
+            msg = "     - " + adj['type'] + " : " + str(adj['previous']) + "m"
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
-            self.__scrollLayout.addWidget(self.__msgLabels[i], i+1, 0, 1, 2)
+            self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
             msgCheck = QCheckBox()
             msgCheck.setChecked(True)
             self.__msgChecks.append(msgCheck)
-            self.__scrollLayout.addWidget(self.__msgChecks[i], i+1, 2)
+            self.__scrollLayout.addWidget(self.__msgChecks[i], pos+1, 2)
+            pos += 1
             displayButton = True
 
         widget = QWidget()
