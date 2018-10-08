@@ -74,7 +74,7 @@ class DrawdownMessageDialog(QDialog):
                 self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
                 pos += 1
 
-            msg = "     - " + adj['type'] + " : " + str(adj['previous']) + "m"
+            msg = "     - " + adj['layer'].name() + " " + str(adj['feature'].id()) + " : " + str(adj['previous']) + "m"
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
