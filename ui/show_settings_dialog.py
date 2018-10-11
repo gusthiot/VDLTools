@@ -27,6 +27,7 @@ from qgis.gui import QgsMessageBar
 from PyQt4.QtGui import (QDialog,
                          QLineEdit,
                          QGridLayout,
+                         QHBoxLayout,
                          QPushButton,
                          QLabel,
                          QCheckBox,
@@ -168,41 +169,64 @@ class ShowSettingsDialog(QDialog):
         # refLabel = QLabel(QCoreApplication.translate("VDLTools", "reference layers : "))
         # self.__layout.addWidget(refLabel, line, 1)
 
-        self.__labelLayout = QGridLayout()
-        self.__labelWidget = QWidget()
+        # self.__labelLayout = QGridLayout()
+        # self.__labelWidget = QWidget()
+        #
+        # self.__refLayout = QGridLayout()
+        # self.__refWidget = QWidget()
 
-        self.__refLayout = QGridLayout()
-        self.__refWidget = QWidget()
+        # self.__labelLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Layer")), 0, 0)
+        # self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Reference")), 0, 0)
+        # self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Adjustable")), 0, 1)
 
-        self.__labelLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Layer")), 0, 0)
-        self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Reference")), 0, 0)
-        self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Adjustable")), 0, 1)
+        self.__layout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Layer")), line, 1)
 
-        i = 1
+        namesLayout = QHBoxLayout()
+        namesWidget = QWidget()
+        namesLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Reference")))
+        namesLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Adjustable")))
+        namesLayout.setContentsMargins(0,0,0,0)
+        namesWidget.setLayout(namesLayout)
+        self.__layout.addWidget(namesWidget, line, 2)
+
+        line += 1
+
+        # i = 1
 
         for layer in self.__refAvailableLayers:
             refLabel = QLabel("  - " + layer.name())
             self.__refLabels.append(refLabel)
-            self.__labelLayout.addWidget(refLabel, i, 0)
+            # self.__labelLayout.addWidget(refLabel, i, 0)
+            self.__layout.addWidget(refLabel, line, 1)
+
+            checksLayout = QHBoxLayout()
+            checksLayout.setContentsMargins(0,0,0,0)
+            checksWidget = QWidget()
 
             refCheck = QCheckBox()
             self.__refChecks.append(refCheck)
             refCheck.stateChanged.connect(self.__refBoxesChanged)
-            self.__refLayout.addWidget(refCheck, i, 0)
+            # self.__refLayout.addWidget(refCheck, i, 0)
+            checksLayout.addWidget(refCheck)
 
             adjCheck = QCheckBox()
             self.__adjChecks.append(adjCheck)
-            self.__refLayout.addWidget(adjCheck, i, 1)
+            # self.__refLayout.addWidget(adjCheck, i, 1)
+            checksLayout.addWidget(adjCheck)
 
-            i += 1
+            checksWidget.setLayout(checksLayout)
+            self.__layout.addWidget(checksWidget, line, 2)
 
-        self.__labelWidget.setLayout(self.__labelLayout)
-        self.__layout.addWidget(self.__labelWidget, line, 1)
+            line += 1
+            # i += 1
 
-        self.__refWidget.setLayout(self.__refLayout)
-        self.__layout.addWidget(self.__refWidget, line, 2)
-
-        line += 1
+        # self.__labelWidget.setLayout(self.__labelLayout)
+        # self.__layout.addWidget(self.__labelWidget, line, 1)
+        #
+        # self.__refWidget.setLayout(self.__refLayout)
+        # self.__layout.addWidget(self.__refWidget, line, 2)
+        #
+        # line += 1
 
         levelAttLabel = QLabel(QCoreApplication.translate("VDLTools", "Level attribute : "))
         self.__layout.addWidget(levelAttLabel, line, 1)

@@ -229,7 +229,6 @@ class DrawdownTool(QgsMapTool):
         for p in range(len(self.__points)):
             feat = []
             pt = self.__points[p]
-            print(pt)
             num_lines = len(self.__selectedIds)
             drawdown = False
             level = None
@@ -240,13 +239,17 @@ class DrawdownTool(QgsMapTool):
                 f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(pt['x'], pt['y'])),
                                                   self.canvas(), [laySettings])
                 if f_l is not None:
-                    if level is not None:
-                        self.__iface.messageBar().pushMessage(
-                            QCoreApplication.translate("VDLTools", "More than one reference point !!"),
-                            level=QgsMessageBar.CRITICAL, duration=0)
                     feature = f_l[0]
                     lay_name = f_l[1].name()
                     point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
+                    if level is not None:
+                        if (level - point_v2.z()) > 0.005:
+                            self.__iface.messageBar().pushMessage(
+                                QCoreApplication.translate(
+                                    "VDLTools", "More than one reference point, with too different elevations !!"),
+                                level=QgsMessageBar.CRITICAL, duration=0)
+                            self.__cancel()
+                            return
                     level = point_v2.z()
                     if str(feature.attribute(self.__levelAtt)) == self.__levelVal:
                         drawdown = True
@@ -352,7 +355,7 @@ class DrawdownTool(QgsMapTool):
 
     def __onAdjOk(self):
         self.__adjDlg.accept()
-        adjustements  = self.__adjDlg.getAdjusts()
+        adjustements = self.__adjDlg.getAdjusts()
         lines = {}
         for adj in adjustements:
             if self.__altitudes[adj['point']]['alt'] is None:
@@ -854,7 +857,6 @@ class DrawdownTool(QgsMapTool):
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in self.__adjLayers:
-                            print(layer.name())
                             if layer in otherLayers:
                                 continue
                             laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,

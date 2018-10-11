@@ -73,13 +73,16 @@ class DrawdownMessageDialog(QDialog):
                 self.__msgLabels.append(msgLabel)
                 self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
                 pos += 1
-
             msg = "     - " + adj['layer'].name() + " " + str(adj['feature'].id()) + " : " + str(adj['previous']) + "m"
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
             msgCheck = QCheckBox()
-            msgCheck.setChecked(True)
+            if alti['alt'] is None or alti['alt'] == adj['previous']:
+                msgCheck.setChecked(False)
+                msgCheck.setVisible(False)
+            else:
+                msgCheck.setChecked(True)
             self.__msgChecks.append(msgCheck)
             self.__scrollLayout.addWidget(self.__msgChecks[i], pos+1, 2)
             pos += 1
