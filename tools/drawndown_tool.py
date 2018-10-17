@@ -184,29 +184,10 @@ class DrawdownTool(QgsMapTool):
         :param layer: selected layer
         """
         enable = True
-        if self.ownSettings is None:
-            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
-            #                                       level=QgsMessageBar.CRITICAL, duration=0)
-            enable = False
-        if self.ownSettings.refLayers is None or len(self.ownSettings.refLayers)==0:
-            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No reference layers given !!"),
-            #                                       level=QgsMessageBar.CRITICAL, duration=0)
-            enable = False
-        if self.ownSettings.levelAtt is None:
-            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level attribute given !!"),
-            #                                       level=QgsMessageBar.CRITICAL, duration=0)
-            enable = False
-        if self.ownSettings.levelVal is None or self.ownSettings.levelVal == "":
-            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No level value given !!"),
-            #                                       level=QgsMessageBar.CRITICAL, duration=0)
-            enable = False
-        if self.ownSettings.drawdownLayer is None:
-            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No drawdown layer given !!"),
-            #                                       level=QgsMessageBar.CRITICAL, duration=0)
-            enable = False
-        if self.ownSettings.pipeDiam is None:
-            # self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No pipe diameter given !!"),
-            #                                       level=QgsMessageBar.CRITICAL, duration=0)
+        if self.ownSettings is None or self.ownSettings.refLayers is None or len(self.ownSettings.refLayers) == 0 \
+                or self.ownSettings.levelAtt is None or self.ownSettings.levelVal is None \
+                or self.ownSettings.levelVal == "" or self.ownSettings.drawdownLayer is None \
+                or self.ownSettings.pipeDiam is None:
             enable = False
 
         if enable:
@@ -246,7 +227,7 @@ class DrawdownTool(QgsMapTool):
                         if (level - point_v2.z()) > 0.005:
                             self.__iface.messageBar().pushMessage(
                                 QCoreApplication.translate(
-                                    "VDLTools", "More than one reference point, with too different elevations !!"),
+                                    "VDLTools", "More than one reference point, with 2 different elevations !!"),
                                 level=QgsMessageBar.CRITICAL, duration=0)
                             self.__cancel()
                             return
@@ -382,6 +363,7 @@ class DrawdownTool(QgsMapTool):
         for key, line in lines.items():
             geom = QgsGeometry(line.clone())
             self.__lineLayer.changeGeometry(key, geom)
+        self.__calculateProfile()
         self.__cancel()
 
 
@@ -968,18 +950,18 @@ class DrawdownTool(QgsMapTool):
     #         self.__features.append(feat)
     #     self.__calculateProfile()
     #
-    # def __getNames(self):
-    #     """
-    #     To get the names from connected lines layers
-    #     :return: the names list
-    #     """
-    #     names = [self.__lineLayer.name()]
-    #     for layer in self.__layers:
-    #         if layer.name() == self.__lineLayer.name():
-    #             names.append(layer.name() + QCoreApplication.translate("VDLTools", " connected"))
-    #         else:
-    #             names.append(layer.name())
-    #     return names
+    def __getNames(self):
+        """
+        To get the names from connected lines layers
+        :return: the names list
+        """
+        names = [self.__lineLayer.name()]
+        for layer in self.__layers:
+            # if layer.name() == self.__lineLayer.name():
+            #     names.append(layer.name() + QCoreApplication.translate("VDLTools", " connected"))
+            # else:
+                names.append(layer.name())
+        return names
 
     @staticmethod
     def __contains(line, point):
@@ -1101,17 +1083,17 @@ class DrawdownTool(QgsMapTool):
                         self.__selectedDirections.append(direction)
                     self.__lineLayer.setSelectedFeatures(self.__selectedIds)
 
-    # def __calculateProfile(self):
-    #     """
-    #     To calculate the profile and display it
-    #     """
-    #     if self.__points is None:
-    #         return
-    #     self.__dockWdg.clearData()
-    #     if len(self.__points) == 0:
-    #         return
-    #     self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
-    #     self.__dockWdg.attachCurves(self.__getNames(), self.ownSettings, self.__usedMnts)
+    def __calculateProfile(self):
+        """
+        To calculate the profile and display it
+        """
+        if self.__points is None:
+            return
+        self.__dockWdg.clearData()
+        if len(self.__points) == 0:
+            return
+        self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
+        self.__dockWdg.attachCurves(self.__getNames(), self.ownSettings, self.__usedMnts)
     #
     # def __checkSituations(self):
     #     """
