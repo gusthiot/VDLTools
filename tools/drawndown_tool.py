@@ -75,10 +75,11 @@ class DrawdownTool(QgsMapTool):
         self.__lastFeatureId = None
         self.__lastFeature = None
         self.__dockWdg = None
-        self.__layDlg = None
-        self.__msgDlg = None
-        self.__confDlg = None
-        self.__zeroDlg = None
+        # self.__layDlg = None
+        # self.__msgDlg = None
+        # self.__confDlg = None
+        # self.__zeroDlg = None
+        self.__adjDlg = None
         self.__points = None
         self.__layers = None
         self.__features = None
@@ -89,8 +90,8 @@ class DrawdownTool(QgsMapTool):
         self.__selectedDirections = None
         self.__startVertex = None
         self.__endVertex = None
-        self.__rubberSit = None
-        self.__rubberDif = None
+        # self.__rubberSit = None
+        # self.__rubberDif = None
         self.ownSettings = None
         self.__usedMnts = None
         self.__isfloating = False
@@ -121,16 +122,16 @@ class DrawdownTool(QgsMapTool):
         else:
            self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
-        self.__rubberSit = QgsRubberBand(self.canvas(), QGis.Point)
-        self.__rubberDif = QgsRubberBand(self.canvas(), QGis.Point)
-        color = QColor("red")
-        color.setAlphaF(0.78)
-        self.__rubberSit.setColor(color)
-        self.__rubberSit.setIcon(4)
-        self.__rubberSit.setIconSize(20)
-        self.__rubberDif.setColor(color)
-        self.__rubberDif.setIcon(2)
-        self.__rubberDif.setIconSize(20)
+        # self.__rubberSit = QgsRubberBand(self.canvas(), QGis.Point)
+        # self.__rubberDif = QgsRubberBand(self.canvas(), QGis.Point)
+        # color = QColor("red")
+        # color.setAlphaF(0.78)
+        # self.__rubberSit.setColor(color)
+        # self.__rubberSit.setIcon(4)
+        # self.__rubberSit.setIconSize(20)
+        # self.__rubberDif.setColor(color)
+        # self.__rubberDif.setIcon(2)
+        # self.__rubberDif.setIconSize(20)
         self.__lineLayer = self.ownSettings.drawdownLayer
         self.__pipeDiam = self.ownSettings.pipeDiam
         self.__refLayers = self.ownSettings.refLayers
@@ -151,10 +152,10 @@ class DrawdownTool(QgsMapTool):
         """
         When the action is deselected
         """
-        self.canvas().scene().removeItem(self.__rubberDif)
-        self.__rubberDif = None
-        self.canvas().scene().removeItem(self.__rubberSit)
-        self.__rubberSit = None
+        # self.canvas().scene().removeItem(self.__rubberDif)
+        # self.__rubberDif = None
+        # self.canvas().scene().removeItem(self.__rubberSit)
+        # self.__rubberSit = None
         if self.__dockWdg is not None:
             self.__dockWdg.close()
         QgsMapTool.deactivate(self)
@@ -173,10 +174,11 @@ class DrawdownTool(QgsMapTool):
         self.__startVertex = None
         self.__endVertex = None
         self.__inSelection = False
-        self.__layDlg = None
-        self.__msgDlg = None
-        self.__confDlg = None
-        self.__zeroDlg = None
+        # self.__layDlg = None
+        # self.__msgDlg = None
+        # self.__confDlg = None
+        # self.__zeroDlg = None
+        self.__adjDlg = None
 
     def setEnable(self):
         """
@@ -1036,8 +1038,8 @@ class DrawdownTool(QgsMapTool):
         When the mouse is clicked
         :param event: mouse event
         """
-        self.__rubberSit.reset()
-        self.__rubberDif.reset()
+        # self.__rubberSit.reset()
+        # self.__rubberDif.reset()
         if event.button() == Qt.RightButton:
             if self.__lineLayer.selectedFeatures() is not None and self.__selectedIds is not None:
                 self.__isChoosed = True
