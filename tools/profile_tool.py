@@ -756,7 +756,7 @@ class ProfileTool(QgsMapTool):
         names = [self.__lineLayer.name()]
         for layer in self.__layers:
             if layer.name() == self.__lineLayer.name():
-                names.append(layer.name() + QCoreApplication.translate("VDLTools", " connected"))
+                names.append(layer.name() + " conn.")
             else:
                 names.append(layer.name())
         return names

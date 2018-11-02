@@ -98,7 +98,7 @@ class ShowSettingsDialog(QDialog):
                 if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
                     self.__refAvailableLayers.append(layer)
 
-        self.resize(450, 400)
+       # self.resize(450, 400)
         self.__layout = QGridLayout()
 
         line = 0
@@ -166,19 +166,6 @@ class ShowSettingsDialog(QDialog):
 
         line += 1
 
-        # refLabel = QLabel(QCoreApplication.translate("VDLTools", "reference layers : "))
-        # self.__layout.addWidget(refLabel, line, 1)
-
-        # self.__labelLayout = QGridLayout()
-        # self.__labelWidget = QWidget()
-        #
-        # self.__refLayout = QGridLayout()
-        # self.__refWidget = QWidget()
-
-        # self.__labelLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Layer")), 0, 0)
-        # self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Reference")), 0, 0)
-        # self.__refLayout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Adjustable")), 0, 1)
-
         self.__layout.addWidget(QLabel(QCoreApplication.translate("VDLTools", "Layer")), line, 1)
 
         namesLayout = QHBoxLayout()
@@ -191,12 +178,9 @@ class ShowSettingsDialog(QDialog):
 
         line += 1
 
-        # i = 1
-
         for layer in self.__refAvailableLayers:
             refLabel = QLabel("  - " + layer.name())
             self.__refLabels.append(refLabel)
-            # self.__labelLayout.addWidget(refLabel, i, 0)
             self.__layout.addWidget(refLabel, line, 1)
 
             checksLayout = QHBoxLayout()
@@ -206,29 +190,18 @@ class ShowSettingsDialog(QDialog):
             refCheck = QCheckBox()
             self.__refChecks.append(refCheck)
             refCheck.stateChanged.connect(self.__refBoxesChanged)
-            # self.__refLayout.addWidget(refCheck, i, 0)
             checksLayout.addWidget(refCheck)
 
             adjCheck = QCheckBox()
             self.__adjChecks.append(adjCheck)
-            # self.__refLayout.addWidget(adjCheck, i, 1)
             checksLayout.addWidget(adjCheck)
 
             checksWidget.setLayout(checksLayout)
             self.__layout.addWidget(checksWidget, line, 2)
 
             line += 1
-            # i += 1
 
-        # self.__labelWidget.setLayout(self.__labelLayout)
-        # self.__layout.addWidget(self.__labelWidget, line, 1)
-        #
-        # self.__refWidget.setLayout(self.__refLayout)
-        # self.__layout.addWidget(self.__refWidget, line, 2)
-        #
-        # line += 1
-
-        levelAttLabel = QLabel(QCoreApplication.translate("VDLTools", "Level attribute : "))
+        levelAttLabel = QLabel(QCoreApplication.translate("VDLTools", "Code(s) on pipe : "))
         self.__layout.addWidget(levelAttLabel, line, 1)
 
         self.__levelAttCombo = QComboBox()
@@ -249,7 +222,7 @@ class ShowSettingsDialog(QDialog):
 
         line += 1
 
-        levelValLabel = QLabel(QCoreApplication.translate("VDLTools", "Level value : "))
+        levelValLabel = QLabel(QCoreApplication.translate("VDLTools", "Point code attribute : "))
         self.__layout.addWidget(levelValLabel, line, 1)
 
         self.__levelValText = QLineEdit()

@@ -28,6 +28,7 @@ from PyQt4.QtCore import (QCoreApplication,
                           QObject,
                           pyqtSignal,
                           QVariant)
+from PyQt4.QtGui import QMessageBox
 from qgis.core import (QgsProject,
                        QgsMapLayerRegistry,
                        QgsWKBTypes,
@@ -64,7 +65,7 @@ class ShowSettings(QObject):
         self.__refLayers = []
         self.__adjLayers = []
         self.__levelAtt = None
-        self.__levelVal = None
+        self.__levelVals = []
         self.__drawdownLayer = None
         self.__pipeDiam = None
         self.__mntUrl = None
@@ -91,7 +92,8 @@ class ShowSettings(QObject):
         self.__levelAtt = QgsProject.instance().readEntry("VDLTools", "level_att", "None")[0]
 
         """ Level value for drawdown tool """
-        self.__levelVal = QgsProject.instance().readEntry("VDLTools", "level_val", "None")[0]
+        value = QgsProject.instance().readEntry("VDLTools", "level_val", "None")[0]
+        self.__levelVals = value.split(",")
 
         """ Drawdown line layer """
         dd_id = QgsProject.instance().readEntry("VDLTools", "drawdown_layer", "None")[0]
@@ -153,10 +155,11 @@ class ShowSettings(QObject):
         """
         To start the show settings, meaning display a Show Settings Dialog
         """
+        levelVal = ','.join(str(x) for x in self.__levelVals)
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
                                             self.__ctlDb, self.__configTable, self.__uriDb, self.__schemaDb,
                                             self.__mntUrl, self.__refLayers, self.__adjLayers, self.__levelAtt,
-                                            self.__levelVal, self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
+                                            levelVal, self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -165,6 +168,15 @@ class ShowSettings(QObject):
         """
         When the Ok button in Show Settings Dialog is pushed
         """
+        values = self.__showDlg.levelVal().split(',')
+        for v in values:
+            if not v.isdigit():
+                QMessageBox.information(
+                    None, QCoreApplication.translate("VDLTools", "Error"),
+                    QCoreApplication.translate("VDLTools", "Point code attribute has to be numbers separated by comma")
+                )
+                return
+
         self.__showDlg.accept()
         self.linesLayer = self.__showDlg.linesLayer()
         self.pointsLayer = self.__showDlg.pointsLayer()
@@ -265,12 +277,12 @@ class ShowSettings(QObject):
         return self.__levelAtt
 
     @property
-    def levelVal(self):
+    def levelVals(self):
         """
         To get the saved level value
         :return: saved level value
         """
-        return self.__levelVal
+        return self.__levelVals
 
     @property
     def drawdownLayer(self):
@@ -452,18 +464,17 @@ class ShowSettings(QObject):
         """
         self.__levelAtt = levelAtt
         if levelAtt is not None:
-            print(levelAtt)
             QgsProject.instance().writeEntry("VDLTools", "level_att", levelAtt)
 
-    @levelVal.setter
-    def levelVal(self, levelVal):
+    @levelVals.setter
+    def levelVals(self, levelVals):
         """
-        To set the saved level value
-        :param levelVal: saved level value
+        To set the saved level values
+        :param levelVals: saved level values
         """
-        self.__levelVal = levelVal
-        if levelVal is not None:
-            QgsProject.instance().writeEntry("VDLTools", "level_val", levelVal)
+        self.__levelVals = levelVals.split(",")
+        if levelVals is not None:
+            QgsProject.instance().writeEntry("VDLTools", "level_val", levelVals)
 
     @drawdownLayer.setter
     def drawdownLayer(self, drawdownLayer):

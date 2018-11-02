@@ -126,52 +126,47 @@
         <translation>Il y a plus qu&apos;une altitude pour le point </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="71"/>
-        <location filename="../tools/drawndown_tool.py" line="109"/>
+        <location filename="../tools/drawndown_tool.py" line="66"/>
+        <location filename="../tools/drawndown_tool.py" line="104"/>
         <source>Drawdown</source>
         <translation>Rabattement</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="110"/>
+        <location filename="../tools/drawndown_tool.py" line="105"/>
         <source>This tool is not yet finished, are you here to test it ?</source>
         <translation>Cet outil n&apos;est pas encore terminé, êtes-vous là pour le tester ?</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="229"/>
+        <location filename="../tools/drawndown_tool.py" line="278"/>
         <source>More than one reference point, with 2 different elevations !!</source>
         <translation>Plus d&apos;un point de référence, avec 2 altitudes différentes !!</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="797"/>
+        <location filename="../tools/drawndown_tool.py" line="482"/>
         <location filename="../tools/profile_tool.py" line="588"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="815"/>
+        <location filename="../tools/drawndown_tool.py" line="500"/>
         <location filename="../tools/profile_tool.py" line="608"/>
         <source>Beware! the line </source>
         <translation>Attention ! La ligne </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="816"/>
+        <location filename="../tools/drawndown_tool.py" line="501"/>
         <location filename="../tools/profile_tool.py" line="609"/>
         <source> has 2 identical summits on the vertex </source>
         <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="817"/>
+        <location filename="../tools/drawndown_tool.py" line="502"/>
         <location filename="../tools/profile_tool.py" line="610"/>
         <source> same coordinates (X and Y). Please correct the line geometry.</source>
         <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="759"/>
-        <source> connected</source>
-        <translation> connectées</translation>
-    </message>
-    <message>
-        <location filename="../tools/drawndown_tool.py" line="1052"/>
+        <location filename="../tools/drawndown_tool.py" line="652"/>
         <location filename="../tools/profile_tool.py" line="849"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
@@ -207,7 +202,7 @@
         <translation>Ajustement des altitudes</translation>
     </message>
     <message>
-        <location filename="../ui/drawdown_message_dialog.py" line="107"/>
+        <location filename="../ui/drawdown_message_dialog.py" line="112"/>
         <source>Apply drawdown</source>
         <translation>Appliquer rabattement</translation>
     </message>
@@ -219,7 +214,7 @@
         <location filename="../ui/intersect_distance_dialog.py" line="62"/>
         <location filename="../ui/profile_confirm_dialog.py" line="49"/>
         <location filename="../ui/profile_layers_dialog.py" line="50"/>
-        <location filename="../ui/show_settings_dialog.py" line="371"/>
+        <location filename="../ui/show_settings_dialog.py" line="344"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -240,7 +235,7 @@
     </message>
     <message>
         <location filename="../ui/choose_control_dialog.py" line="86"/>
-        <location filename="../ui/drawdown_message_dialog.py" line="100"/>
+        <location filename="../ui/drawdown_message_dialog.py" line="105"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="69"/>
         <location filename="../ui/fields_settings_dialog.py" line="67"/>
         <location filename="../ui/import_confirm_dialog.py" line="53"/>
@@ -250,7 +245,7 @@
         <location filename="../ui/move_confirm_dialog.py" line="58"/>
         <location filename="../ui/profile_confirm_dialog.py" line="53"/>
         <location filename="../ui/profile_layers_dialog.py" line="54"/>
-        <location filename="../ui/show_settings_dialog.py" line="375"/>
+        <location filename="../ui/show_settings_dialog.py" line="348"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -465,10 +460,15 @@
         <translation>Appliquer l&apos;altitude des points à la ligne</translation>
     </message>
     <message>
-        <location filename="../tools/show_settings.py" line="56"/>
+        <location filename="../tools/show_settings.py" line="57"/>
         <location filename="../ui/show_settings_dialog.py" line="74"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
+    </message>
+    <message>
+        <location filename="../tools/show_settings.py" line="174"/>
+        <source>Point code attribute has to be numbers separated by comma</source>
+        <translation>L&apos;attribut code point doit contenir des nombres séparés par une virgule</translation>
     </message>
     <message>
         <location filename="../ui/show_settings_dialog.py" line="111"/>
@@ -491,41 +491,27 @@
         <translation>Rabattement</translation>
     </message>
     <message>
-        <source>reference layers : </source>
-        <translation type="obsolete">Couches de référence : </translation>
-    </message>
-    <message>
-        <location filename="../ui/show_settings_dialog.py" line="231"/>
-        <source>Level attribute : </source>
-        <translation>Attribut de niveau : </translation>
-    </message>
-    <message>
-        <location filename="../ui/show_settings_dialog.py" line="252"/>
-        <source>Level value : </source>
-        <translation>Valeur de niveau : </translation>
-    </message>
-    <message>
-        <location filename="../ui/show_settings_dialog.py" line="264"/>
+        <location filename="../ui/show_settings_dialog.py" line="237"/>
         <source>drawdown layer : </source>
         <translation>Couche à rabattre : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="296"/>
+        <location filename="../ui/show_settings_dialog.py" line="269"/>
         <source>Import </source>
         <translation>Import</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="301"/>
+        <location filename="../ui/show_settings_dialog.py" line="274"/>
         <source>Import database : </source>
         <translation>Import base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="314"/>
+        <location filename="../ui/show_settings_dialog.py" line="287"/>
         <source>Database schema : </source>
         <translation>Schéma base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="325"/>
+        <location filename="../ui/show_settings_dialog.py" line="298"/>
         <source>Config table : </source>
         <translation>Table de configuration : </translation>
     </message>
@@ -540,32 +526,42 @@
         <translation>Intersection</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="182"/>
+        <location filename="../ui/show_settings_dialog.py" line="169"/>
         <source>Layer</source>
         <translation>Couche</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="186"/>
+        <location filename="../ui/show_settings_dialog.py" line="173"/>
         <source>Reference</source>
         <translation>Référence</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="187"/>
+        <location filename="../ui/show_settings_dialog.py" line="174"/>
         <source>Adjustable</source>
         <translation>Ajustable</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="277"/>
+        <location filename="../ui/show_settings_dialog.py" line="204"/>
+        <source>Code(s) on pipe : </source>
+        <translation>Code(s) sur conduite : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="225"/>
+        <source>Point code attribute : </source>
+        <translation>Attribut code point : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="250"/>
         <source>Pipe diameter attribute [cm] : </source>
         <translation>Attribut de diamètre de conduite [cm] : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="336"/>
+        <location filename="../ui/show_settings_dialog.py" line="309"/>
         <source>Control </source>
         <translation>Contrôle</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="341"/>
+        <location filename="../ui/show_settings_dialog.py" line="314"/>
         <source>Control database : </source>
         <translation>Base de données à contrôler : </translation>
     </message>
@@ -779,6 +775,7 @@
     </message>
     <message>
         <location filename="../tools/multiselect_tool.py" line="81"/>
+        <location filename="../tools/show_settings.py" line="173"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
