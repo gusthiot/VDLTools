@@ -33,7 +33,7 @@ from PyQt4.QtGui import (QDialog,
 from PyQt4.QtCore import QCoreApplication
 
 
-class DrawdownMessageDialog(QDialog):
+class DrawdownAdjustmentDialog(QDialog):
     """
     Dialog class to display the issues in the profile
     """
@@ -62,12 +62,12 @@ class DrawdownMessageDialog(QDialog):
             pt = adj['point']
             alti = self.__altitudes[pt]
             if pt > pt_last:
-                msg = "vertex " + str(pt) + ") max high : " + str(alti['diam']) + "m, drawdown : "
-                msg += str(alti['drawdown'])
+                msg = str(pt) + QCoreApplication.translate("VDLTools", ") height : ") + str(alti['diam']) + "m"
                 if alti['alt'] is not None:
-                    msg += ", new alt : " + str(alti['alt']) + "m"
-                if alti['layer'] is not None:
-                    msg += ", from " + alti['layer']
+                    msg += QCoreApplication.translate("VDLTools", ", invert elevation")
+                    if alti['drawdown'] is not None:
+                        msg += " (" + alti['drawdown'] + ")"
+                    msg += " : " + str(alti['alt']) + "m"
                 pt_last = pt
                 msgLabel = QLabel(msg)
                 self.__msgLabels.append(msgLabel)
@@ -76,12 +76,18 @@ class DrawdownMessageDialog(QDialog):
             msg = "     - " + adj['layer'].name()
             if 'comp' in adj:
                 msg += adj['comp']
-            msg += " " + str(adj['feature'].id()) + " : " + str(adj['previous']) + "m"
+            previous = adj['previous']
+            if adj['adj_ref']:
+                previous -= alti['diam']
+            msg += " " + str(adj['feature'].id()) + " : " + str(previous) + "m"
+            if adj['delta']:
+                delta = alti['alt'] - previous
+                msg += QCoreApplication.translate("VDLTools", ", adjustment : ") + str(delta) + "m"
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
             msgCheck = QCheckBox()
-            if alti['alt'] is None or alti['alt'] == adj['previous']:
+            if alti['alt'] is None or alti['alt'] == previous:
                 msgCheck.setChecked(False)
                 msgCheck.setVisible(False)
             else:

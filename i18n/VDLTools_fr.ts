@@ -127,46 +127,67 @@
     </message>
     <message>
         <location filename="../tools/drawndown_tool.py" line="66"/>
-        <location filename="../tools/drawndown_tool.py" line="104"/>
+        <location filename="../tools/drawndown_tool.py" line="98"/>
         <source>Drawdown</source>
         <translation>Rabattement</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="105"/>
+        <location filename="../tools/drawndown_tool.py" line="99"/>
         <source>This tool is not yet finished, are you here to test it ?</source>
         <translation>Cet outil n&apos;est pas encore terminé, êtes-vous là pour le tester ?</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="278"/>
+        <location filename="../tools/drawndown_tool.py" line="265"/>
         <source>More than one reference point, with 2 different elevations !!</source>
         <translation>Plus d&apos;un point de référence, avec 2 altitudes différentes !!</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="482"/>
+        <location filename="../tools/drawndown_tool.py" line="271"/>
+        <source> (at invert)</source>
+        <translation> (au radier)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="275"/>
+        <source> (on pipe)</source>
+        <translation> (sur conduite)</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="359"/>
+        <source>dradown</source>
+        <translation>rabattement</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="390"/>
+        <location filename="../tools/drawndown_tool.py" line="405"/>
+        <source>cannot be extrapolated</source>
+        <translation>ne peut pas être extrapolé</translation>
+    </message>
+    <message>
+        <location filename="../tools/drawndown_tool.py" line="483"/>
         <location filename="../tools/profile_tool.py" line="588"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="500"/>
+        <location filename="../tools/drawndown_tool.py" line="501"/>
         <location filename="../tools/profile_tool.py" line="608"/>
         <source>Beware! the line </source>
         <translation>Attention ! La ligne </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="501"/>
+        <location filename="../tools/drawndown_tool.py" line="502"/>
         <location filename="../tools/profile_tool.py" line="609"/>
         <source> has 2 identical summits on the vertex </source>
         <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="502"/>
+        <location filename="../tools/drawndown_tool.py" line="503"/>
         <location filename="../tools/profile_tool.py" line="610"/>
         <source> same coordinates (X and Y). Please correct the line geometry.</source>
         <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="652"/>
+        <location filename="../tools/drawndown_tool.py" line="656"/>
         <location filename="../tools/profile_tool.py" line="849"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
@@ -202,7 +223,22 @@
         <translation>Ajustement des altitudes</translation>
     </message>
     <message>
-        <location filename="../ui/drawdown_message_dialog.py" line="112"/>
+        <location filename="../ui/drawdown_message_dialog.py" line="65"/>
+        <source>) height : </source>
+        <translation>) hauteur : </translation>
+    </message>
+    <message>
+        <location filename="../ui/drawdown_message_dialog.py" line="67"/>
+        <source>, invert elevation</source>
+        <translation>, altitude radier</translation>
+    </message>
+    <message>
+        <location filename="../ui/drawdown_message_dialog.py" line="85"/>
+        <source>, adjustment : </source>
+        <translation>, correction : </translation>
+    </message>
+    <message>
+        <location filename="../ui/drawdown_message_dialog.py" line="116"/>
         <source>Apply drawdown</source>
         <translation>Appliquer rabattement</translation>
     </message>
@@ -235,7 +271,7 @@
     </message>
     <message>
         <location filename="../ui/choose_control_dialog.py" line="86"/>
-        <location filename="../ui/drawdown_message_dialog.py" line="105"/>
+        <location filename="../ui/drawdown_message_dialog.py" line="109"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="69"/>
         <location filename="../ui/fields_settings_dialog.py" line="67"/>
         <location filename="../ui/import_confirm_dialog.py" line="53"/>
@@ -466,7 +502,7 @@
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../tools/show_settings.py" line="174"/>
+        <location filename="../tools/show_settings.py" line="176"/>
         <source>Point code attribute has to be numbers separated by comma</source>
         <translation>L&apos;attribut code point doit contenir des nombres séparés par une virgule</translation>
     </message>
@@ -775,7 +811,7 @@
     </message>
     <message>
         <location filename="../tools/multiselect_tool.py" line="81"/>
-        <location filename="../tools/show_settings.py" line="173"/>
+        <location filename="../tools/show_settings.py" line="175"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
