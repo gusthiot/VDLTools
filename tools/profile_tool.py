@@ -599,10 +599,8 @@ class ProfileTool(QgsMapTool):
                 pt_v2 = line_v2.pointN(i)
                 x = pt_v2.x()
                 y = pt_v2.y()
-                # print(x, y, iden)
                 doublon = False
                 for position in rg_positions:
-                    # print(position)
                     if position['x'] == x and position['y'] == y and position['iden'] == iden:
                         self.__iface.messageBar().pushMessage(
                            QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
@@ -611,18 +609,15 @@ class ProfileTool(QgsMapTool):
                                                                              "Please correct the line geometry."),
                            level=QgsMessageBar.CRITICAL, duration=0
                         )
-                        # print("doublon rg")
                         doublon = True
                         break
                 for item in self.__points:
                     if item['x'] == x and item['y'] == y:
                         item['z'][num] = pt_v2.z()
-                        # print("doublon item")
                         rg_positions.append({'x': x, 'y': y, 'iden': iden})
                         doublon = True
                         break
                 if not doublon:
-                    # print("append")
                     rg_positions.append({'x': x, 'y': y, 'iden': iden})
                     z = []
                     for j in range(num_lines):
@@ -633,7 +628,6 @@ class ProfileTool(QgsMapTool):
                                 z.append(0)
                         else:
                             z.append(None)
-                    # print(x, y, z)
                     self.__points.append({'x': x, 'y': y, 'z': z})
                     if checkLayers:
                         for layer in availableLayers:

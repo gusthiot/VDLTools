@@ -80,14 +80,14 @@ class DrawdownAdjustmentDialog(QDialog):
             if adj['adj_ref']:
                 previous -= alti['diam']
             msg += " " + str(adj['feature'].id()) + " : " + str(previous) + "m"
-            if adj['delta']:
+            if adj['delta'] and alti['alt'] is not None:
                 delta = alti['alt'] - previous
                 msg += QCoreApplication.translate("VDLTools", ", adjustment : ") + str(delta) + "m"
             msgLabel = QLabel(msg)
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
             msgCheck = QCheckBox()
-            if alti['alt'] is None or alti['alt'] == previous:
+            if not adj['delta'] or alti['alt'] is None or alti['alt'] == previous:
                 msgCheck.setChecked(False)
                 msgCheck.setVisible(False)
             else:
