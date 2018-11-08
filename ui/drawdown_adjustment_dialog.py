@@ -65,8 +65,9 @@ class DrawdownAdjustmentDialog(QDialog):
                 msg = str(pt) + QCoreApplication.translate("VDLTools", ") height : ") + str(alti['diam']) + "m"
                 if alti['alt'] is not None:
                     msg += QCoreApplication.translate("VDLTools", ", invert elevation")
-                    if alti['drawdown'] is not None:
-                        msg += " (" + alti['drawdown'] + ")"
+                if alti['drawdown'] is not None:
+                    msg += " (" + alti['drawdown'] + ")"
+                if alti['alt'] is not None:
                     msg += " : " + str(alti['alt']) + "m"
                 pt_last = pt
                 msgLabel = QLabel(msg)
@@ -87,7 +88,7 @@ class DrawdownAdjustmentDialog(QDialog):
             self.__msgLabels.append(msgLabel)
             self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
             msgCheck = QCheckBox()
-            if not adj['delta'] or alti['alt'] is None or alti['alt'] == previous:
+            if not adj['delta'] or alti['alt'] is None or alti['alt'] == previous or alti['alt'] == 0:
                 msgCheck.setChecked(False)
                 msgCheck.setVisible(False)
             else:
@@ -121,7 +122,6 @@ class DrawdownAdjustmentDialog(QDialog):
 
 
         self.setLayout(self.__layout)
-
 
     def getAdjusts(self):
         """

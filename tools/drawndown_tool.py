@@ -42,6 +42,8 @@ from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.drawdown_adjustment_dialog import DrawdownAdjustmentDialog
+from ..ui.drawdown_edition_dialog import DrawdownEditionDialog
+from ..ui.drawdown_confirm_dialog import DrawdownConfirmDialog
 
 
 class DrawdownTool(QgsMapTool):
@@ -67,10 +69,14 @@ class DrawdownTool(QgsMapTool):
         self.__lastFeature = None
         self.__dockWdg = None
         self.__adjDlg = None
+        self.__editDlg = None
+        self.__confDlg = None
         self.__points = None
         self.__layers = None
         # self.__features = None
         self.__altitudes = None
+        self.__extras = None
+        self.__adjustments = None
         self.__inSelection = False
         self.__selectedIds = None
         self.__selectedStarts = None
@@ -136,6 +142,8 @@ class DrawdownTool(QgsMapTool):
         self.__endVertex = None
         self.__inSelection = False
         self.__adjDlg = None
+        self.__editDlg = None
+        self.__confDlg = None
 
     def setEnable(self):
         """
@@ -206,7 +214,7 @@ class DrawdownTool(QgsMapTool):
 
     def __adjust(self):
         self.__layers = self.__lineVertices(True)
-        adjustments = []
+        self.__adjustments = []
         self.__altitudes = []
         # self.__features = []
 
@@ -244,8 +252,8 @@ class DrawdownTool(QgsMapTool):
                         comp = QCoreApplication.translate("VDLTools", " (on pipe)")
                         adj_ref = True
 
-                    adjustments.append({'point': p, 'previous': point_v2.z(), 'line': False, 'adj_ref': adj_ref,
-                                        'layer': f_l[1], 'comp': comp, 'feature': f_l[0], 'delta': False})
+                    self.__adjustments.append({'point': p, 'previous': point_v2.z(), 'line': False, 'adj_ref': adj_ref,
+                                               'layer': f_l[1], 'comp': comp, 'feature': f_l[0], 'delta': False})
             diam = 0
             for i in range(num_lines):
                 if z[i] is None:
@@ -261,8 +269,8 @@ class DrawdownTool(QgsMapTool):
                     if f.id() == id_s:
                         selected = f
                         break
-                adjustments.append({'point': p, 'previous': z[i], 'line': True, 'adj_ref': False,
-                                    'layer': self.ownSettings.drawdownLayer, 'feature': selected, 'delta': True})
+                self.__adjustments.append({'point': p, 'previous': z[i], 'line': True, 'adj_ref': False,
+                                           'layer': self.ownSettings.drawdownLayer, 'feature': selected, 'delta': True})
 
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
@@ -294,8 +302,9 @@ class DrawdownTool(QgsMapTool):
                             dtemp = f_ok.attribute(self.ownSettings.pipeDiam) / 1000
                             if dtemp > diam:
                                 diam = dtemp
-                            adjustments.append({'point': p, 'previous': zp, 'line': True, 'adj_ref': False,
-                                                'layer': f_l[1], 'comp': " conn.", 'feature': f_ok, 'delta': True})
+                            self.__adjustments.append({'point': p, 'previous': zp, 'line': True, 'adj_ref': False,
+                                                       'layer': f_l[1], 'comp': " conn.", 'feature': f_ok,
+                                                       'delta': True})
                             if zp is None or zp != zp:
                                 z.append(0)
                             else:
@@ -310,8 +319,8 @@ class DrawdownTool(QgsMapTool):
                             zp = 0
                         z.append(zp)
                         if layer in self.ownSettings.adjLayers:
-                            adjustments.append({'point': p, 'previous': zp, 'line': False, 'adj_ref': False,
-                                                'layer': f_l[1], 'feature': f_l[0], 'delta': True})
+                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'adj_ref': False,
+                                                       'layer': f_l[1], 'feature': f_l[0], 'delta': True})
 
             # self.__features.append(feat)
 
@@ -329,6 +338,7 @@ class DrawdownTool(QgsMapTool):
             self.__altitudes.append({'diam': diam, 'drawdown': dd, 'alt': alt})
 
         last = len(self.__altitudes)-1
+        self.__extras = []
         for i in range(len(self.__altitudes)):
             if self.__altitudes[i]['alt'] is None:
                 if 0 < i < last:
@@ -352,12 +362,12 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[0]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
+                        alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
                         if small_d < (old_div(big_d, 4)):
-                            self.__altitudes[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                            self.__altitudes[i]['alt'] = alt
                             self.__altitudes[i]['drawdown'] = "extrapolation"
                         else:
-                            self.__altitudes[i]['drawdown'] = QCoreApplication.translate("VDLTools",
-                                                                                         "cannot be extrapolated")
+                            self.__extras.append([i, alt])
                 elif i == last and len(self.__altitudes) > 2:
                     alt1 = self.__altitudes[i-1]['alt']
                     alt2 = self.__altitudes[i-2]['alt']
@@ -367,25 +377,81 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[i]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
+                        alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
                         if small_d < (old_div(big_d, 4)):
-                            self.__altitudes[i]['alt'] = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                            self.__altitudes[i]['alt'] = alt
                             self.__altitudes[i]['drawdown'] = "extrapolation"
                         else:
-                            self.__altitudes[i]['drawdown'] = QCoreApplication.translate("VDLTools",
-                                                                                         "cannot be extrapolated")
+                            self.__extras.append([i, alt])
 
+        if len(self.__extras) == 0:
+            self.__setAdjustements()
+        else:
+            self.__checkForceExtrapolation()
+
+    def __setAdjustements(self):
         self.__calculateProfile()
-        self.__adjDlg = DrawdownAdjustmentDialog(adjustments, self.__altitudes)
+        self.__adjDlg = DrawdownAdjustmentDialog(self.__adjustments, self.__altitudes)
         self.__adjDlg.rejected.connect(self.__cancel)
         self.__adjDlg.cancelButton().clicked.connect(self.__onAdjCancel)
         self.__adjDlg.applyButton().clicked.connect(self.__onAdjOk)
         self.__adjDlg.show()
 
+    def __checkForceExtrapolation(self):
+        message = ""
+        for extra in self.__extras:
+            message += str(extra[0]) + ") " + \
+                       QCoreApplication.translate("VDLTools",
+                                                  "The segment is too big, do you really want "
+                                                  "to extrapolate anyway ? (elevation : ") + \
+                       str(extra[1]) + "m) ? \n"
+        self.__confDlg = DrawdownConfirmDialog(message)
+        self.__confDlg.okButton().clicked.connect(self.__onConfOk)
+        self.__confDlg.cancelButton().clicked.connect(self.__onConfCancel)
+        self.__confDlg.show()
+
+    def __onConfOk(self):
+        self.__confDlg.accept()
+        for extra in self.__extras:
+            self.__altitudes[extra[0]]['alt'] = extra[1]
+            self.__altitudes[extra[0]]['drawdown'] = "extrapolation"
+        self.__setAdjustements()
+
+    def __onConfCancel(self):
+        self.__confDlg.reject()
+        for extra in self.__extras:
+            self.__altitudes[extra[0]]['drawdown'] = QCoreApplication.translate("VDLTools", "cannot be extrapolated")
+        self.__setAdjustements()
+
     def __onAdjOk(self):
         self.__adjDlg.accept()
-        adjustements = self.__adjDlg.getAdjusts()
+        layers = []
+        for adj in self.__adjDlg.getAdjusts():
+            if not adj['layer'].isEditable() and adj['layer'] not in layers:
+                layers.append(adj['layer'])
+        if len(layers) == 0:
+            self.__applyAdjustments()
+        else:
+            self.__editDlg = DrawdownEditionDialog(layers)
+            self.__editDlg.rejected.connect(self.__cancel)
+            self.__editDlg.cancelButton().clicked.connect(self.__onEditCancel)
+            self.__editDlg.okButton().clicked.connect(self.__onEditOk)
+            self.__editDlg.show()
+
+    def __onEditCancel(self):
+        self.__editDlg.reject()
+        self.__cancel()
+
+    def __onEditOk(self):
+        self.__editDlg.accept()
+        for layer in self.__editDlg.getLayers():
+            layer.startEditing()
+        self.__applyAdjustments()
+
+
+    def __applyAdjustments(self):
         lines = {}
-        for adj in adjustements:
+        for adj in self.__adjDlg.getAdjusts():
             if self.__altitudes[adj['point']]['alt'] is None:
                 continue
             if adj['line']:
@@ -406,8 +472,6 @@ class DrawdownTool(QgsMapTool):
             else:
                 pt = adj['point']
                 self.__changePoint(adj['layer'], adj['feature'], self.__altitudes[pt]['alt'])
-        if not self.ownSettings.drawdownLayer.isEditable():
-            self.ownSettings.drawdownLayer.startEditing()
         for key, line in lines.items():
             geom = QgsGeometry(line.clone())
             self.ownSettings.drawdownLayer.changeGeometry(key, geom)
@@ -427,8 +491,6 @@ class DrawdownTool(QgsMapTool):
         """
         feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
         feat_v2.setZ(newZ)
-        if not layer.isEditable():
-            layer.startEditing()
         layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
 
     def __lineVertices(self, checkLayers=False):
