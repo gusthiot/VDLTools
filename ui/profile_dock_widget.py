@@ -90,7 +90,7 @@ class ProfileDockWidget(QDockWidget):
 
     closeSignal = pyqtSignal()
 
-    def __init__(self, iface, geometry):
+    def __init__(self, iface, geometry, mntButton=False):
         """
         Constructor
         :param iface: interface
@@ -164,6 +164,13 @@ class ProfileDockWidget(QDockWidget):
         self.__vertLayout.addWidget(self.__libCombo)
         self.__libCombo.currentIndexChanged.connect(self.__setLib)
 
+        if mntButton:
+            self.__displayMnt = False
+            self.__mntButton = QPushButton(QCoreApplication.translate("VDLTools", "Display MNT"))
+            self.__mntButton.setFixedSize(size)
+            self.__mntButton.clicked.connect(self.__mnt)
+            self.__vertLayout.addWidget(self.__mntButton)
+
         self.__maxLabel = QLabel("y max")
         self.__maxLabel.setFixedSize(size)
         self.__vertLayout.addWidget(self.__maxLabel)
@@ -204,6 +211,14 @@ class ProfileDockWidget(QDockWidget):
             val = qc.red() + qc.green() + qc.blue()
             if 0 < val < 450:
                 self.__colors.append(cn)
+
+    def __mnt(self):
+        if self.__displayMnt:
+            self.__displayMnt = False
+            self.__mntButton.setText(QCoreApplication.translate("VDLTools", "Display MNT"))
+        else:
+            self.__displayMnt = True
+            self.__mntButton.setText(QCoreApplication.translate("VDLTools", "Remove MNT"))
 
     def __changePlotWidget(self):
         """

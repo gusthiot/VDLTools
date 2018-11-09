@@ -27,7 +27,6 @@ from past.utils import old_div
 from qgis.core import (QgsPointLocator,
                        QgsSnappingUtils,
                        QgsGeometry,
-                       QGis,
                        QgsFeatureRequest,
                        QgsFeature,
                        QgsTolerance,
@@ -103,7 +102,7 @@ class DrawdownTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom)
+        self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom, True)
         if self.__isfloating:
             self.__dockWdg.show()
         else:
