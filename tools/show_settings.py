@@ -188,7 +188,7 @@ class ShowSettings(QObject):
         self.refLayers = self.__showDlg.refLayers()
         self.adjLayers = self.__showDlg.adjLayers()
         self.levelAtt = self.__showDlg.levelAtt()
-        self.levelVal = self.__showDlg.levelVal()
+        self.levelVals = self.__showDlg.levelVal()
         self.drawdownLayer = self.__showDlg.drawdownLayer()
         self.pipeDiam = self.__showDlg.pipeDiam()
         self.changedSignal.emit()
