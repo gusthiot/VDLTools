@@ -47,7 +47,7 @@ class ExtrapolateConfirmDialog(QDialog):
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "Yes"))
         self.__okButton.setMinimumHeight(20)
-        self.__okButton.setMinimumWidth(300)
+        self.__okButton.setMinimumWidth(100)
 
         self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "No"))
         self.__cancelButton.setMinimumHeight(20)

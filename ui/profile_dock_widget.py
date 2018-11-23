@@ -212,6 +212,16 @@ class ProfileDockWidget(QDockWidget):
             if 0 < val < 450:
                 self.__colors.append(cn)
 
+    def mntButton(self):
+        """
+        To get the mnt button instance
+        :return: ok button instance
+        """
+        return self.__mntButton
+
+    def displayMnt(self):
+        return self.__displayMnt
+
     def __mnt(self):
         if self.__displayMnt:
             self.__displayMnt = False
@@ -330,6 +340,7 @@ class ProfileDockWidget(QDockWidget):
             pos += 1
             url += '[' + str(self.__profiles[i]['x']) + ',' + str(self.__profiles[i]['y']) + ']'
         url = url + ']}&nbPoints=' + str(int(self.__profiles[len(self.__profiles)-1]['l']))
+        print(url)
         try:
             response = urlopen(url)
             j = response.read()

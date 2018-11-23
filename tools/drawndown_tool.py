@@ -72,12 +72,12 @@ class DrawdownTool(QgsMapTool):
         self.__confDlg = None
         self.__points = None
         self.__layers = None
-        # self.__features = None
         self.__altitudes = None
         self.__extras = None
         self.__adjustments = None
         self.__inSelection = False
         self.__selectedIds = None
+        self.__renderedIds = None
         self.__selectedStarts = None
         self.__selectedDirections = None
         self.__startVertex = None
@@ -86,6 +86,7 @@ class DrawdownTool(QgsMapTool):
         self.__usedMnts = None
         self.__isfloating = False
         self.__dockGeom = None
+        self.__rendered = False
 
     def setTool(self):
         """
@@ -103,11 +104,20 @@ class DrawdownTool(QgsMapTool):
         """
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom, True)
+        self.__dockWdg.mntButton().clicked.connect(self.__isDisplayingMnt)
         if self.__isfloating:
             self.__dockWdg.show()
         else:
             self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
+
+    def __isDisplayingMnt(self):
+        if self.__dockWdg.displayMnt():
+            self.__usedMnts = [1, 1, 1]
+        else:
+            self.__usedMnts = None
+        if self.__rendered:
+            self.__calculateProfile()
 
     def __closed(self):
         """
@@ -116,6 +126,8 @@ class DrawdownTool(QgsMapTool):
         self.__dockGeom = self.__dockWdg.geometry()
         self.__isfloating = self.__dockWdg.isFloating()
         self.__cancel()
+        self.__rendered = False
+        self.__displayMnt = False
         self.__iface.actionPan().trigger()
 
     def deactivate(self):
@@ -215,10 +227,8 @@ class DrawdownTool(QgsMapTool):
         self.__layers = self.__lineVertices(True)
         self.__adjustments = []
         self.__altitudes = []
-        # self.__features = []
 
         for p in range(len(self.__points)):
-            # feat = []
             pt = self.__points[p]
             x = pt['x']
             y = pt['y']
@@ -277,7 +287,6 @@ class DrawdownTool(QgsMapTool):
                 f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
                                                   self.canvas(), [laySettings])
                 if f_l is None:
-                    # feat.append(None)
                     z.append(None)
                 else:
                     if layer == self.ownSettings.drawdownLayer:
@@ -294,7 +303,6 @@ class DrawdownTool(QgsMapTool):
                                         break
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
-                            # feat.append(f_ok)
                             line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
                             zp = line.zAt(closest[1])
 
@@ -309,19 +317,15 @@ class DrawdownTool(QgsMapTool):
                             else:
                                 z.append(zp)
                         else:
-                            # feat.append(None)
                             z.append(None)
                     else:
                         zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
-                        # feat.append(f_l[0])
                         if zp is None or zp != zp:
                             zp = 0
                         z.append(zp)
                         if layer in self.ownSettings.adjLayers:
                             self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'adj_ref': False,
                                                        'layer': f_l[1], 'feature': f_l[0], 'delta': True})
-
-            # self.__features.append(feat)
 
             if level is not None:
                 if drawdown:
@@ -389,6 +393,7 @@ class DrawdownTool(QgsMapTool):
             self.__checkForceExtrapolation()
 
     def __setAdjustements(self):
+        self.__renderedIds = self.__selectedIds
         self.__calculateProfile()
         self.__adjDlg = DrawdownAdjustmentDialog(self.__adjustments, self.__altitudes)
         self.__adjDlg.rejected.connect(self.__cancel)
@@ -729,5 +734,6 @@ class DrawdownTool(QgsMapTool):
         self.__dockWdg.clearData()
         if len(self.__points) == 0:
             return
-        self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
+        self.__dockWdg.setProfiles(self.__points, len(self.__renderedIds))
         self.__dockWdg.attachCurves(self.__getNames(), self.ownSettings, self.__usedMnts)
+        self.__rendered = True

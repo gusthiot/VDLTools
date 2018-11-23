@@ -46,6 +46,7 @@ class DrawdownAdjustmentDialog(QDialog):
         self.__adjustements = adjustments
         self.__altitudes = altitudes
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Elevations adjustments"))
+        self.setMinimumWidth(500)
         self.__layout = QGridLayout()
 
         self.__msgLabels = []
@@ -116,7 +117,7 @@ class DrawdownAdjustmentDialog(QDialog):
 
         self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply drawdown"))
         self.__applyButton.setMinimumHeight(20)
-        self.__applyButton.setMinimumWidth(100)
+        self.__applyButton.setMinimumWidth(300)
         if displayButton:
             self.__layout.addWidget(self.__applyButton, pos, 1)
 
