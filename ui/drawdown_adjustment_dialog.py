@@ -46,7 +46,8 @@ class DrawdownAdjustmentDialog(QDialog):
         self.__adjustements = adjustments
         self.__altitudes = altitudes
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Elevations adjustments"))
-        self.setMinimumWidth(500)
+        self.setMinimumWidth(550)
+        self.setMinimumHeight(500)
         self.__layout = QGridLayout()
 
         self.__msgLabels = []
@@ -79,9 +80,7 @@ class DrawdownAdjustmentDialog(QDialog):
             if 'comp' in adj:
                 msg += adj['comp']
             previous = adj['previous']
-            if adj['adj_ref']:
-                previous -= alti['diam']
-            msg += " " + str(adj['feature'].id()) + " : " + str(previous) + "m"
+            msg += " : " + str(previous) + "m"
             if adj['delta'] and alti['alt'] is not None:
                 delta = alti['alt'] - previous
                 msg += QCoreApplication.translate("VDLTools", ", adjustment : ") + str(delta) + "m"

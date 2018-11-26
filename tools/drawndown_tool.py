@@ -104,8 +104,9 @@ class DrawdownTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom, True)
+        self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom, True, True)
         self.__dockWdg.mntButton().clicked.connect(self.__isDisplayingMnt)
+        self.__dockWdg.zerosButton().clicked.connect(self.__isDisplayingZeros)
         if self.__isfloating:
             self.__dockWdg.show()
         else:
@@ -117,6 +118,10 @@ class DrawdownTool(QgsMapTool):
             self.__usedMnts = [1, 1, 1]
         else:
             self.__usedMnts = None
+        if self.__rendered:
+            self.__calculateProfile()
+
+    def __isDisplayingZeros(self):
         if self.__rendered:
             self.__calculateProfile()
 
@@ -256,13 +261,13 @@ class DrawdownTool(QgsMapTool):
                                 return
                         level = point_v2.z()
                     comp = QCoreApplication.translate("VDLTools", " (at invert)")
-                    adj_ref = False
                     if str(feature.attribute(self.ownSettings.levelAtt)) in self.ownSettings.levelVals:
                         drawdown = True
                         comp = QCoreApplication.translate("VDLTools", " (on pipe)")
-                        adj_ref = True
+                    if point_v2.z() == 0:
+                        comp = QCoreApplication.translate("VDLTools", " (no elevation)")
 
-                    self.__adjustments.append({'point': p, 'previous': point_v2.z(), 'line': False, 'adj_ref': adj_ref,
+                    self.__adjustments.append({'point': p, 'previous': point_v2.z(), 'line': False,
                                                'layer': f_l[1], 'comp': comp, 'feature': f_l[0], 'delta': False})
             diam = 0
             for i in range(num_lines):
@@ -279,7 +284,7 @@ class DrawdownTool(QgsMapTool):
                     if f.id() == id_s:
                         selected = f
                         break
-                self.__adjustments.append({'point': p, 'previous': z[i], 'line': True, 'adj_ref': False,
+                self.__adjustments.append({'point': p, 'previous': z[i], 'line': True,
                                            'layer': self.ownSettings.drawdownLayer, 'feature': selected, 'delta': True})
 
             for layer in self.__layers:
@@ -310,9 +315,9 @@ class DrawdownTool(QgsMapTool):
                             dtemp = f_ok.attribute(self.ownSettings.pipeDiam) / 1000
                             if dtemp > diam:
                                 diam = dtemp
-                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'adj_ref': False,
-                                                       'layer': f_l[1], 'comp': " conn.", 'feature': f_ok,
-                                                       'delta': True})
+                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False,
+                                                       'comp': QCoreApplication.translate("VDLTools", " connected"),
+                                                       'feature': f_ok, 'layer': f_l[1], 'delta': True})
                             if zp is None or zp != zp:
                                 z.append(0)
                             else:
@@ -325,7 +330,7 @@ class DrawdownTool(QgsMapTool):
                             zp = 0
                         z.append(zp)
                         if layer in self.ownSettings.adjLayers:
-                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'adj_ref': False,
+                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False,
                                                        'layer': f_l[1], 'feature': f_l[0], 'delta': True})
 
             if level is not None:

@@ -90,7 +90,7 @@ class ProfileDockWidget(QDockWidget):
 
     closeSignal = pyqtSignal()
 
-    def __init__(self, iface, geometry, mntButton=False):
+    def __init__(self, iface, geometry, mntButton=False, zerosButton=False):
         """
         Constructor
         :param iface: interface
@@ -171,6 +171,13 @@ class ProfileDockWidget(QDockWidget):
             self.__mntButton.clicked.connect(self.__mnt)
             self.__vertLayout.addWidget(self.__mntButton)
 
+        if zerosButton:
+            self.__displayZeros = False
+            self.__zerosButton = QPushButton(QCoreApplication.translate("VDLTools", "Display Zeros"))
+            self.__zerosButton.setFixedSize(size)
+            self.__zerosButton.clicked.connect(self.__zeros)
+            self.__vertLayout.addWidget(self.__zerosButton)
+
         self.__maxLabel = QLabel("y max")
         self.__maxLabel.setFixedSize(size)
         self.__vertLayout.addWidget(self.__maxLabel)
@@ -215,9 +222,16 @@ class ProfileDockWidget(QDockWidget):
     def mntButton(self):
         """
         To get the mnt button instance
-        :return: ok button instance
+        :return: mnt button instance
         """
         return self.__mntButton
+
+    def zerosButton(self):
+        """
+        To get the zeros button instance
+        :return: zeros button instance
+        """
+        return self.__zerosButton
 
     def displayMnt(self):
         return self.__displayMnt
@@ -229,6 +243,14 @@ class ProfileDockWidget(QDockWidget):
         else:
             self.__displayMnt = True
             self.__mntButton.setText(QCoreApplication.translate("VDLTools", "Remove MNT"))
+
+    def __zeros(self):
+        if self.__displayZeros:
+            self.__displayZeros = False
+            self.__zerosButton.setText(QCoreApplication.translate("VDLTools", "Display Zeros"))
+        else:
+            self.__displayZeros = True
+            self.__zerosButton.setText(QCoreApplication.translate("VDLTools", "Remove Zeros"))
 
     def __changePlotWidget(self):
         """
@@ -520,7 +542,7 @@ class ProfileDockWidget(QDockWidget):
             for i in range(len(self.__profiles)):
                 if 'z' in self.__profiles[i]:
                     mini = self.__minTab(self.__profiles[i]['z'])
-                    if mini > 0 and mini < minimumValue:
+                    if (mini > 0 or self.__displayZeros) and mini < minimumValue:
                         minimumValue = ceil(mini) - 1
                     maxi = self.__maxTab(self.__profiles[i]['z'])
                     if maxi > maximumValue:
@@ -528,7 +550,7 @@ class ProfileDockWidget(QDockWidget):
                 if self.__mntPoints is not None:
                     for pts in self.__mntPoints[2]:
                         miniMnt = self.__minTab(pts)
-                        if miniMnt > 0 and miniMnt < minimumValue:
+                        if (miniMnt > 0 or self.__displayZeros) and miniMnt < minimumValue:
                             minimumValue = ceil(miniMnt) - 1
                         maxiMnt = self.__maxTab(pts)
                         if maxiMnt > maximumValue:
