@@ -520,7 +520,7 @@ class ProfileDockWidget(QDockWidget):
             for i in range(len(self.__profiles)):
                 if 'z' in self.__profiles[i]:
                     mini = self.__minTab(self.__profiles[i]['z'])
-                    if mini < minimumValue:
+                    if mini > 0 and mini < minimumValue:
                         minimumValue = ceil(mini) - 1
                     maxi = self.__maxTab(self.__profiles[i]['z'])
                     if maxi > maximumValue:
@@ -528,7 +528,7 @@ class ProfileDockWidget(QDockWidget):
                 if self.__mntPoints is not None:
                     for pts in self.__mntPoints[2]:
                         miniMnt = self.__minTab(pts)
-                        if miniMnt < minimumValue:
+                        if miniMnt > 0 and miniMnt < minimumValue:
                             minimumValue = ceil(miniMnt) - 1
                         maxiMnt = self.__maxTab(pts)
                         if maxiMnt > maximumValue:

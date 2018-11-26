@@ -217,7 +217,7 @@ class ExtrapolateTool(QgsMapTool):
                 small_d = Finder.sqrDistForPoints(pt1, pt)
                 self.__isEditing = True
                 self.__selectedFeature = found_features[0]
-                self.__elevation = pt0.z() + (1 + old_div(small_d, big_d)) * (pt1.z() - pt0.z())
+                self.__elevation = round(pt0.z() + (1 + old_div(small_d, big_d)) * (pt1.z() - pt0.z()), 2)
                 if small_d < (old_div(big_d, 4)):
                     if pt.z() is not None and pt.z() != 0:
                         message = QCoreApplication.translate("VDLTools", "This vertex has already an elevation ") + \

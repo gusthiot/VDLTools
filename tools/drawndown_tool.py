@@ -25,6 +25,7 @@ from future.builtins import str
 from future.builtins import range
 from past.utils import old_div
 from qgis.core import (QgsPointLocator,
+                       QGis,
                        QgsSnappingUtils,
                        QgsGeometry,
                        QgsFeatureRequest,
@@ -309,7 +310,7 @@ class DrawdownTool(QgsMapTool):
                             dtemp = f_ok.attribute(self.ownSettings.pipeDiam) / 1000
                             if dtemp > diam:
                                 diam = dtemp
-                            self.__adjustments.append({'point': p, 'previous': zp, 'line': True, 'adj_ref': False,
+                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'adj_ref': False,
                                                        'layer': f_l[1], 'comp': " conn.", 'feature': f_ok,
                                                        'delta': True})
                             if zp is None or zp != zp:
@@ -354,7 +355,7 @@ class DrawdownTool(QgsMapTool):
                         d0 = Finder.sqrDistForCoords(pt['x'], prev_pt['x'], pt['y'], prev_pt['y'])
                         d1 = Finder.sqrDistForCoords(next_pt['x'], pt['x'], next_pt['y'], pt['y'])
                         inter_alt = old_div((d0*next_alt + d1*prev_alt), (d0 + d1))
-                        self.__altitudes[i]['alt'] = inter_alt
+                        self.__altitudes[i]['alt'] = round(inter_alt,2)
                         self.__altitudes[i]['drawdown'] = "interpolation"
                 elif i == 0 and len(self.__altitudes) > 2:
                     alt1 = self.__altitudes[1]['alt']
@@ -365,7 +366,8 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[0]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
-                        alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                        extra_alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                        alt = round(extra_alt, 2)
                         if small_d < (old_div(big_d, 4)):
                             self.__altitudes[i]['alt'] = alt
                             self.__altitudes[i]['drawdown'] = "extrapolation"
@@ -380,7 +382,8 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[i]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
-                        alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                        extra_alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
+                        alt = round(extra_alt, 2)
                         if small_d < (old_div(big_d, 4)):
                             self.__altitudes[i]['alt'] = alt
                             self.__altitudes[i]['drawdown'] = "extrapolation"
@@ -465,17 +468,22 @@ class DrawdownTool(QgsMapTool):
                     lines[id_f] = line_v2
                 line = lines[id_f]
                 i = 0
+                print(self.__selectedIds)
                 for iden in self.__selectedIds:
+                    print(str(iden) + " =? " + str(id_f))
                     if iden == id_f:
                         break
                     i += 1
+                print("point : " + str(adj['point']))
+                print("i : " + str(i))
+                print(self.__selectedStarts)
                 index = adj['point']-self.__selectedStarts[i]
                 if not self.__selectedDirections[i]:
                     index = line.numPoints()-1-index
                 line.setZAt(index, self.__altitudes[adj['point']]['alt'])
             else:
                 pt = adj['point']
-                self.__changePoint(adj['layer'], adj['feature'], self.__altitudes[pt]['alt'])
+                self.__changePoint(adj['layer'], pt, adj['feature'], self.__altitudes[pt]['alt'])
         for key, line in lines.items():
             geom = QgsGeometry(line.clone())
             self.ownSettings.drawdownLayer.changeGeometry(key, geom)
@@ -486,15 +494,22 @@ class DrawdownTool(QgsMapTool):
         self.__adjDlg.reject()
         self.__cancel()
 
-    def __changePoint(self, layer, feat, newZ):
+    def __changePoint(self, layer, pos, feat, newZ):
         """
         To change Vertex elevation
         :param layer: layer containing the object
+        :param pos: vertex position in the object (if not a point)
         :param feat: QgsFeature of the object
         :param newZ: new elevation
         """
-        feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
-        feat_v2.setZ(newZ)
+        if layer.geometryType() == QGis.Line:
+            closest = feat.geometry().closestVertex(
+                QgsPoint(self.__points[pos]['x'], self.__points[pos]['y']))
+            feat_v2, curved = GeometryV2.asLineV2(feat.geometry(), self.__iface)
+            feat_v2.setZAt(closest[1], newZ)
+        else:
+            feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
+            feat_v2.setZ(newZ)
         layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
 
     def __lineVertices(self, checkLayers=False):

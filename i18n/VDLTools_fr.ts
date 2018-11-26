@@ -40,7 +40,7 @@
         <location filename="../tools/duplicate_tool.py" line="394"/>
         <location filename="../tools/extrapolate_tool.py" line="202"/>
         <location filename="../tools/interpolate_tool.py" line="298"/>
-        <location filename="../tools/interpolate_tool.py" line="434"/>
+        <location filename="../tools/interpolate_tool.py" line="435"/>
         <location filename="../tools/move_tool.py" line="406"/>
         <source>One feature at a time</source>
         <translation>Un objet à la fois</translation>
@@ -76,7 +76,7 @@
         <translation>Créer seulement le vertex</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="439"/>
+        <location filename="../tools/interpolate_tool.py" line="440"/>
         <source>No more feature selected</source>
         <translation>Plus d&apos;objet sélectionné</translation>
     </message>
@@ -126,67 +126,67 @@
         <translation>Il y a plus qu&apos;une altitude pour le point </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="64"/>
-        <location filename="../tools/drawndown_tool.py" line="97"/>
+        <location filename="../tools/drawndown_tool.py" line="65"/>
+        <location filename="../tools/drawndown_tool.py" line="98"/>
         <source>Drawdown</source>
         <translation>Rabattement</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="98"/>
+        <location filename="../tools/drawndown_tool.py" line="99"/>
         <source>This tool is not yet finished, are you here to test it ?</source>
         <translation>Cet outil n&apos;est pas encore terminé, êtes-vous là pour le tester ?</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="251"/>
+        <location filename="../tools/drawndown_tool.py" line="252"/>
         <source>More than one reference point, with 2 different elevations !!</source>
         <translation>Plus d&apos;un point de référence, avec 2 altitudes différentes !!</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="257"/>
+        <location filename="../tools/drawndown_tool.py" line="258"/>
         <source> (at invert)</source>
         <translation> (au radier)</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="261"/>
+        <location filename="../tools/drawndown_tool.py" line="262"/>
         <source> (on pipe)</source>
         <translation> (sur conduite)</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="340"/>
+        <location filename="../tools/drawndown_tool.py" line="341"/>
         <source>dradown</source>
         <translation>rabattement</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="427"/>
+        <location filename="../tools/drawndown_tool.py" line="430"/>
         <source>cannot be extrapolated</source>
         <translation>ne peut pas être extrapolé</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="522"/>
+        <location filename="../tools/drawndown_tool.py" line="537"/>
         <location filename="../tools/profile_tool.py" line="588"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="540"/>
+        <location filename="../tools/drawndown_tool.py" line="555"/>
         <location filename="../tools/profile_tool.py" line="606"/>
         <source>Beware! the line </source>
         <translation>Attention ! La ligne </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="541"/>
+        <location filename="../tools/drawndown_tool.py" line="556"/>
         <location filename="../tools/profile_tool.py" line="607"/>
         <source> has 2 identical summits on the vertex </source>
         <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="542"/>
+        <location filename="../tools/drawndown_tool.py" line="557"/>
         <location filename="../tools/profile_tool.py" line="608"/>
         <source> same coordinates (X and Y). Please correct the line geometry.</source>
         <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="694"/>
+        <location filename="../tools/drawndown_tool.py" line="709"/>
         <location filename="../tools/profile_tool.py" line="843"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
@@ -316,7 +316,7 @@
         <translation>voulez-vous vraiment la changer (nouvelle altitude : </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="408"/>
+        <location filename="../tools/drawndown_tool.py" line="411"/>
         <location filename="../tools/extrapolate_tool.py" line="236"/>
         <source>The segment is too big, do you really want to extrapolate anyway ? (elevation : </source>
         <translation>Le segment est trop grand, voulez-vous extrapoler malgré tout ? (altitude : </translation>
