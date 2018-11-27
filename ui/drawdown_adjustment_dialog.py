@@ -114,7 +114,7 @@ class DrawdownAdjustmentDialog(QDialog):
         pos = len(self.__adjustements) + 1
         self.__layout.addWidget(self.__cancelButton, pos, 0)
 
-        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply drawdown"))
+        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply correction(s)"))
         self.__applyButton.setMinimumHeight(20)
         self.__applyButton.setMinimumWidth(300)
         if displayButton:

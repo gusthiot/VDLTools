@@ -248,8 +248,8 @@
     </message>
     <message>
         <location filename="../ui/drawdown_adjustment_dialog.py" line="117"/>
-        <source>Apply drawdown</source>
-        <translation>Appliquer rabattement</translation>
+        <source>Apply correction(s)</source>
+        <translation>Appliquer correction(s)</translation>
     </message>
     <message>
         <location filename="../ui/drawdown_edition_dialog.py" line="50"/>
