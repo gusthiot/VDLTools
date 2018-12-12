@@ -426,69 +426,74 @@
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="278"/>
-        <location filename="../ui/profile_dock_widget.py" line="723"/>
+        <location filename="../ui/profile_dock_widget.py" line="722"/>
         <source>Distance [m]</source>
         <translation>Distance [m]</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="281"/>
-        <location filename="../ui/profile_dock_widget.py" line="724"/>
+        <location filename="../ui/profile_dock_widget.py" line="723"/>
         <source>Elevation [m]</source>
         <translation>Altitude [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="390"/>
+        <location filename="../ui/profile_dock_widget.py" line="384"/>
         <source>HTTP Error</source>
         <translation>Erreur HTTP</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="391"/>
+        <location filename="../ui/profile_dock_widget.py" line="385"/>
         <source>status error</source>
         <translation>erreur status</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="395"/>
+        <location filename="../ui/profile_dock_widget.py" line="389"/>
         <source>URL Error</source>
         <translation>Erreur URL</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="505"/>
+        <location filename="../ui/profile_dock_widget.py" line="393"/>
+        <source>No MNT values here</source>
+        <translation>Pas de mesures MNT ici</translation>
+    </message>
+    <message>
+        <location filename="../ui/profile_dock_widget.py" line="504"/>
         <source>Rescale problem... (trace printed)</source>
         <translation>Problème de rescale... (trace imrpimée dans la console)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="746"/>
+        <location filename="../ui/profile_dock_widget.py" line="745"/>
         <source>Tracking exception : </source>
         <translation>Exception de tracking : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="760"/>
+        <location filename="../ui/profile_dock_widget.py" line="759"/>
         <source>Mouse event exception : </source>
         <translation>Exception d&apos;évènement souris : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="655"/>
+        <location filename="../ui/profile_dock_widget.py" line="654"/>
         <source>Invalid index </source>
         <translation>Index invalide </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="663"/>
-        <location filename="../ui/profile_dock_widget.py" line="681"/>
+        <location filename="../ui/profile_dock_widget.py" line="662"/>
+        <location filename="../ui/profile_dock_widget.py" line="680"/>
         <source>Save As</source>
         <translation>Sauver sous</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="664"/>
+        <location filename="../ui/profile_dock_widget.py" line="663"/>
         <source>Profile.pdf</source>
         <translation>Profil.pdf</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="682"/>
+        <location filename="../ui/profile_dock_widget.py" line="681"/>
         <source>Profile.png</source>
         <translation>Profil.png</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="668"/>
+        <location filename="../ui/profile_dock_widget.py" line="667"/>
         <source>QGIS Profile Plugin</source>
         <translation>Pllugin QGIS de profil</translation>
     </message>

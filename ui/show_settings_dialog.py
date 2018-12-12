@@ -152,7 +152,7 @@ class ShowSettingsDialog(QDialog):
 
         self.__mntText = QLineEdit()
         if self.__mntUrl is None or self.__mntUrl == "None":
-            self.__mntText.insert('http://map.lausanne.ch/main/wsgi/profile.json')
+            self.__mntText.insert('https://map.lausanne.ch/prod/wsgi/profile.json')
         else:
             self.__mntText.insert(self.__mntUrl)
         self.__mntText.setMinimumHeight(20)

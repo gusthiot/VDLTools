@@ -56,8 +56,8 @@ import itertools
 import traceback
 import sys
 import json
+import requests
 from ..core.signal import Signal
-from future.moves.urllib.request import urlopen
 from future.moves.urllib.error import (HTTPError,
                                        URLError)
 
@@ -341,31 +341,25 @@ class ProfileDockWidget(QDockWidget):
         :param settings: settings containing MN url
         """
         if settings is None or settings.mntUrl is None or settings.mntUrl == "None":
-            url = 'http://map.lausanne.ch/main/wsgi/profile.json'
+            url = 'https://map.lausanne.ch/prod/wsgi/profile.json'
         elif settings.mntUrl == "":
             return
         else:
             url = settings.mntUrl
-        names = ['mnt', 'mns', 'toit_rocher']
-        url += '?layers='
-        pos = 0
-        for name in names:
-            if pos > 0:
-                url += ','
-            pos += 1
-            url += name
-        url += '&geom={"type":"LineString","coordinates":['
+        names = ['MNT', 'MNS', 'Rocher (approx.)']
+        data = "layers=MNT%2CMNS%2CRocher%20(approx.)&geom=%7B%22type%22%3A%22LineString%22%2C%22coordinates%22%3A%5B"
+
         pos = 0
         for i in range(len(self.__profiles)):
             if pos > 0:
-                url += ','
+                data += "%2C"
             pos += 1
-            url += '[' + str(self.__profiles[i]['x']) + ',' + str(self.__profiles[i]['y']) + ']'
-        url = url + ']}&nbPoints=' + str(int(self.__profiles[len(self.__profiles)-1]['l']))
-        print(url)
+            data += "%5B" + str(self.__profiles[i]['x']) + "%2C" + str(self.__profiles[i]['y']) + "%5D"
+        data += "%5D%7D&nbPoints=10"
         try:
-            response = urlopen(url)
-            j = response.read()
+            response = requests.post(url, data=data)
+            print(response.text)
+            j = response.text
             j_obj = json.loads(j)
             profile = j_obj['profile']
             self.__mntPoints = []
@@ -394,6 +388,11 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "URL Error"),
                 e.reason, level=QgsMessageBar.CRITICAL, duration=0)
+        except ValueError as e:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "No MNT values here"),
+                level=QgsMessageBar.CRITICAL, duration=0)
+
 
     def attachCurves(self, names, settings, usedMnts):
         """
