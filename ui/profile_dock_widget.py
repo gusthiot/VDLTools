@@ -358,7 +358,7 @@ class ProfileDockWidget(QDockWidget):
         data += "%5D%7D&nbPoints=10"
         try:
             response = requests.post(url, data=data)
-            print(response.text)
+            # print(response.text)
             j = response.text
             j_obj = json.loads(j)
             profile = j_obj['profile']
