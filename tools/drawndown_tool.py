@@ -48,7 +48,7 @@ from ..ui.drawdown_confirm_dialog import DrawdownConfirmDialog
 
 class DrawdownTool(QgsMapTool):
     """
-    Tool class for
+    Map tool class to drawdown a pipe
     """
 
     ALT_TOLERANCE = 0.0005
@@ -94,10 +94,6 @@ class DrawdownTool(QgsMapTool):
         To set the current tool as this one
         """
         self.canvas().setMapTool(self)
-        QMessageBox.information(
-            None, QCoreApplication.translate("VDLTools", "Drawdown"),
-            QCoreApplication.translate("VDLTools", "This tool is not yet finished, are you here to test it ?")
-        )
 
     def activate(self):
         """
@@ -114,6 +110,9 @@ class DrawdownTool(QgsMapTool):
         self.__dockWdg.closeSignal.connect(self.__closed)
 
     def __isDisplayingMnt(self):
+        """
+        To toogle if we want to display mnt or not
+        """
         if self.__dockWdg.displayMnt():
             self.__usedMnts = [1, 1, 1]
         else:
@@ -122,6 +121,10 @@ class DrawdownTool(QgsMapTool):
             self.__calculateProfile()
 
     def __isDisplayingZeros(self):
+        """
+        To update the graph when changing zeros choice
+        :return:
+        """
         if self.__rendered:
             self.__calculateProfile()
 
@@ -184,6 +187,9 @@ class DrawdownTool(QgsMapTool):
         return
 
     def __updateProfile(self):
+        """
+        To update the profile in the dock after adjustments
+        """
         self.__lineVertices()
         for p in range(len(self.__points)):
             pt = self.__points[p]
@@ -230,6 +236,9 @@ class DrawdownTool(QgsMapTool):
 
 
     def __adjust(self):
+        """
+        To look for adjustments and to display them
+        """
         self.__layers = self.__lineVertices(True)
         self.__adjustments = []
         self.__altitudes = []
@@ -401,6 +410,10 @@ class DrawdownTool(QgsMapTool):
             self.__checkForceExtrapolation()
 
     def __setAdjustements(self):
+        """
+        To display adjustments window
+        :return:
+        """
         self.__renderedIds = self.__selectedIds
         self.__calculateProfile()
         self.__adjDlg = DrawdownAdjustmentDialog(self.__adjustments, self.__altitudes)
@@ -410,6 +423,9 @@ class DrawdownTool(QgsMapTool):
         self.__adjDlg.show()
 
     def __checkForceExtrapolation(self):
+        """
+        To ask for forcing extrapolation
+        """
         message = ""
         for extra in self.__extras:
             message += str(extra[0]) + ") " + \
@@ -423,6 +439,9 @@ class DrawdownTool(QgsMapTool):
         self.__confDlg.show()
 
     def __onConfOk(self):
+        """
+        When the Ok button in Drawdown Confirm Dialog is pushed
+        """
         self.__confDlg.accept()
         for extra in self.__extras:
             self.__altitudes[extra[0]]['alt'] = extra[1]
@@ -430,12 +449,18 @@ class DrawdownTool(QgsMapTool):
         self.__setAdjustements()
 
     def __onConfCancel(self):
+        """
+        When the Cancel button in Drawdown Confirm Dialog is pushed
+        """
         self.__confDlg.reject()
         for extra in self.__extras:
             self.__altitudes[extra[0]]['drawdown'] = QCoreApplication.translate("VDLTools", "cannot be extrapolated")
         self.__setAdjustements()
 
     def __onAdjOk(self):
+        """
+        When the Ok button in Drawdown Adjustment Dialog is pushed
+        """
         self.__adjDlg.accept()
         layers = []
         for adj in self.__adjDlg.getAdjusts():
@@ -451,10 +476,16 @@ class DrawdownTool(QgsMapTool):
             self.__editDlg.show()
 
     def __onEditCancel(self):
+        """
+        When the Cancel button in Drawdown Edition Dialog is pushed
+        """
         self.__editDlg.reject()
         self.__cancel()
 
     def __onEditOk(self):
+        """
+        When the Ok button in Drawdown Edition Dialog is pushed
+        """
         self.__editDlg.accept()
         for layer in self.__editDlg.getLayers():
             layer.startEditing()
@@ -462,6 +493,9 @@ class DrawdownTool(QgsMapTool):
 
 
     def __applyAdjustments(self):
+        """
+        To apply the selected adjustments
+        """
         lines = {}
         for adj in self.__adjDlg.getAdjusts():
             if self.__altitudes[adj['point']]['alt'] is None:
@@ -496,6 +530,9 @@ class DrawdownTool(QgsMapTool):
         self.__cancel()
 
     def __onAdjCancel(self):
+        """
+        When the Cancel button in Drawdown Adjustment Dialog is pushed
+        """
         self.__adjDlg.reject()
         self.__cancel()
 

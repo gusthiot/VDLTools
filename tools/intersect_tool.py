@@ -254,6 +254,5 @@ class IntersectTool(QgsMapTool):
     def __pointLayerDeleted(self):
         """
         To deselect the point layer when it is deleted
-        :return:
         """
         self.__pointLayerID = None

@@ -420,6 +420,10 @@ class ShowSettingsDialog(QDialog):
                         self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
 
     def __setPipeDiamCombo(self, drawdownLayer):
+        """
+        To fill the pipe diameter combo list
+        :param drawdownLayer: choosen drawdown layer
+        """
         Signal.safelyDisconnect(self.__pipeDiamCombo.currentIndexChanged, self.__pipeDiamComboChanged)
         self.__resetCombo(self.__pipeDiamCombo)
         self.__pipeDiamCombo.addItem("")
@@ -434,6 +438,10 @@ class ShowSettingsDialog(QDialog):
                 self.__pipeDiamCombo.setCurrentIndex(self.__pipeDiamFields.index(self.__pipeDiam) + 1)
 
     def __setLevelAttCombo(self, refLayers):
+        """
+        To fill the level attribute combo list
+        :param refLayers: choosen reference layers
+        """
         Signal.safelyDisconnect(self.__levelAttCombo.currentIndexChanged, self.__levelAttComboChanged)
         self.__resetCombo(self.__levelAttCombo)
         self.__levelAttCombo.addItem("")
@@ -477,12 +485,16 @@ class ShowSettingsDialog(QDialog):
             self.__pointCombo.removeItem(0)
 
     def __refBoxesChanged(self):
+        """
+        To update level attribute combo when reference layers have changed
+        """
         if self.refLayers() is not None:
             self.__setLevelAttCombo(self.refLayers())
 
     def __drawdownComboChanged(self):
         """
         To remove blank item when another one is selected
+        and update pipe diamete combo when drawdown layer has changed
         """
         if self.__drawdownCombo.itemText(0) == "":
             self.__drawdownCombo.removeItem(0)
@@ -598,6 +610,10 @@ class ShowSettingsDialog(QDialog):
         return layers
 
     def levelAtt(self):
+        """
+        To get the selected level attribute
+        :return:  selected level attribute, or none
+        """
         if self.__levelAttCombo is None:
             return None
         index = self.__levelAttCombo.currentIndex()
@@ -607,6 +623,10 @@ class ShowSettingsDialog(QDialog):
             return self.__levelAttFields[index]
 
     def levelVal(self):
+        """
+        To get the filled level value
+        :return: filled level value
+        """
         return self.__levelValText.text()
 
     def drawdownLayer(self):
@@ -621,6 +641,10 @@ class ShowSettingsDialog(QDialog):
             return self.__drawdownLayers[index]
 
     def pipeDiam(self):
+        """
+        To get the selected pipe diameter
+        :return: selected pipe diameter, or none
+        """
         if self.__pipeDiamCombo is None:
             return None
         index = self.__pipeDiamCombo.currentIndex()

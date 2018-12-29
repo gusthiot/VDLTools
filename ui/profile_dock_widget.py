@@ -234,9 +234,16 @@ class ProfileDockWidget(QDockWidget):
         return self.__zerosButton
 
     def displayMnt(self):
+        """
+        To get if we want to display mnt
+        :return: true or false
+        """
         return self.__displayMnt
 
     def __mnt(self):
+        """
+        To toggle mnt display choice
+        """
         if self.__displayMnt:
             self.__displayMnt = False
             self.__mntButton.setText(QCoreApplication.translate("VDLTools", "Display MNT"))
@@ -245,6 +252,9 @@ class ProfileDockWidget(QDockWidget):
             self.__mntButton.setText(QCoreApplication.translate("VDLTools", "Remove MNT"))
 
     def __zeros(self):
+        """
+        To toggle if we want to display zero elevations or not
+        """
         if self.__displayZeros:
             self.__displayZeros = False
             self.__zerosButton.setText(QCoreApplication.translate("VDLTools", "Display Zeros"))

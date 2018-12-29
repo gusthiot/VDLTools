@@ -387,7 +387,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
 
     def __ok(self, withVertex, withPoint):
         """
-        To realize the interpolation
+        To apply the interpolation
         :param withVertex: if we want a new interpolated vertex
         :param withPoint: if we want a new interpolated point
         """

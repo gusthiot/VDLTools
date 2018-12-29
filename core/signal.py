@@ -28,6 +28,11 @@ class Signal(object):
 
     @staticmethod
     def safelyDisconnect(signal, handler):
+        """
+        To safely disconnect a signal
+        :param signal: signal to disconnect
+        :param handler: object from which we want to disconnect the signal
+        """
         while True:
             try:
                 if handler is not None:

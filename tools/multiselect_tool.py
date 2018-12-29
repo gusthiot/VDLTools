@@ -52,6 +52,10 @@ class MultiselectTool(AreaTool):
         self.request = None
 
     def disabled(self):
+        """
+        to get disabled layers
+        :return disabled layers
+        """
         return QgsProject.instance().readListEntry("Identify", "disabledLayers", "None")[0]
 
     def __select(self):
