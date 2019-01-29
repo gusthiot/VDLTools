@@ -124,6 +124,8 @@ class ProfileDockWidget(QDockWidget):
         self.__numLines = None
         self.__mntPoints = None
 
+        self.__displayZeros = False
+
         self.__marker = None
         self.__tabmouseevent = None
 
@@ -172,7 +174,6 @@ class ProfileDockWidget(QDockWidget):
             self.__vertLayout.addWidget(self.__mntButton)
 
         if zerosButton:
-            self.__displayZeros = False
             self.__zerosButton = QPushButton(QCoreApplication.translate("VDLTools", "Display Zeros"))
             self.__zerosButton.setFixedSize(size)
             self.__zerosButton.clicked.connect(self.__zeros)
@@ -365,10 +366,11 @@ class ProfileDockWidget(QDockWidget):
                 data += "%2C"
             pos += 1
             data += "%5B" + str(self.__profiles[i]['x']) + "%2C" + str(self.__profiles[i]['y']) + "%5D"
-        data += "%5D%7D&nbPoints=10"
+        data += "%5D%7D&nbPoints=" + str(int(self.__profiles[len(self.__profiles)-1]['l']))
+        print("request : " + data)
         try:
             response = requests.post(url, data=data)
-            # print(response.text)
+            print("response : " + response.text)
             j = response.text
             j_obj = json.loads(j)
             profile = j_obj['profile']
