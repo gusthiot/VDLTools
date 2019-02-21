@@ -9,9 +9,9 @@
 
 [general]
 name=VDL Tools
-qgisMinimumVersion=2.18.0
+qgisMinimumVersion=3.4.0
 description=Tools needed by the Ville de Lausanne
-version=0.7
+version=0.8
 author=Christophe Gusthiot (Ville de Lausanne)
 email=cgusthiot@gmail.com
 
