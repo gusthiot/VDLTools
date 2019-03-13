@@ -54,9 +54,8 @@ class Finder(object):
         :param mapCanvas: the used QgsMapCanvas
         :return: feature found in layers
         """
-        match = Finder.snapLayers(mapPoint, mapCanvas, layers, type, tolerance, units)
+        match = Finder.snapLayers(mapPoint, mapCanvas, layers, type, tolerance, units, QgsSnappingConfig.AdvancedConfiguration)
         if match.featureId() is not None and match.layer() is not None:
-            print(match.layer().name())
             feature = QgsFeature()
             match.layer().getFeatures(QgsFeatureRequest().setFilterFid(match.featureId())).nextFeature(feature)
             return [feature, match.layer()]
@@ -96,7 +95,7 @@ class Finder(object):
         """
         features = []
         for layer, config in layersConfig.items():
-            features += Finder.findFeaturesAt(mapPoint, layer, config.tolerance, config.units, mapTool)
+            features += Finder.findFeaturesAt(mapPoint, layer, config["tolerance"], config["units"], mapTool)
         return features
 
     @staticmethod
@@ -293,6 +292,7 @@ class Finder(object):
         :return: intersection point
         """
         snap_layers = Finder.getLayersSettings(mapCanvas, [QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry, QgsWkbTypes.PointGeometry])
+        print(snap_layers)
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         inter = None
         if len(features) > 1:
@@ -313,51 +313,48 @@ class Finder(object):
         return inter
 
     @staticmethod
-    def snapLayersConfigs(mapPoint, mapCanvas, layersConfigs=None):
+    def snapLayersConfigs(mapPoint, mapCanvas, layersConfigs=None, mode=None):
         snap_util = mapCanvas.snappingUtils()
         config = snap_util.config()
+        old_config = snap_util.config()
         for lay, iConf in config.individualLayerSettings().items():
             if lay in layersConfigs:
-                iConf.setTolerance(layersConfigs[lay].tolerance)
-                iConf.setType(layersConfigs[lay].type)
-                iConf.setUnits(layersConfigs[lay].units)
+                iConf.setTolerance(layersConfigs[lay]["tolerance"])
+                iConf.setType(layersConfigs[lay]["type"])
+                iConf.setUnits(layersConfigs[lay]["units"])
                 iConf.setEnabled(True)
             else:
                 iConf.setEnabled(False)
             config.setIndividualLayerSettings(lay, iConf)
+        if mode is not None:
+            config.setMode(mode)
+        if not old_config.enabled():
+            config.setEnabled(True)
         snap_util.setConfig(config)
         match = snap_util.snapToMap(mapPoint)
-        config.reset()
-        snap_util.setConfig(config)
+        snap_util.setConfig(old_config)
         return match
 
 
     @staticmethod
-    def snapLayers(mapPoint, mapCanvas, layers, sType, tolerance, units):
+    def snapLayers(mapPoint, mapCanvas, layers, sType, tolerance, units, mode=None):
         snap_util = mapCanvas.snappingUtils()
         config = snap_util.config()
-
-        for conf in snap_util.layers():
-            print("a", conf.layer.name())
-        #for lay, iConf in config.individualLayerSettings().items():
-        #    print("1", lay.name(), iConf.enabled())
+        old_config = snap_util.config()
         for lay, iConf in config.individualLayerSettings().items():
             if lay in layers:
                 iConf.setTolerance(tolerance)
-                # iConf.setType(sType)
+                iConf.setType(sType)
                 iConf.setUnits(units)
                 iConf.setEnabled(True)
             else:
                 iConf.setEnabled(False)
             config.setIndividualLayerSettings(lay, iConf)
-        #for lay, iConf in snap_util.config().individualLayerSettings().items():
-        #    print("2", lay.name(), iConf.enabled())
+        if mode is not None:
+            config.setMode(mode)
+        if not old_config.enabled():
+            config.setEnabled(True)
         snap_util.setConfig(config)
-        for conf in snap_util.layers():
-            print("b", conf.layer.name(), conf.type, conf.tolerance, conf.unit)
-        #print(config.mode())
         match = snap_util.snapToMap(mapPoint)
-        config.reset()
-        #print(config.mode())
-        snap_util.setConfig(config)
+        snap_util.setConfig(old_config)
         return match

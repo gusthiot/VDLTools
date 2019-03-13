@@ -267,12 +267,13 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         :param snap_layers: layers configs
         :return: True if there is a vertex, False otherwise
         """
-        for layer, config in snap_layers:
+        for layer, config in snap_layers.items():
             if layer.id() == self.__lastLayer.id():
-                tolerance = config.tolerance
-                if config.unit == QgsTolerance.Pixels:
+                tolerance = config["tolerance"]
+                unit = config["unit"]
+                if unit == QgsTolerance.Pixels:
                     tolerance = Finder.calcCanvasTolerance(self.toCanvasCoordinates(point), layer, self, tolerance)
-                elif config.unit == QgsTolerance.ProjectUnits:
+                elif unit == QgsTolerance.ProjectUnits:
                     tolerance = Finder.calcMapTolerance(point, layer, self, tolerance)
                 layPoint = self.toLayerCoordinates(layer, point)
                 geom = self.__selectedFeature.geometry()
