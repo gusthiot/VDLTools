@@ -20,23 +20,23 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import range
+from builtins import str
+from builtins import range
 
 from ..ui.show_settings_dialog import ShowSettingsDialog
 from ..ui.fields_settings_dialog import FieldsSettingsDialog
-from PyQt4.QtCore import (QCoreApplication,
-                          QObject,
-                          pyqtSignal,
-                          QVariant)
-from PyQt4.QtGui import QMessageBox
+from qgis.PyQt.QtCore import (QCoreApplication,
+                              QObject,
+                              pyqtSignal,
+                              QVariant)
+from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.core import (QgsProject,
-                       QgsMapLayerRegistry,
-                       QgsWKBTypes,
+                       QgsWkbTypes,
                        edit,
                        QgsField,
-                       QGis,
                        QgsMapLayer)
 from ..core.db_connector import DBConnector
+from ..core.geometry_v2 import GeometryV2
 
 
 class ShowSettings(QObject):
@@ -122,19 +122,19 @@ class ShowSettings(QObject):
         """ Temporarly lines layer for the project """
         mll_id = QgsProject.instance().readEntry("VDLTools", "memory_lines_layer", None)[0]
 
-        for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
+        for layer in list(QgsProject.instance().mapLayers().values()):
             if layer and layer.type() == QgsMapLayer.VectorLayer:
                 if layer.providerType() == "memory":
-                    if layer.geometryType() == QGis.Point:
+                    if layer.geometryType() == QgsWkbTypes.PointGeometry:
                         if layer.id() == mpl_id:
                             self.__memoryPointsLayer = layer
-                    if layer.geometryType() == QGis.Line:
+                    if layer.geometryType() == QgsWkbTypes.LineGeometry:
                         if layer.id() == mll_id:
                             self.__memoryLinesLayer = layer
-                if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+                if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
                         if layer.id() == dd_id:
                             self.__drawdownLayer = layer
-                if QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.PointZ:
+                if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
                         if layer.id() in ref_ids:
                             self.__refLayers.append(layer)
                         if layer.id() in adj_ids:
@@ -334,7 +334,7 @@ class ShowSettings(QObject):
         layer_id = None
         if pointsLayer:
             layer_id = pointsLayer.id()
-            self.__memoryPointsLayer.layerDeleted.connect(self.__memoryPointsLayerDeleted)
+            self.__memoryPointsLayer.destroyed.connect(self.__memoryPointsLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_points_layer", layer_id)
 
     @linesLayer.setter
@@ -345,7 +345,7 @@ class ShowSettings(QObject):
         """
         self.__linesLayer = linesLayer
         if linesLayer:
-            fields = self.__linesLayer.pendingFields()
+            fields = self.__linesLayer.fields()
             fieldsNames = []
             for pos in range(fields.count()):
                 fieldsNames.append(fields.at(pos).name())
@@ -401,7 +401,7 @@ class ShowSettings(QObject):
         layer_id = None
         if self.__linesLayer:
             layer_id = self.__linesLayer.id()
-            self.__memoryLinesLayer.layerDeleted.connect(self.__memoryLinesLayerDeleted)
+            self.__memoryLinesLayer.destroyed.connect(self.__memoryLinesLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", layer_id)
         self.__cancel()
 
@@ -438,7 +438,7 @@ class ShowSettings(QObject):
                 if ids != "":
                     ids += ","
                 ids += str(layer.id())
-                # layer.layerDeleted.connect(self.__refLayerDeleted)
+                # layer.destroyed.connect(self.__refLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "ref_layers", ids)
 
     @adjLayers.setter
@@ -486,7 +486,7 @@ class ShowSettings(QObject):
         layer_id = None
         if drawdownLayer:
             layer_id = drawdownLayer.id()
-            self.__drawdownLayer.layerDeleted.connect(self.__drawdownLayerDeleted)
+            self.__drawdownLayer.destroyed.connect(self.__drawdownLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "drawdown_layer", layer_id)
 
     @pipeDiam.setter

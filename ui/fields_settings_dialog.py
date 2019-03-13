@@ -22,11 +22,8 @@
 """
 
 
-from PyQt4.QtGui import (QDialog,
-                         QGridLayout,
-                         QPushButton,
-                         QLabel)
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel
+from qgis.PyQt.QtCore import QCoreApplication
 
 
 class FieldsSettingsDialog(QDialog):

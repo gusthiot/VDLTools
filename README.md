@@ -3,36 +3,6 @@ Outils QGIS pour la Ville de Lausanne
 -------------------------------------
 
 
-- Duplicate
-
-L'outil "Duplicate" permet de copier un objet dans une direction à une distance donnée. La distance est fixe pour chaque noeud de l'objet, donc la géométrie n'est pas conservée.
-
-    - sélectionner une couche éditable
-    - sélectionner l'outil
-    - sélectionner un élément sur la carte
-    - choisir à quelle distance et dans quelle direction dupliquer l'élément.
-    - compléter les attributs du formulaire s'il est affiché
-
-![Duplicate Gif](./gifs/duplicate.gif)
-
----
-
-- Move
-
-L'outil "Move" permet de déplacer ou copier un objet.
-
-    - sélectionner une couche éditable
-    - sélectionner l'outil
-    - sélectionner un élément sur la carte
-    - sélectionner un vertex de l'élément (si ce n'est pas un point)
-    - choisir où déplacer/copier l'élément et cliquer (utilisation possible des options d'accrochage de la couche)
-    - choisir entre déplacer et copier
-    - pour une copie, compléter les attributs du formulaire s'il est affiché
-
-![Move Gif](./gifs/copy.gif)
-
----
-
 - Intersect
 
 L'outil "Intersect" permet de créer un cercle de construction d'un rayon donné. 

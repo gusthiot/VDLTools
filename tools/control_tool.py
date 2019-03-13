@@ -20,12 +20,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import division
-from PyQt4.QtCore import QCoreApplication
+from builtins import str
+from builtins import range
+from qgis.PyQt.QtCore import QCoreApplication
 from .area_tool import AreaTool
 from ..ui.choose_control_dialog import ChooseControlDialog
-from qgis.gui import QgsMessageBar
-from qgis.core import (QgsMapLayerRegistry,
+from qgis.core import (QgsProject,
+                       Qgis,
                        QgsVectorLayer,
                        QgsGeometry,
                        QgsFeature)
@@ -74,14 +75,14 @@ class ControlTool(AreaTool):
         """
         if self.ownSettings is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
+                                                  level=Qgis.Critical, duration=0)
             return
         if self.ownSettings.ctlDb is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control db given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
+                                                  level=Qgis.Critical, duration=0)
             return
 
-        self.__chooseDlg = ChooseControlDialog(self.__requests.keys())
+        self.__chooseDlg = ChooseControlDialog(list(self.__requests.keys()))
         self.__chooseDlg.okButton().clicked.connect(self.__onOk)
         self.__chooseDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__chooseDlg.show()
@@ -118,7 +119,7 @@ class ControlTool(AreaTool):
             select_part += """, %s, pg_typeof(%s)""" % (f, f)
         from_part = """ FROM qwat_od.pipe """
         where_part = """WHERE ST_Intersects(geometry3d,ST_GeomFromText('%s',%s))""" \
-                     % (self.geom().exportToWkt(), str(self.__crs))
+                     % (self.geom().asWkt(), str(self.__crs))
         request = select_part + from_part + where_part
         print(request)
         self.__querying(request, layer_name, fNames)
@@ -132,13 +133,13 @@ class ControlTool(AreaTool):
         """
         query = self.__db.exec_(request)
         if query.lastError().isValid():
-            self.__iface.messageBar().pushMessage(query.lastError().text(), level=QgsMessageBar.CRITICAL, duration=0)
+            self.__iface.messageBar().pushMessage(query.lastError().text(), level=Qgis.Critical, duration=0)
         else:
             gtype = None
             geometries = []
             attributes = []
             fTypes = []
-            while query.next():
+            while next(query):
                 gtype = query.value(0)
                 geometries.append(query.value(1))
                 atts = []
@@ -160,21 +161,20 @@ class ControlTool(AreaTool):
         :param fNames: fields names
         :param fTypes: fields types
         """
-        layerList = QgsMapLayerRegistry.instance().mapLayersByName(layer_name)
+        layerList = QgsProject.instance().mapLayersByName(layer_name)
         if layerList:
-            QgsMapLayerRegistry.instance().removeMapLayers([layerList[0].id()])
+            QgsProject.instance().removeMapLayers([layerList[0].id()])
         epsg = self.canvas().mapRenderer().destinationCrs().authid()
         fieldsParam = ""
         for i in range(len(fNames)):
             fieldsParam += "&field=" + fNames[i] + ":" + fTypes[i]
         layer = QgsVectorLayer(gtype + "?crs=" + epsg + fieldsParam + "&index=yes", layer_name, "memory")
-        QgsMapLayerRegistry.instance().addMapLayer(layer)
+        QgsProject.instance().addMapLayer(layer)
         layer.startEditing()
         for i in range(len(geometries)):
             feature = QgsFeature()
             feature.setGeometry(QgsGeometry().fromWkt(geometries[i]))
-            fields = layer.pendingFields()
-            feature.setFields(fields)
+            feature.setFields(layer.fields())
             for j in range(len(fNames)):
                 feature.setAttribute(fNames[j], attributes[i][j])
             layer.addFeature(feature)

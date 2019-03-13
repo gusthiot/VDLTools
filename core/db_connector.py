@@ -20,16 +20,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import object
+from builtins import object
 
-from PyQt4.QtCore import QSettings
-from PyQt4.QtSql import QSqlDatabase
-from qgis.gui import QgsMessageBar
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtCore import QSettings
+from qgis.PyQt.QtSql import QSqlDatabase
+from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import (QgsMapLayer,
                        QgsCredentials,
-                       QgsMapLayerRegistry,
-                       QgsDataSourceURI)
+                       QgsProject,
+                       QgsDataSourceUri,
+                       Qgis)
 
 
 class DBConnector(object):
@@ -95,7 +95,7 @@ class DBConnector(object):
         if not ok:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Database Error: ") + db.lastError().text(),
-                level=QgsMessageBar.CRITICAL, duration=0)
+                level=Qgis.Critical, duration=0)
             return None
         return db
 
@@ -106,9 +106,9 @@ class DBConnector(object):
         :return: databases uri list
         """
         dbs = {}
-        for layer in list(QgsMapLayerRegistry.instance().mapLayers().values()):
+        for layer in list(QgsProject.instance().mapLayers().values()):
             if layer is not None and layer.type() == QgsMapLayer.VectorLayer and layer.providerType() == "postgres":
-                uri = QgsDataSourceURI(layer.source())
+                uri = QgsDataSourceUri(layer.source())
                 if uri.database() not in dbs:
                     dbs[uri.database()] = uri
         return dbs

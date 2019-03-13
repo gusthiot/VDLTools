@@ -21,11 +21,9 @@
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import (QDialog,
-                         QGridLayout,
-                         QPushButton,
-                         QLabel)
-from PyQt4.QtCore import QCoreApplication
+from builtins import str
+from qgis.PyQt.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel
+from qgis.PyQt.QtCore import QCoreApplication
 
 
 class ImportMeasuresDialog(QDialog):

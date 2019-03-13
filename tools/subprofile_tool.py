@@ -20,16 +20,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import range
-from qgis.core import (QgsPointV2,
-                       QgsLineStringV2,
-                       QgsGeometry,
-                       QGis)
-from qgis.gui import (QgsMapTool,
-                      QgsRubberBand)
-from PyQt4.QtCore import (Qt,
-                          QCoreApplication)
-from PyQt4.QtGui import QColor
+from builtins import range
+from qgis.core import (QgsPoint,
+                       QgsWkbTypes,
+                       QgsLineString,
+                       QgsGeometry)
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtGui import QColor
 from ..ui.profile_dock_widget import ProfileDockWidget
 
 
@@ -75,11 +73,11 @@ class SubProfileTool(QgsMapTool):
         else:
            self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
-        self.__rubberLine = QgsRubberBand(self.canvas(), QGis.Line)
+        self.__rubberLine = QgsRubberBand(self.canvas(), QgsWkbTypes.LineGeometry)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubberLine.setColor(color)
-        self.__rubberDots = QgsRubberBand(self.canvas(), QGis.Line)
+        self.__rubberDots = QgsRubberBand(self.canvas(), QgsWkbTypes.LineGeometry)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubberDots.setColor(color)
@@ -127,9 +125,9 @@ class SubProfileTool(QgsMapTool):
         :param event: mouse event
         """
         if self.__isSelected:
-            dots = QgsLineStringV2()
+            dots = QgsLineString()
             dots.addVertex(self.__startVertex)
-            dots.addVertex(QgsPointV2(event.mapPoint()))
+            dots.addVertex(QgsPoint(event.mapPoint()))
             self.__rubberDots.reset()
             self.__rubberDots.setToGeometry(QgsGeometry(dots.clone()), None)
 
@@ -147,9 +145,9 @@ class SubProfileTool(QgsMapTool):
             if not self.__isSelected:
                 self.__isSelected = True
                 self.__dockWdg.clearData()
-                self.__line = QgsLineStringV2()
+                self.__line = QgsLineString()
                 self.__rubberLine.reset()
-            self.__startVertex = QgsPointV2(event.mapPoint())
+            self.__startVertex = QgsPoint(event.mapPoint())
             self.__line.addVertex(self.__startVertex)
             if self.__isSelected:
                 self.__rubberLine.reset()

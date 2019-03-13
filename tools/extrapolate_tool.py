@@ -20,22 +20,17 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import division
-from past.utils import old_div
+from builtins import str
 
-from qgis.gui import (QgsMapTool,
-                      QgsRubberBand,
-                      QgsMessageBar)
-from qgis.core import (QGis,
-                       QgsPointLocator,
-                       QgsSnappingUtils,
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.core import (QgsSnappingConfig,
+                       Qgis,
                        QgsTolerance,
                        QgsMapLayer,
                        QgsGeometry,
-                       QgsWKBTypes)
-from PyQt4.QtCore import (Qt,
-                          QCoreApplication)
-from PyQt4.QtGui import QColor
+                       QgsWkbTypes)
+from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtGui import QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.extrapolate_confirm_dialog import ExtrapolateConfirmDialog
@@ -79,7 +74,7 @@ class ExtrapolateTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.canvas(), QGis.Point)
+        self.__rubber = QgsRubberBand(self.canvas(), QgsWkbTypes.PointGeometry)
         color = QColor("red")
         color.setAlphaF(0.78)
         self.__rubber.setColor(color)
@@ -142,8 +137,8 @@ class ExtrapolateTool(QgsMapTool):
         To check if we can enable the action for the selected layer
         :param layer: selected layer
         """
-        if layer is not None and layer.type() == QgsMapLayer.VectorLayer\
-                and QGis.fromOldWkbType(layer.wkbType()) == QgsWKBTypes.LineStringZ:
+        if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
+                GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
             if layer == self.__layer:
                 return
 
@@ -171,12 +166,11 @@ class ExtrapolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
-                                                       QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
+            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [self.__layer], QgsSnappingConfig.VertexAndSegment, 10,
+                                              QgsTolerance.Pixels)
             if f_l is not None:
                 self.__lastFeatureId = f_l[0].id()
-                self.__layer.setSelectedFeatures([f_l[0].id()])
+                self.__layer.selectByIds([f_l[0].id()])
                 self.__rubber.reset()
                 geom = f_l[0].geometry()
                 index = geom.closestVertex(event.mapPoint())[1]
@@ -199,7 +193,7 @@ class ExtrapolateTool(QgsMapTool):
         if len(found_features) > 0:
             if len(found_features) > 1:
                 self.__iface.messageBar().pushMessage(
-                    QCoreApplication.translate("VDLTools", "One feature at a time"), level=QgsMessageBar.INFO)
+                    QCoreApplication.translate("VDLTools", "One feature at a time"), level=Qgis.Info)
                 return
             geom = found_features[0].geometry()
             self.__selectedVertex = geom.closestVertex(event.mapPoint())[1]
@@ -217,8 +211,8 @@ class ExtrapolateTool(QgsMapTool):
                 small_d = Finder.sqrDistForPoints(pt1, pt)
                 self.__isEditing = True
                 self.__selectedFeature = found_features[0]
-                self.__elevation = round(pt0.z() + (1 + old_div(small_d, big_d)) * (pt1.z() - pt0.z()), 2)
-                if small_d < (old_div(big_d, 4)):
+                self.__elevation = round(pt0.z() + (1 + small_d / big_d) * (pt1.z() - pt0.z()), 2)
+                if small_d < (big_d / 4):
                     if pt.z() is not None and pt.z() != 0:
                         message = QCoreApplication.translate("VDLTools", "This vertex has already an elevation ") + \
                                   "(" + str(pt.z()) + ")" + \

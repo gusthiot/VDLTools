@@ -20,15 +20,13 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import division
-from PyQt4.QtCore import pyqtSignal
-from PyQt4.QtGui import QColor
-from qgis.gui import (QgsMapTool,
-                      QgsRubberBand)
-from qgis.core import (QGis,
-                       QgsLineStringV2,
-                       QgsPolygonV2,
-                       QgsPointV2,
+from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtGui import QColor
+from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.core import (QgsLineString,
+                       QgsPolygon,
+                       QgsPoint,
+                       QgsWkbTypes,
                        QgsGeometry)
 
 
@@ -53,10 +51,10 @@ class AreaTool(QgsMapTool):
         When the action is selected
         """
         QgsMapTool.activate(self)
-        self.__rubber = QgsRubberBand(self.canvas(), QGis.Polygon)
+        self.__rubber = QgsRubberBand(self.canvas(), QgsWkbTypes.PolygonGeometry)
         color = QColor("red")
         color.setAlphaF(0.6)
-        self.__rubber.setBorderColor(color)
+        self.__rubber.setColor(color)
         color = QColor("orange")
         color.setAlphaF(0.3)
         self.__rubber.setFillColor(color)
@@ -85,16 +83,16 @@ class AreaTool(QgsMapTool):
         """
         if self.__selecting:
             self.__rubber.reset()
-            firstV2 = QgsPointV2(self.first)
-            second = QgsPointV2(self.first.x(), event.mapPoint().y())
-            third = QgsPointV2(event.mapPoint())
-            fourth = QgsPointV2(event.mapPoint().x(), self.first.y())
+            firstZ = QgsPoint(self.first)
+            second = QgsPoint(self.first.x(), event.mapPoint().y())
+            third = QgsPoint(event.mapPoint())
+            fourth = QgsPoint(event.mapPoint().x(), self.first.y())
 
-            lineV2 = QgsLineStringV2()
-            lineV2.setPoints([firstV2, second, third, fourth, firstV2])
-            polygonV2 = QgsPolygonV2()
-            polygonV2.setExteriorRing(lineV2)
-            self.geom = QgsGeometry(polygonV2)
+            line = QgsLineString()
+            line.setPoints([firstZ, second, third, fourth, firstZ])
+            polygon = QgsPolygon()
+            polygon.setExteriorRing(line)
+            self.geom = QgsGeometry(polygon)
             self.__rubber.setToGeometry(self.geom, None)
 
     def canvasPressEvent(self, event):

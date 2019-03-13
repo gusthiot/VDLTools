@@ -20,8 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import division
-from PyQt4.QtCore import QCoreApplication
+from builtins import str
+from qgis.PyQt.QtCore import QCoreApplication
 from .multiselect_tool import MultiselectTool
 from ..ui.multi_confirm_dialog import MultiConfirmDialog
 # from ..ui.attributes_table_view import AttributesTableView

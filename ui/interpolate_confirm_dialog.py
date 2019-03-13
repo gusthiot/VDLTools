@@ -20,17 +20,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import range
+from builtins import range
 
-from PyQt4.QtGui import (QDialog,
-                         QWidget,
-                         QScrollArea,
-                         QButtonGroup,
-                         QGridLayout,
-                         QRadioButton,
-                         QPushButton,
-                         QLabel)
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtWidgets import QDialog, QWidget, QScrollArea, QButtonGroup, QGridLayout, QRadioButton, QPushButton, QLabel
+from qgis.PyQt.QtCore import QCoreApplication
 
 
 class InterpolateConfirmDialog(QDialog):

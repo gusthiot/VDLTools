@@ -30,7 +30,7 @@ $(LN_FILES): %.qm: %.ts
 	lrelease $<
 
 resources.py: resources.qrc
-	pyrcc4 -o resources.py  resources.qrc
+	pyrcc5 -o resources.py  resources.qrc
 
 clean:
 	rm -f resources.py i18n/*.qm *.pyc */*.pyc

@@ -20,21 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import absolute_import
-from future.builtins import object
-from PyQt4.QtCore import (QSettings,
-                          QTranslator,
-                          qVersion,
-                          QCoreApplication)
-from PyQt4.QtGui import (QAction,
-                         QIcon)
+from builtins import object
+from qgis.PyQt.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from qgis.PyQt.QtWidgets import QAction
+from qgis.PyQt.QtGui import QIcon
 
-from .tools.duplicate_tool import DuplicateTool
 from .tools.intersect_tool import IntersectTool
 from .tools.profile_tool import ProfileTool
 from .tools.interpolate_tool import InterpolateTool
 from .tools.extrapolate_tool import ExtrapolateTool
-from .tools.move_tool import MoveTool
 from .tools.show_settings import ShowSettings
 from .tools.import_measures import ImportMeasures
 from .tools.subprofile_tool import SubProfileTool
@@ -47,6 +41,7 @@ from .tools.drawndown_tool import DrawdownTool
 from . import resources
 
 import os
+
 
 class VDLTools(object):
     """
@@ -64,13 +59,11 @@ class VDLTools(object):
         # Save reference to the QGIS interface
         self.iface = iface
         self.mapCanvas = iface.mapCanvas()
-        self.duplicateTool = None
         self.intersectTool = None
         self.profileTool = None
         self.subProfileTool = None
         self.drawdownTool = None
         self.pointerTool = None
-        self.moveTool = None
         self.multiAttributesTool = None
         self.showSettings = None
         if VDLTools.MORE_TOOLS:
@@ -135,8 +128,6 @@ class VDLTools(object):
 
         self.showSettings = ShowSettings(self.iface, self.MORE_TOOLS)
         self.add_action(self.showSettings, self.iface.mainWindow(), True, False, False)
-        self.duplicateTool = DuplicateTool(self.iface)
-        self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
         self.intersectTool = IntersectTool(self.iface)
         self.add_action(self.intersectTool, self.iface.mainWindow())
         self.multiAttributesTool = MultiAttributesTool(self.iface)
@@ -151,8 +142,6 @@ class VDLTools(object):
         self.add_action(self.interpolateTool, self.iface.mainWindow(), False)
         self.extrapolateTool = ExtrapolateTool(self.iface)
         self.add_action(self.extrapolateTool, self.iface.mainWindow(), False)
-        self.moveTool = MoveTool(self.iface)
-        self.add_action(self.moveTool, self.iface.mainWindow(), False)
         self.drawdownTool = DrawdownTool(self.iface)
         self.add_action(self.drawdownTool, self.iface.mainWindow())
 
@@ -167,10 +156,6 @@ class VDLTools(object):
         self.iface.currentLayerChanged.connect(self.interpolateTool.setEnable)
         self.extrapolateTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.extrapolateTool.setEnable)
-        self.duplicateTool.setEnable(self.iface.activeLayer())
-        self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
-        self.moveTool.setEnable(self.iface.activeLayer())
-        self.iface.currentLayerChanged.connect(self.moveTool.setEnable)
         self.drawdownTool.setEnable()
         self.showSettings.changedSignal.connect(self.drawdownTool.setEnable)
 

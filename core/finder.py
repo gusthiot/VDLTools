@@ -20,17 +20,19 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import range
-from future.builtins import object
+from builtins import range
+from builtins import object
 
-from PyQt4.QtCore import QPoint
-from qgis.core import (QgsPoint,QgsGeometry,
-                       QGis,
+from qgis.PyQt.QtCore import QPoint
+from qgis.core import (QgsPoint,
+                       QgsPointXY,
+                       QgsWkbTypes,
+                       QgsGeometry,
                        QgsMapLayer,
                        QgsTolerance,
                        QgsPointLocator,
                        QgsProject,
-                       QgsSnapper,
+                       QgsSnappingConfig,
                        QgsSnappingUtils,
                        QgsRectangle,
                        QgsFeatureRequest,
@@ -45,16 +47,16 @@ class Finder(object):
     """
 
     @staticmethod
-    def findClosestFeatureAt(mapPoint, mapCanvas, layersConfigs=None):
+    def findClosestFeatureAt(mapPoint, mapCanvas, layers, type, tolerance, units):
         """
         To find closest feature from a given position in given layers
         :param mapPoint: the map position
         :param mapCanvas: the used QgsMapCanvas
-        :param layersConfig: the layers in which we are looking for features
         :return: feature found in layers
         """
-        match = Finder.snap(mapPoint, mapCanvas, layersConfigs, QgsSnappingUtils.SnapAdvanced)
+        match = Finder.snapLayers(mapPoint, mapCanvas, layers, type, tolerance, units)
         if match.featureId() is not None and match.layer() is not None:
+            print(match.layer().name())
             feature = QgsFeature()
             match.layer().getFeatures(QgsFeatureRequest().setFilterFid(match.featureId())).nextFeature(feature)
             return [feature, match.layer()]
@@ -87,46 +89,41 @@ class Finder(object):
     def findFeaturesLayersAt(mapPoint, layersConfig, mapTool):
         """
         To find features from a given position in given layers
-        :param mapPoint: the map position
+        :param mapPoint: the XY map position
         :param layersConfig: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
         :return: features found in layers
         """
         features = []
-        for layerConfig in layersConfig:
-            features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
+        for layer, config in layersConfig.items():
+            features += Finder.findFeaturesAt(mapPoint, layer, config.tolerance, config.units, mapTool)
         return features
 
     @staticmethod
-    def findFeaturesAt(mapPoint, layerConfig, mapTool):
+    def findFeaturesAt(mapPoint, layer, tolerance, units, mapTool):
         """
         To find features from a given position in a given layer
-        :param mapPoint: the map position
-        :param layerConfig: the layer in which we are looking for features
+        :param mapPoint: the XY map position
         :param mapTool: a QgsMapTool instance
         :return: features found in layer
         """
-        if layerConfig is None:
-            return None
-        tolerance = layerConfig.tolerance
-        if layerConfig.unit == QgsTolerance.Pixels:
-            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layerConfig.layer, mapTool,
-                                                      tolerance)
-        elif layerConfig.unit == QgsTolerance.ProjectUnits:
-            layTolerance = Finder.calcMapTolerance(mapPoint, layerConfig.layer, mapTool, tolerance)
+        if units == QgsTolerance.Pixels:
+            layTolerance = Finder.calcCanvasTolerance(mapTool.toCanvasCoordinates(mapPoint), layer, mapTool, tolerance)
+        elif units == QgsTolerance.ProjectUnits:
+            layTolerance = Finder.calcMapTolerance(mapPoint, layer, mapTool, tolerance)
         else:
             layTolerance = tolerance
-        layPoint = mapTool.toLayerCoordinates(layerConfig.layer, mapPoint)
+        layPoint = mapTool.toLayerCoordinates(layer, mapPoint)
         searchRect = QgsRectangle(layPoint.x() - layTolerance, layPoint.y() - layTolerance,
                                   layPoint.x() + layTolerance, layPoint.y() + layTolerance)
         request = QgsFeatureRequest()
         request.setFilterRect(searchRect)
         request.setFlags(QgsFeatureRequest.ExactIntersect)
         features = []
-        for feature in layerConfig.layer.getFeatures(request):
-            if layerConfig.layer.geometryType() == QGis.Polygon:
+        for feature in layer.getFeatures(request):
+            if layer.geometryType() == QgsWkbTypes.PolygonGeometry:
                 dist, nearest, vertex = feature.geometry().closestSegmentWithContext(mapPoint)
-                if QgsGeometry.fromPoint(nearest).intersects(searchRect):
+                if QgsGeometry.fromPointXY(nearest).intersects(searchRect):
                     features.append(QgsFeature(feature))
             else:
                 features.append(QgsFeature(feature))
@@ -159,8 +156,8 @@ class Finder(object):
         :param distance: the tolerance in map coordinates
         :return: the tolerance in layer coordinates
         """
-        pt1 = QgsPoint(mapPoint.x(), mapPoint.y())
-        pt2 = QgsPoint(mapPoint.x() + distance, mapPoint.y())
+        pt1 = QgsPointXY(mapPoint.x(), mapPoint.y())
+        pt2 = QgsPointXY(mapPoint.x() + distance, mapPoint.y())
         layerPt1 = mapTool.toLayerCoordinates(layer, pt1)
         layerPt2 = mapTool.toLayerCoordinates(layer, pt2)
         tolerance = layerPt2.x() - layerPt1.x()
@@ -196,24 +193,26 @@ class Finder(object):
             intersection = geometry1.intersection(geometry2)
             if intersection.type() == 0:
                 intersectionP = intersection.asPoint()
-                intersectionMP = intersection.asMultiPoint()
-                if intersectionMP is not None and len(intersectionMP) > 0:
-                    for point in intersectionMP:
-                        if intersectionP is None:
-                            intersectionP = point
-                        elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                            intersectionP = QgsPoint(point.x(), point.y())
-            elif intersection.type() == 1:
-                intersectionPL = intersection.asPolyline()
-                intersectionMPL = intersection.asMultiPolyline()
-                intersectionP = None
-                if intersectionMPL is not None and len(intersectionMPL) > 0:
-                    for line in intersectionMPL:
-                        for point in line:
+                if (intersection.isMultipart()):
+                    intersectionMP = intersection.asMultiPoint()
+                    if intersectionMP is not None and len(intersectionMP) > 0:
+                        for point in intersectionMP:
                             if intersectionP is None:
                                 intersectionP = point
                             elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                                 intersectionP = QgsPoint(point.x(), point.y())
+            elif intersection.type() == 1:
+                intersectionPL = intersection.asPolyline()
+                intersectionP = None
+                if (intersection.isMultipart()):
+                    intersectionMPL = intersection.asMultiPolyline()
+                    if intersectionMPL is not None and len(intersectionMPL) > 0:
+                        for line in intersectionMPL:
+                            for point in line:
+                                if intersectionP is None:
+                                    intersectionP = point
+                                elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                                    intersectionP = QgsPoint(point.x(), point.y())
                 else:
                     for point in intersectionPL:
                         if intersectionP is None:
@@ -221,14 +220,15 @@ class Finder(object):
                         elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
                             intersectionP = QgsPoint(point.x(), point.y())
             elif intersection.type() == 2:
-                intersectionMPL = intersection.asMultiPolyline()
                 intersectionP = None
-                for line in intersectionMPL:
-                    for point in line:
-                        if intersectionP is None:
-                            intersectionP = point
-                        elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                            intersectionP = QgsPoint(point.x(), point.y())
+                if (intersection.isMultipart()):
+                    intersectionMPL = intersection.asMultiPolyline()
+                    for line in intersectionMPL:
+                        for point in line:
+                            if intersectionP is None:
+                                intersectionP = point
+                            elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
+                                intersectionP = QgsPoint(point.x(), point.y())
             else:
                 return None
 
@@ -246,47 +246,53 @@ class Finder(object):
         :param snapType: snapping type
         :return: list of layers config
         """
-        snap_layers = []
+        snap_layers = {}
         for layer in mapCanvas.layers():
             if layer.type() == QgsMapLayer.VectorLayer and layer.geometryType() in types:
                 snap_util = mapCanvas.snappingUtils()
-                mode = snap_util.snapToMapMode()
-                if mode == QgsSnappingUtils.SnapCurrentLayer and layer.id() != mapCanvas.currentLayer().id():
+                mode = snap_util.config().mode()
+                if mode == QgsSnappingConfig.ActiveLayer and layer.id() != mapCanvas.currentLayer().id():
                     continue
-                if mode == QgsSnappingUtils.SnapAllLayers:
-                    snap_index, tolerance, unitType = snap_util.defaultSettings()
-                    snap_type = QgsPointLocator.Type(snap_index)
+                if mode == QgsSnappingConfig.AllLayers:
+                    individual = snap_util.config().individualLayerSettings(layer)
+                    snap_type = individual.type()
+                    tolerance = individual.tolerance()
+                    unitType = individual.units()
                 else:
                     noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
                         QgsProject.instance().snapSettingsForLayer(layer.id())
                     if layer.type() == QgsMapLayer.VectorLayer and enabled:
                         if snapType is None:
-                            if snappingType == QgsSnapper.SnapToVertex:
-                                snap_type = QgsPointLocator.Vertex
-                            elif snappingType == QgsSnapper.SnapToSegment:
-                                snap_type = QgsPointLocator.Edge
-                            elif snappingType == QgsSnapper.SnapToVertexAndSegment:
-                                snap_type = QgsPointLocator.Edge and QgsPointLocator.Vertex
-                            else:
-                                snap_type = QgsPointLocator.All
+                            snap_type = snappingType
                         else:
                             snap_type = snapType
                     else:
                         continue
-                snap_layers.append(QgsSnappingUtils.LayerConfig(layer, snap_type, tolerance, unitType))
+                snap_layers[layer] = {'type': snap_type, 'tolerance': tolerance, 'units': unitType}
         return snap_layers
+
+    # @staticmethod
+    # def snappingConfigToLocatorType(snappingType):
+    #         if snappingType == QgsSnappingConfig.Vertex:
+    #             return QgsPointLocator.Vertex
+    #         elif snappingType == QgsSnappingConfig.Segment:
+    #             return QgsPointLocator.Edge
+    #         elif snappingType == QgsSnappingConfig.VertexAndSegment:
+    #             return QgsPointLocator.Edge and QgsPointLocator.Vertex
+    #         else:
+    #             return QgsPointLocator.All
 
     @staticmethod
     def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, featureId=None):
         """
         To snap on curved intersections
-        :param mapPoint: the map position
+        :param mapPoint: the XY map position
         :param mapCanvas: the used QgsMapCanvas
         :param mapTool: a QgsMapTool instance
         :param featureId: if we want to snap on a given feature
         :return: intersection point
         """
-        snap_layers = Finder.getLayersSettings(mapCanvas, [QGis.Line, QGis.Polygon, QGis.Point])
+        snap_layers = Finder.getLayersSettings(mapCanvas, [QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry, QgsWkbTypes.PointGeometry])
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         inter = None
         if len(features) > 1:
@@ -307,25 +313,51 @@ class Finder(object):
         return inter
 
     @staticmethod
-    def snap(mapPoint, mapCanvas, layersConfigs=None, mode=None):
-        """
-        To snap on given layers for a given point
-        :param mapPoint: the map position
-        :param mapCanvas: the used QgsMapCanvas
-        :param layersConfigs: the layers in which we are looking for features
-        :param mode: snapping mode
-        :return: snapping match instance
-        """
+    def snapLayersConfigs(mapPoint, mapCanvas, layersConfigs=None):
         snap_util = mapCanvas.snappingUtils()
-        if layersConfigs is not None:
-            old_layers = snap_util.layers()
-            old_mode = snap_util.snapToMapMode()
-            snap_util.setLayers(layersConfigs)
-            if mode is not None:
-                snap_util.setSnapToMapMode(mode)
-            match = snap_util.snapToMap(mapPoint)
-            snap_util.setLayers(old_layers)
-            snap_util.setSnapToMapMode(old_mode)
-        else:
-            match = snap_util.snapToMap(mapPoint)
+        config = snap_util.config()
+        for lay, iConf in config.individualLayerSettings().items():
+            if lay in layersConfigs:
+                iConf.setTolerance(layersConfigs[lay].tolerance)
+                iConf.setType(layersConfigs[lay].type)
+                iConf.setUnits(layersConfigs[lay].units)
+                iConf.setEnabled(True)
+            else:
+                iConf.setEnabled(False)
+            config.setIndividualLayerSettings(lay, iConf)
+        snap_util.setConfig(config)
+        match = snap_util.snapToMap(mapPoint)
+        config.reset()
+        snap_util.setConfig(config)
+        return match
+
+
+    @staticmethod
+    def snapLayers(mapPoint, mapCanvas, layers, sType, tolerance, units):
+        snap_util = mapCanvas.snappingUtils()
+        config = snap_util.config()
+
+        for conf in snap_util.layers():
+            print("a", conf.layer.name())
+        #for lay, iConf in config.individualLayerSettings().items():
+        #    print("1", lay.name(), iConf.enabled())
+        for lay, iConf in config.individualLayerSettings().items():
+            if lay in layers:
+                iConf.setTolerance(tolerance)
+                # iConf.setType(sType)
+                iConf.setUnits(units)
+                iConf.setEnabled(True)
+            else:
+                iConf.setEnabled(False)
+            config.setIndividualLayerSettings(lay, iConf)
+        #for lay, iConf in snap_util.config().individualLayerSettings().items():
+        #    print("2", lay.name(), iConf.enabled())
+        snap_util.setConfig(config)
+        for conf in snap_util.layers():
+            print("b", conf.layer.name(), conf.type, conf.tolerance, conf.unit)
+        #print(config.mode())
+        match = snap_util.snapToMap(mapPoint)
+        config.reset()
+        #print(config.mode())
+        snap_util.setConfig(config)
         return match

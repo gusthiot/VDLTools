@@ -20,18 +20,16 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.core import (QgsWKBTypes,
+from builtins import str
+from qgis.core import (QgsWkbTypes,
+                       Qgis,
                        QgsMapLayer,
-                       QgsSnappingUtils,
-                       QgsTolerance,
-                       QgsPointLocator,
-                       QGis)
-from qgis.gui import (QgsMapTool,
-                      QgsMessageBar)
-from PyQt4.QtCore import (Qt,
-                          QCoreApplication)
-from PyQt4.QtGui import QMessageBox
+                       QgsTolerance)
+from qgis.gui import QgsMapTool
+from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtWidgets import QMessageBox
 from ..core.finder import Finder
+from ..core.geometry_v2 import GeometryV2
 
 
 class PointerTool(QgsMapTool):
@@ -61,25 +59,26 @@ class PointerTool(QgsMapTool):
         When the mouse is clicked
         :param event: mouse event
         """
-        types = [QgsWKBTypes.PointZ, QgsWKBTypes.LineStringZ, QgsWKBTypes.CircularStringZ, QgsWKBTypes.CompoundCurveZ,
-                 QgsWKBTypes.CurvePolygonZ, QgsWKBTypes.PolygonZ]
+        types = [QgsWkbTypes.PointZ, QgsWkbTypes.LineStringZ, QgsWkbTypes.CircularStringZ, QgsWkbTypes.CompoundCurveZ,
+                 QgsWkbTypes.CurvePolygonZ, QgsWkbTypes.PolygonZ]
         display = ""
         for layer in self.canvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and QGis.fromOldWkbType(layer.wkbType()) in types:
-                layerConfig = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, 10, QgsTolerance.Pixels)
-                features = Finder.findFeaturesAt(event.mapPoint(), layerConfig, self)
+            if layer.type() == QgsMapLayer.VectorLayer and GeometryV2.getAdaptedWKB(layer.wkbType()) in types:
+                features = Finder.findFeaturesAt(event.mapPoint(), layer, 10, QgsTolerance.Pixels, self)
                 if len(features) > 0:
                     display += layer.name() + " : \n"
                     for f in features:
-                        if f.geometry().type() == QGis.Point:
-                            alt = f.geometry().geometry().z()
-                        elif f.geometry().type() == QGis.Line:
-                            closest = f.geometry().closestVertex(event.mapPoint())
-                            alt = f.geometry().geometry().zAt(closest[1])
-                        elif f.geometry().type() == QGis.Polygon:
+                        geom = f.geometry()
+                        if geom.type() == QgsWkbTypes.PointGeometry:
+                            alt = geom.get().z()
+                        elif geom.type() == QgsWkbTypes.LineGeometry:
+                            closest = geom.closestVertex(event.mapPoint())
+                            line = geom.get()
+                            alt = line.zAt(closest[1])
+                        elif geom.type() == QgsWkbTypes.PolygonGeometry:
                             self.__iface.messageBar().pushMessage(
                                 QCoreApplication.translate("VDLTools", "Polygon not yet implemented"),
-                                level=QgsMessageBar.WARNING)
+                                level=Qgis.Warning)
                             continue
                         else:
                             continue

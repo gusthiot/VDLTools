@@ -20,46 +20,42 @@
  *                                                                         *
  ***************************************************************************/
 """
-from __future__ import print_function
-from __future__ import division
-from future import standard_library
-from future.builtins import str
-from future.builtins import range
-from math import sqrt, ceil, floor
+from builtins import str
+from builtins import range
+from math import (sqrt,
+                  ceil,
+                  floor)
 from matplotlib import rc
-from past.utils import old_div
-from qgis.core import QgsPoint
-from qgis.gui import (QgsVertexMarker,
-                      QgsMessageBar)
-from PyQt4.QtGui import (QDockWidget,
-                         QVBoxLayout,
-                         QFrame,
-                         QHBoxLayout,
-                         QSpinBox,
-                         QLabel,
-                         QComboBox,
-                         QWidget,
-                         QPushButton,
-                         QPen,
-                         QColor,
-                         QFont,
-                         QPixmap,
-                         QFileDialog,
-                         QSizePolicy,
-                         QPrinter)
-from PyQt4.QtCore import (QSize,
-                          QRectF,
-                          QCoreApplication,
-                          Qt,
-                          pyqtSignal)
+from qgis.core import QgsPoint, Qgis
+from qgis.gui import QgsVertexMarker
+from qgis.PyQt.QtWidgets import (QDockWidget,
+                                 QVBoxLayout,
+                                 QFrame,
+                                 QHBoxLayout,
+                                 QSpinBox,
+                                 QLabel,
+                                 QComboBox,
+                                 QWidget,
+                                 QPushButton,
+                                 QFileDialog,
+                                 QSizePolicy)
+from qgis.PyQt.QtGui import (QPen,
+                             QColor,
+                             QFont,
+                             QPixmap)
+from qgis.PyQt.QtPrintSupport import QPrinter
+from qgis.PyQt.QtCore import (QSize,
+                              QRectF,
+                              QCoreApplication,
+                              Qt,
+                              pyqtSignal)
 import itertools
 import traceback
 import sys
 import json
 import requests
 from ..core.signal import Signal
-from future.moves.urllib.error import (HTTPError,
-                                       URLError)
+from urllib.error import HTTPError, URLError
 
 try:
     from PyQt4.Qwt5.Qwt import (QwtPlot,
@@ -79,8 +75,6 @@ try:
     matplotlib_loaded = True
 except ImportError:
     matplotlib_loaded = False
-
-standard_library.install_aliases()
 
 
 class ProfileDockWidget(QDockWidget):
@@ -115,7 +109,7 @@ class ProfileDockWidget(QDockWidget):
             self.__lib = None
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "No graph lib available (qwt5 or matplotlib)"),
-                level=QgsMessageBar.CRITICAL, duration=0)
+                level=Qgis.Critical, duration=0)
 
         self.__doTracking = False
         self.__vline = None
@@ -394,15 +388,15 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "HTTP Error"),
                 QCoreApplication.translate("VDLTools", "status error") + "[" + str(e.code) + "] : " + e.reason,
-                level=QgsMessageBar.CRITICAL, duration=0)
+                level=Qgis.Critical, duration=0)
         except URLError as e:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "URL Error"),
-                e.reason, level=QgsMessageBar.CRITICAL, duration=0)
+                e.reason, level=Qgis.Critical, duration=0)
         except ValueError as e:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "No MNT values here"),
-                level=QgsMessageBar.CRITICAL, duration=0)
+                level=Qgis.Critical, duration=0)
 
 
     def attachCurves(self, names, settings, usedMnts):
@@ -446,8 +440,8 @@ class ProfileDockWidget(QDockWidget):
                             tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                             for t in range(len(tmp)):
                                 if self.__mntPoints[0][p] == tmp[t].get_gid():
-                                    tmp[c].set_color((old_div(qcol.red(), 255.0), old_div(qcol.green(), 255.0),
-                                                      old_div(qcol.blue(), 255.0), old_div(qcol.alpha(), 255.0)))
+                                    tmp[c].set_color((qcol.red() / 255.0, qcol.green() / 255.0,
+                                                      qcol.blue() / 255.0, qcol.alpha() / 255.0))
                                     self.__plotWdg.draw()
                                     break
                         c += 1
@@ -501,8 +495,8 @@ class ProfileDockWidget(QDockWidget):
                     tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                     for t in range(len(tmp)):
                         if name == tmp[t].get_gid():
-                            tmp[c].set_color((old_div(qcol.red(), 255.0), old_div(qcol.green(), 255.0),
-                                              old_div(qcol.blue(), 255.0), old_div(qcol.alpha(), 255.0)))
+                            tmp[c].set_color((qcol.red() / 255.0, qcol.green() / 255.0,
+                                              qcol.blue() / 255.0, qcol.alpha() / 255.0))
                             self.__plotWdg.draw()
                             break
                 c += 1
@@ -513,7 +507,7 @@ class ProfileDockWidget(QDockWidget):
         except:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Rescale problem... (trace printed)"),
-                level=QgsMessageBar.CRITICAL, duration=0)
+                level=Qgis.Critical, duration=0)
             print(sys.exc_info()[0], traceback.format_exc())
         if self.__lib == 'Qwt5':
             self.__plotWdg.replot()
@@ -663,7 +657,7 @@ class ProfileDockWidget(QDockWidget):
         else:
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "Invalid index ") + str(idx),
-                level=QgsMessageBar.CRITICAL, duration=0)
+                level=Qgis.Critical, duration=0)
 
     def __outPDF(self):
         """
@@ -754,7 +748,7 @@ class ProfileDockWidget(QDockWidget):
             except Exception as e:
                 self.__iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "Tracking exception : ") + str(e),
-                    level=QgsMessageBar.CRITICAL, duration=0)
+                    level=Qgis.Critical, duration=0)
 
     def __mouseevent_mpl(self, event):
         """
@@ -768,7 +762,7 @@ class ProfileDockWidget(QDockWidget):
             except Exception as e:
                 self.__iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "Mouse event exception : ") + str(e),
-                    level=QgsMessageBar.CRITICAL, duration=0)
+                    level=Qgis.Critical, duration=0)
             xdata = float(event.xdata)
             self.__vline = self.__plotWdg.figure.get_axes()[0].axvline(xdata, linewidth=2, color='k')
             self.__plotWdg.draw()

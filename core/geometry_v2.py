@@ -20,17 +20,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import range
-from future.builtins import object
+from builtins import range
+from builtins import object
 
-from PyQt4.QtCore import QCoreApplication
-from qgis.gui import QgsMessageBar
-from qgis.core import (QgsPointV2,
+from qgis.PyQt.QtCore import QCoreApplication
+from qgis.core import (QgsPoint,
+                       Qgis,
+                       QgsWkbTypes,
                        QgsVertexId,
-                       QgsCompoundCurveV2,
-                       QgsLineStringV2,
-                       QgsCurvePolygonV2,
-                       QgsCircularStringV2)
+                       QgsCompoundCurve,
+                       QgsLineString,
+                       QgsCurvePolygon,
+                       QgsCircularString)
 
 
 class GeometryV2(object):
@@ -39,14 +40,22 @@ class GeometryV2(object):
     """
 
     @staticmethod
+    def getAdaptedWKB(type):
+        flat = QgsWkbTypes.flatType(type)
+        if QgsWkbTypes.hasZ(type):
+            return QgsWkbTypes.addZ(flat)
+        else:
+            return flat
+
+    @staticmethod
     def asPolygonV2(geometry, iface):
         """
-        To get the feature geometry from a polygon as a QgsCurvePolygonV2
+        To get the feature geometry from a polygon as a QgsCurvePolygon
         :param geometry: the feature geometry
         :param iface: interface
-        :return: the polygon as QgsCurvePolygonV2 , and true if it has curves or false if it hasn't, or none
+        :return: the polygon as QgsCurvePolygon , and true if it has curves or false if it hasn't, or none
         """
-        wktPolygon = geometry.exportToWkt()
+        wktPolygon = geometry.asWkt()
         curved = []
         if wktPolygon.startswith('PolygonZ'):
             polygon = wktPolygon.replace('PolygonZ', '')
@@ -59,11 +68,11 @@ class GeometryV2(object):
         else:
             iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "This geometry is not yet implemented"),
-                level=QgsMessageBar.WARNING)
+                level=Qgis.Warning)
             return None
         polygon = polygon.strip()[1:-1]
         lines = polygon.split('),')
-        polygonV2 = QgsCurvePolygonV2()
+        polygonV2 = QgsCurvePolygon()
         for i in range(0, len(lines)):
             line = lines[i]
             if line.startswith('CircularStringZ'):
@@ -85,14 +94,14 @@ class GeometryV2(object):
     @staticmethod
     def asLineV2(geometry, iface):
         """
-        To get the feature geometry from a line as a QgsLineStringV2/QgsCircularStringV2
+        To get the feature geometry from a line as a QgsLineString/QgsCircularString
         (as soon as the geometry().geometry() is crashing)
         :param geometry: the feature geometry
         :param iface: interface
-        :return: the line as QgsLineStringV2/QgsCircularStringV2 , and true if it has curves or false if it hasn't,
+        :return: the line as QgsLineString/QgsCircularString , and true if it has curves or false if it hasn't,
         or none
         """
-        wktLine = geometry.exportToWkt()
+        wktLine = geometry.asWkt()
         curved = False
         if wktLine.startswith('LineStringZ'):
             line = wktLine.replace('LineStringZ', '')
@@ -112,11 +121,11 @@ class GeometryV2(object):
             else:
                 iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "This geometry is not yet implemented"),
-                    level=QgsMessageBar.WARNING)
+                    level=Qgis.Warning)
                 return None
             compound = compound.strip()[1:-1]
             lines = compound.split('),')
-            compoundV2 = QgsCompoundCurveV2()
+            compoundV2 = QgsCompoundCurve()
             curved = []
             for i in range(0, len(lines)):
                 line = lines[i]
@@ -143,7 +152,7 @@ class GeometryV2(object):
         To create a new line V2 from a list of points coordinates
         :param tab: list of points coordinates
         :param curved: true if it has curves, false if it hasn't
-        :return: the new line as QgsLineStringV2/QgsCircularStringV2, or none
+        :return: the new line as QgsLineString/QgsCircularString, or none
         """
         if len(tab) < 2:
             return None
@@ -152,22 +161,22 @@ class GeometryV2(object):
             pt_tab = pt.strip().split()
             points.append(GeometryV2.__createPoint(pt_tab))
         if curved:
-            lineV2 = QgsCircularStringV2()
+            lineV2 = QgsCircularString()
         else:
-            lineV2 = QgsLineStringV2()
+            lineV2 = QgsLineString()
         lineV2.setPoints(points)
         return lineV2
 
     @staticmethod
     def asPointV2(geometry, iface):
         """
-        To get the feature geometry from a line as a QgsPointV2
+        To get the feature geometry from a line as a QgsPoint
         (as soon as the geometry().geometry() is crashing)
         :param geometry: the feature geometry
         :param iface: interface
-        :return: the point as QgsPointV2, or none
+        :return: the point as QgsPoint, or none
         """
-        wktPoint = geometry.exportToWkt()
+        wktPoint = geometry.asWkt()
         if wktPoint.startswith('PointZ'):
             point = wktPoint.replace('PointZ', '')
         elif wktPoint.startswith('Point'):
@@ -175,7 +184,7 @@ class GeometryV2(object):
         else:
             iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "This geometry is not yet implemented"),
-                level=QgsMessageBar.WARNING)
+                level=Qgis.Warning)
             return None
         point = point.strip()[1:-1]
         pt_tab = point.strip().split()
@@ -184,11 +193,11 @@ class GeometryV2(object):
     @staticmethod
     def __createPoint(tab):
         """
-        To create a new QGSPointV2 from coordinates
+        To create a new QGSPoint from coordinates
         :param tab: coordinates
-        :return: QGSPointV2
+        :return: QGSPoint
         """
-        pointV2 = QgsPointV2(float(tab[0]), float(tab[1]))
+        pointV2 = QgsPoint(float(tab[0]), float(tab[1]))
         if len(tab) > 2:
             pointV2.addZValue(float(tab[2]))
         if len(tab) > 3:

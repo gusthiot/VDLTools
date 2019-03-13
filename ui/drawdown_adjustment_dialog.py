@@ -20,17 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import str
-from future.builtins import range
+from builtins import str
+from builtins import range
 
-from PyQt4.QtGui import (QDialog,
-                         QWidget,
-                         QScrollArea,
-                         QGridLayout,
-                         QPushButton,
-                         QLabel,
-                         QCheckBox)
-from PyQt4.QtCore import QCoreApplication
+from qgis.PyQt.QtWidgets import QDialog, QWidget, QScrollArea, QGridLayout, QPushButton, QLabel, QCheckBox
+from qgis.PyQt.QtCore import QCoreApplication
 
 
 class DrawdownAdjustmentDialog(QDialog):
