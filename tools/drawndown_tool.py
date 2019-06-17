@@ -352,7 +352,7 @@ class DrawdownTool(QgsMapTool):
 
             dd = None
             if drawdown:
-                dd = QCoreApplication.translate("VDLTools", "dradown")
+                dd = QCoreApplication.translate("VDLTools", "drawdown")
             self.__altitudes.append({'diam': diam, 'drawdown': dd, 'alt': alt})
 
         last = len(self.__altitudes)-1
@@ -360,11 +360,29 @@ class DrawdownTool(QgsMapTool):
         for i in range(len(self.__altitudes)):
             if self.__altitudes[i]['alt'] is None:
                 if 0 < i < last:
-                    prev_alt = self.__altitudes[i-1]['alt']
-                    next_alt = self.__altitudes[i+1]['alt']
-                    if prev_alt is not None and next_alt is not None:
-                        prev_pt = self.__points[i-1]
-                        next_pt = self.__points[i+1]
+                    av = None
+                    j = 1
+                    while True:
+                        if i-j < 0:
+                            break
+                        if self.__altitudes[i-j]['alt'] != 0:
+                            av = j
+                            break
+                        j += 1
+                    ap = None
+                    j = 1
+                    while True:
+                        if i+j > len(self.__points)-1:
+                            break
+                        if self.__altitudes[i+j]['alt'] != 0:
+                            ap = j
+                            break
+                        j += 1
+                    if av is not None and ap is not None:
+                        prev_alt = self.__altitudes[i-av]['alt']
+                        next_alt = self.__altitudes[i+ap]['alt']
+                        prev_pt = self.__points[i-av]
+                        next_pt = self.__points[i+ap]
                         pt = self.__points[i]
                         d0 = Finder.sqrDistForCoords(pt['x'], prev_pt['x'], pt['y'], prev_pt['y'])
                         d1 = Finder.sqrDistForCoords(next_pt['x'], pt['x'], next_pt['y'], pt['y'])
