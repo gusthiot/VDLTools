@@ -158,6 +158,7 @@ class ProfileTool(QgsMapTool):
         self.__confDlg = None
         self.__zeroDlg = None
         self.__isChoosed = False
+        self.__iface.mapCanvas().refreshAllLayers()
 
     def setEnable(self, layer):
         """
@@ -447,7 +448,6 @@ class ProfileTool(QgsMapTool):
         for i in range(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
-        self.__lineLayer.updateExtents()
         self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
@@ -493,7 +493,6 @@ class ProfileTool(QgsMapTool):
         for i in range(len(lines)):
             geom = QgsGeometry(lines[i].clone())
             self.__lineLayer.changeGeometry(self.__selectedIds[i], geom)
-        self.__lineLayer.updateExtents()
         self.__dockWdg.clearData()
         self.__lineVertices()
         self.__createProfile()
@@ -555,7 +554,6 @@ class ProfileTool(QgsMapTool):
         if not layer.isEditable():
             layer.startEditing()
         layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
-        layer.updateExtents()
 
     def __onLayCancel(self):
         """
