@@ -46,6 +46,7 @@ from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
 from ..ui.profile_confirm_dialog import ProfileConfirmDialog
 from ..ui.profile_zeros_dialog import ProfileZerosDialog
+from ..ui.profile_force_dialog import ProfileForceDialog
 
 
 class ProfileTool(QgsMapTool):
@@ -75,6 +76,7 @@ class ProfileTool(QgsMapTool):
         self.__msgDlg = None
         self.__confDlg = None
         self.__zeroDlg = None
+        self.__forceDlg = None
         self.__points = None
         self.__layers = None
         self.__features = None
@@ -157,6 +159,7 @@ class ProfileTool(QgsMapTool):
         self.__msgDlg = None
         self.__confDlg = None
         self.__zeroDlg = None
+        self.__forceDlg = None
         self.__isChoosed = False
         self.__iface.mapCanvas().refreshAllLayers()
 
@@ -304,7 +307,8 @@ class ProfileTool(QgsMapTool):
             alts.append(alt)
             nb_not_none.append(nb)
 
-        zeros = []
+        self.__zeros = []
+        self.__extras = []
         for i in range(len(self.__points)):
             if alts[i] == 0:
                 if i == 0:
@@ -327,17 +331,18 @@ class ProfileTool(QgsMapTool):
                             break
                         j += 1
                     if ap is None or app is None:
-                        zeros.append([i, None, None])
+                        self.__zeros.append([i, None, None, None])
                     else:
                         big_d = Finder.sqrDistForCoords(self.__points[ap]['x'], self.__points[app]['x'],
                                                         self.__points[ap]['y'], self.__points[app]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
                                                           self.__points[i]['y'], self.__points[ap]['y'])
+                        zextra = alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app])
                         if small_d < (old_div(big_d, 4)):
-                            zextra = alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app])
-                            zeros.append([i, zextra, nb_not_none[i]])
+                            self.__zeros.append([i, zextra, nb_not_none[i], 'E'])
                         else:
-                            zeros.append([i, None, None])
+                            self.__zeros.append([i, None, None, 'E'])
+                            self.__extras.append([i, zextra, len(self.__zeros)-1, nb_not_none[i]])
                 elif i == len(self.__points)-1:
                     av = None
                     avv = None
@@ -358,17 +363,18 @@ class ProfileTool(QgsMapTool):
                             break
                         j += 1
                     if av is None or avv is None:
-                        zeros.append([i, None, None])
+                        self.__zeros.append([i, None, None, None])
                     else:
                         big_d = Finder.sqrDistForCoords(self.__points[i-av]['x'], self.__points[i-avv]['x'],
                                                         self.__points[i-av]['y'], self.__points[i-avv]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
                                                           self.__points[i]['y'], self.__points[i-av]['y'])
+                        zextra = alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv])
                         if small_d < (old_div(big_d, 4)):
-                            zextra = alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv])
-                            zeros.append([i, zextra, nb_not_none[i]])
+                            self.__zeros.append([i, zextra, nb_not_none[i], 'E'])
                         else:
-                            zeros.append([i, None, None])
+                            self.__zeros.append([i, None, None, 'E'])
+                            self.__extras.append([i, zextra, len(self.__zeros)-1, nb_not_none[i]])
                 else:
                     av = None
                     j = 1
@@ -389,7 +395,7 @@ class ProfileTool(QgsMapTool):
                             break
                         j += 1
                     if av is None or ap is None:
-                        zeros.append([i, None, None])
+                        self.__zeros.append([i, None, None, None])
                     else:
                         d0 = Finder.sqrDistForCoords(
                             self.__points[i-av]['x'], self.__points[i]['x'], self.__points[i-av]['y'],
@@ -398,9 +404,49 @@ class ProfileTool(QgsMapTool):
                             self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'],
                             self.__points[i]['y'])
                         zinter = old_div((d0*alts[i+ap] + d1*alts[i-av]), (d0 + d1))
-                        zeros.append([i, zinter, nb_not_none[i]])
-        if len(zeros) > 0:
-            self.__zeroDlg = ProfileZerosDialog(zeros)
+                        self.__zeros.append([i, zinter, nb_not_none[i], 'I'])
+
+        if len(self.__extras) == 0:
+            self.__setZerosDialog()
+        else:
+            self.__checkForceExtrapolation()
+
+    def __checkForceExtrapolation(self):
+        """
+        To ask for forcing extrapolation
+        """
+        message = ""
+        for extra in self.__extras:
+            message += str(extra[0]) + ") " + \
+                       QCoreApplication.translate("VDLTools",
+                                                  "The segment is too big, do you really want "
+                                                  "to extrapolate anyway ? (elevation : ") + \
+                       str(extra[1]) + "m) ? \n"
+        self.__forceDlg = ProfileForceDialog(message)
+        self.__forceDlg.okButton().clicked.connect(self.__onForceOk)
+        self.__forceDlg.cancelButton().clicked.connect(self.__onForceCancel)
+        self.__forceDlg.show()
+
+    def __onForceOk(self):
+        """
+        When the Ok button in Profile Force Dialog is pushed
+        """
+        self.__forceDlg.accept()
+        for extra in self.__extras:
+            self.__zeros[extra[2]] = [extra[0], extra[1], extra[3], 'E']
+        self.__setZerosDialog()
+
+    def __onForceCancel(self):
+        """
+        When the Cancel button in Profile Force Dialog is pushed
+        """
+        self.__confDlg.reject()
+        self.__setZerosDialog()
+
+    def __setZerosDialog(self):
+
+        if len(self.__zeros) > 0:
+            self.__zeroDlg = ProfileZerosDialog(self.__zeros)
             self.__zeroDlg.rejected.connect(self.__cancel)
             self.__zeroDlg.passButton().clicked.connect(self.__onZeroPass)
             self.__zeroDlg.applyButton().clicked.connect(self.__onZeroApply)

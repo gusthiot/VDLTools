@@ -57,7 +57,11 @@ class ProfileZerosDialog(QDialog):
             msg = "- vertex " + str(self.__zeros[i][0])
             msg += QCoreApplication.translate("VDLTools", ", elevation : '0', ")
             if self.__zeros[i][1] is not None:
-                msg += QCoreApplication.translate("VDLTools", "interpolated elevation : ")
+                print(self.__zeros[i])
+                if self.__zeros[i][3] == 'E':
+                    msg += QCoreApplication.translate("VDLTools", "extrapolated elevation : ")
+                else:
+                    msg += QCoreApplication.translate("VDLTools", "interpolated elevation : ")
                 msg += str(self.__zeros[i][1]) + "m"
                 if self.__zeros[i][2] > 1:
                     msg += QCoreApplication.translate("VDLTools", " (and apply to point)")
@@ -67,7 +71,11 @@ class ProfileZerosDialog(QDialog):
                 self.__scrollLayout.addWidget(self.__zeroChecks[i], i+1, 2)
                 displayButton = True
             else:
-                msg += QCoreApplication.translate("VDLTools", "no interpolated elevation")
+                print(self.__zeros[i])
+                if self.__zeros[i][3] == 'E':
+                    msg += QCoreApplication.translate("VDLTools", "no extrapolated elevation")
+                else:
+                    msg += QCoreApplication.translate("VDLTools", "no interpolated elevation")
                 self.__zeroChecks.append(None)
 
             zeroLabel = QLabel(msg)
@@ -90,7 +98,7 @@ class ProfileZerosDialog(QDialog):
         pos = len(self.__zeros) + 1
         self.__layout.addWidget(self.__passButton, pos, 0)
 
-        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply interpolation"))
+        self.__applyButton = QPushButton(QCoreApplication.translate("VDLTools", "Apply adjustments"))
         self.__applyButton.setMinimumHeight(20)
         self.__applyButton.setMinimumWidth(100)
         if displayButton:
