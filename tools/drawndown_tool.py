@@ -348,7 +348,7 @@ class DrawdownTool(QgsMapTool):
                 else:
                     alt = level
             else:
-                alt = None
+                alt = 0
 
             dd = None
             if drawdown:
@@ -358,7 +358,7 @@ class DrawdownTool(QgsMapTool):
         last = len(self.__altitudes)-1
         self.__extras = []
         for i in range(len(self.__altitudes)):
-            if self.__altitudes[i]['alt'] is None:
+            if self.__altitudes[i]['alt'] is 0:
                 if 0 < i < last:
                     av = None
                     j = 1
