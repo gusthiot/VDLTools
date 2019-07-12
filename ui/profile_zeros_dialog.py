@@ -57,7 +57,6 @@ class ProfileZerosDialog(QDialog):
             msg = "- vertex " + str(self.__zeros[i][0])
             msg += QCoreApplication.translate("VDLTools", ", elevation : '0', ")
             if self.__zeros[i][1] is not None:
-                print(self.__zeros[i])
                 if self.__zeros[i][3] == 'E':
                     msg += QCoreApplication.translate("VDLTools", "extrapolated elevation : ")
                 else:
@@ -71,7 +70,6 @@ class ProfileZerosDialog(QDialog):
                 self.__scrollLayout.addWidget(self.__zeroChecks[i], i+1, 2)
                 displayButton = True
             else:
-                print(self.__zeros[i])
                 if self.__zeros[i][3] == 'E':
                     msg += QCoreApplication.translate("VDLTools", "no extrapolated elevation")
                 else:

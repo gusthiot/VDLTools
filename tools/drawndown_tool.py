@@ -198,17 +198,16 @@ class DrawdownTool(QgsMapTool):
             z = pt['z']
 
             for layer in self.__layers:
-                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-                                                  self.canvas(), [laySettings])
-                if f_l is None:
+                feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
+                if feat is None:
                     z.append(None)
                 else:
                     if layer == self.ownSettings.drawdownLayer:
                         f_ok = None
-                        if f_l[0].id() not in self.__selectedIds:
-                            f_ok = f_l[0]
+                        if feat.id() not in self.__selectedIds:
+                            f_ok = feat
                         else:
                             fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                             for f in fs:
@@ -228,7 +227,7 @@ class DrawdownTool(QgsMapTool):
                         else:
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        zp = GeometryV2.asPointV2(feat.geometry(), self.__iface).z()
                         if zp is None or zp != zp:
                             zp = 0
                         z.append(zp)
@@ -252,12 +251,10 @@ class DrawdownTool(QgsMapTool):
             drawdown = False
             level = None
             for layer in self.ownSettings.refLayers:
-                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-                                                  self.canvas(), [laySettings])
-                if f_l is not None:
-                    feature = f_l[0]
+                feature = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
+                if feature is not None:
                     point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
                     if point_v2.z() > 0:
                         if level is not None:
@@ -277,7 +274,7 @@ class DrawdownTool(QgsMapTool):
                         comp = QCoreApplication.translate("VDLTools", " (no elevation)")
 
                     self.__adjustments.append({'point': p, 'previous': point_v2.z(), 'line': False,
-                                               'layer': f_l[1], 'comp': comp, 'feature': f_l[0], 'delta': False})
+                                               'layer': layer, 'comp': comp, 'feature': feature, 'delta': False})
             diam = 0
             for i in range(num_lines):
                 if z[i] is None:
@@ -297,17 +294,16 @@ class DrawdownTool(QgsMapTool):
                                            'layer': self.ownSettings.drawdownLayer, 'feature': selected, 'delta': True})
 
             for layer in self.__layers:
-                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-                                                  self.canvas(), [laySettings])
-                if f_l is None:
+                feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
+                if feat is None:
                     z.append(None)
                 else:
                     if layer == self.ownSettings.drawdownLayer:
                         f_ok = None
-                        if f_l[0].id() not in self.__selectedIds:
-                            f_ok = f_l[0]
+                        if feat.id() not in self.__selectedIds:
+                            f_ok = feat
                         else:
                             fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                             for f in fs:
@@ -326,7 +322,7 @@ class DrawdownTool(QgsMapTool):
                                 diam = dtemp
                             self.__adjustments.append({'point': p, 'previous': zp, 'line': False,
                                                        'comp': QCoreApplication.translate("VDLTools", " connected"),
-                                                       'feature': f_ok, 'layer': f_l[1], 'delta': True})
+                                                       'feature': f_ok, 'layer': layer, 'delta': True})
                             if zp is None or zp != zp:
                                 z.append(0)
                             else:
@@ -334,13 +330,13 @@ class DrawdownTool(QgsMapTool):
                         else:
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        zp = GeometryV2.asPointV2(feat.geometry(), self.__iface).z()
                         if zp is None or zp != zp:
                             zp = 0
                         z.append(zp)
                         if layer in self.ownSettings.adjLayers:
                             self.__adjustments.append({'point': p, 'previous': zp, 'line': False,
-                                                       'layer': f_l[1], 'feature': f_l[0], 'delta': True})
+                                                       'layer': layer, 'feature': feat, 'delta': True})
 
             if level is not None:
                 if drawdown:
@@ -525,15 +521,10 @@ class DrawdownTool(QgsMapTool):
                     lines[id_f] = line_v2
                 line = lines[id_f]
                 i = 0
-                print(self.__selectedIds)
                 for iden in self.__selectedIds:
-                    print(str(iden) + " =? " + str(id_f))
                     if iden == id_f:
                         break
                     i += 1
-                print("point : " + str(adj['point']))
-                print("i : " + str(i))
-                print(self.__selectedStarts)
                 index = adj['point']-self.__selectedStarts[i]
                 if not self.__selectedDirections[i]:
                     index = line.numPoints()-1-index
@@ -644,15 +635,15 @@ class DrawdownTool(QgsMapTool):
                         for layer in combinedLayers:
                             if layer in otherLayers:
                                 continue
-                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
-                                                                       QgsTolerance.LayerUnits)
-                            f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-                                                              self.canvas(), [laySettings])
+                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All,
+                                                                       self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits)
+                            feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings,
+                                                              self)
 
-                            if f_l is not None:
+                            if feat is not None:
                                 if layer == self.ownSettings.drawdownLayer:
                                     other = False
-                                    if f_l[0].id() not in self.__selectedIds:
+                                    if feat.id() not in self.__selectedIds:
                                         other = True
                                     else:
                                         fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
@@ -717,27 +708,27 @@ class DrawdownTool(QgsMapTool):
             if self.ownSettings.drawdownLayer is not None:
                 laySettings = QgsSnappingUtils.LayerConfig(self.ownSettings.drawdownLayer, QgsPointLocator.All, 10,
                                                            QgsTolerance.Pixels)
-                f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
+                feat = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
                 if not self.__inSelection:
-                    if f_l is not None and self.__lastFeatureId != f_l[0].id():
-                        self.__lastFeature = f_l[0]
-                        self.__lastFeatureId = f_l[0].id()
-                        self.ownSettings.drawdownLayer.setSelectedFeatures([f_l[0].id()])
-                    if f_l is None:
+                    if feat is not None and self.__lastFeatureId != feat.id():
+                        self.__lastFeature = feat
+                        self.__lastFeatureId = feat.id()
+                        self.ownSettings.drawdownLayer.setSelectedFeatures([feat.id()])
+                    if feat is None:
                         self.__cancel()
                 else:
-                    if f_l is not None and (self.__selectedIds is None or f_l[0].id() not in self.__selectedIds):
-                        line = f_l[0].geometry().asPolyline()
+                    if feat is not None and (self.__selectedIds is None or feat.id() not in self.__selectedIds):
+                        line = feat.geometry().asPolyline()
                         if self.__contains(line, self.__endVertex) > -1:
-                            self.__lastFeature = f_l[0]
-                            self.__lastFeatureId = f_l[0].id()
-                            features = self.__selectedIds + [f_l[0].id()]
+                            self.__lastFeature = feat
+                            self.__lastFeatureId = feat.id()
+                            features = self.__selectedIds + [feat.id()]
                             self.ownSettings.drawdownLayer.setSelectedFeatures(features)
 
                         elif self.__contains(line, self.__startVertex) > -1:
-                            self.__lastFeature = f_l[0]
-                            self.__lastFeatureId = f_l[0].id()
-                            features = self.__selectedIds + [f_l[0].id()]
+                            self.__lastFeature = feat
+                            self.__lastFeatureId = feat.id()
+                            features = self.__selectedIds + [feat.id()]
                             self.ownSettings.drawdownLayer.setSelectedFeatures(features)
 
                         else:
@@ -745,7 +736,7 @@ class DrawdownTool(QgsMapTool):
                             self.__lastFeatureId = None
                             self.__lastFeature = None
 
-                if f_l is None:
+                if feat is None:
                     if self.__selectedIds is not None:
                         self.ownSettings.drawdownLayer.setSelectedFeatures(self.__selectedIds)
                     self.__lastFeatureId = None

@@ -161,7 +161,6 @@ class ProfileTool(QgsMapTool):
         self.__zeroDlg = None
         self.__forceDlg = None
         self.__isChoosed = False
-        self.__iface.mapCanvas().refreshAllLayers()
 
     def setEnable(self, layer):
         """
@@ -679,15 +678,15 @@ class ProfileTool(QgsMapTool):
                         for layer in availableLayers:
                             if layer in otherLayers:
                                 continue
-                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
-                                                                       QgsTolerance.LayerUnits)
-                            f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)),
-                                                              self.canvas(), [laySettings])
+                            laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All,
+                                                                       self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits)
+                            feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings,
+                                                              self)
 
-                            if f_l is not None:
+                            if feat is not None:
                                 if layer == self.__lineLayer:
                                     other = False
-                                    if f_l[0].id() not in self.__selectedIds:
+                                    if feat.id() not in self.__selectedIds:
                                         other = True
                                     else:
                                         fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
@@ -734,28 +733,27 @@ class ProfileTool(QgsMapTool):
             y = points['y']
             z = points['z']
             for layer in self.__layers:
-                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.Vertex, self.SEARCH_TOLERANCE,
+                laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-                f_l = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), self.canvas(),
-                                                  [laySettings])
-                if f_l is None:
+                feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
+                if feat is None:
                     feat.append(None)
                     z.append(None)
                 else:
-                    if f_l[1].geometryType() == QGis.Polygon:
-                        closest = f_l[0].geometry().closestVertex(QgsPoint(x, y))
-                        polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry(), self.__iface)
+                    if layer.geometryType() == QGis.Polygon:
+                        closest = feat.geometry().closestVertex(QgsPoint(x, y))
+                        polygon_v2, curved = GeometryV2.asPolygonV2(feat.geometry(), self.__iface)
                         zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
-                        feat.append(f_l[0])
+                        feat.append(feat)
                         if zp is None or zp != zp:
                             z.append(0)
                         else:
                             z.append(zp)
-                    elif f_l[1].geometryType() == QGis.Line:
+                    elif layer.geometryType() == QGis.Line:
                         f_ok = None
                         if layer == self.__lineLayer:
-                            if f_l[0].id() not in self.__selectedIds:
-                                f_ok = f_l[0]
+                            if feat.id() not in self.__selectedIds:
+                                f_ok = feat
                             else:
                                 fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                                 for f in fs:
@@ -765,7 +763,7 @@ class ProfileTool(QgsMapTool):
                                             f_ok = f
                                             break
                         else:
-                            f_ok = f_l[0]
+                            f_ok = feat
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
                             feat.append(f_ok)
@@ -779,8 +777,8 @@ class ProfileTool(QgsMapTool):
                             feat.append(None)
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
-                        feat.append(f_l[0])
+                        zp = GeometryV2.asPointV2(feat.geometry(), self.__iface).z()
+                        feat.append(feat)
                         if zp is None or zp != zp:
                             z.append(0)
                         else:
@@ -835,27 +833,27 @@ class ProfileTool(QgsMapTool):
             if self.__lineLayer is not None:
                 laySettings = QgsSnappingUtils.LayerConfig(self.__lineLayer, QgsPointLocator.All, 10,
                                                            QgsTolerance.Pixels)
-                f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
+                feat = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
                 if not self.__inSelection:
-                    if f_l is not None and self.__lastFeatureId != f_l[0].id():
-                        self.__lastFeature = f_l[0]
-                        self.__lastFeatureId = f_l[0].id()
-                        self.__lineLayer.setSelectedFeatures([f_l[0].id()])
-                    if f_l is None:
+                    if feat is not None and self.__lastFeatureId != feat.id():
+                        self.__lastFeature = feat
+                        self.__lastFeatureId = feat.id()
+                        self.__lineLayer.setSelectedFeatures([feat.id()])
+                    if feat is None:
                         self.__cancel()
                 else:
-                    if f_l is not None and (self.__selectedIds is None or f_l[0].id() not in self.__selectedIds):
-                        line = f_l[0].geometry().asPolyline()
+                    if feat is not None and (self.__selectedIds is None or feat.id() not in self.__selectedIds):
+                        line = feat.geometry().asPolyline()
                         if self.__contains(line, self.__endVertex) > -1:
-                            self.__lastFeature = f_l[0]
-                            self.__lastFeatureId = f_l[0].id()
-                            features = self.__selectedIds + [f_l[0].id()]
+                            self.__lastFeature = feat
+                            self.__lastFeatureId = feat.id()
+                            features = self.__selectedIds + [feat.id()]
                             self.__lineLayer.setSelectedFeatures(features)
 
                         elif self.__contains(line, self.__startVertex) > -1:
-                            self.__lastFeature = f_l[0]
-                            self.__lastFeatureId = f_l[0].id()
-                            features = self.__selectedIds + [f_l[0].id()]
+                            self.__lastFeature = feat
+                            self.__lastFeatureId = feat.id()
+                            features = self.__selectedIds + [feat.id()]
                             self.__lineLayer.setSelectedFeatures(features)
 
                         else:
@@ -863,7 +861,7 @@ class ProfileTool(QgsMapTool):
                             self.__lastFeatureId = None
                             self.__lastFeature = None
 
-                if f_l is None:
+                if feat is None:
                     if self.__selectedIds is not None:
                         self.__lineLayer.setSelectedFeatures(self.__selectedIds)
                     self.__lastFeatureId = None

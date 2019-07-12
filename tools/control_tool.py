@@ -120,7 +120,6 @@ class ControlTool(AreaTool):
         where_part = """WHERE ST_Intersects(geometry3d,ST_GeomFromText('%s',%s))""" \
                      % (self.geom().exportToWkt(), str(self.__crs))
         request = select_part + from_part + where_part
-        print(request)
         self.__querying(request, layer_name, fNames)
 
     def __querying(self, request, layer_name, fNames):
@@ -146,7 +145,6 @@ class ControlTool(AreaTool):
                     atts.append(query.value(2*i+2))
                     fTypes.append(query.value(2*i+3))
                 attributes.append(atts)
-            print(len(geometries))
             if len(geometries) > 0:
                 self.__createMemoryLayer(layer_name, gtype, geometries, attributes, fNames, fTypes)
 

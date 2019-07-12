@@ -218,7 +218,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             map_point = event.mapPoint()
 
         if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureAt(map_point, self.canvas(), self.__layerList)
+            f_l = Finder.findClosestFeatureLayersAt(map_point, self.__layerList, self)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]

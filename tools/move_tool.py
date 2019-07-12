@@ -334,11 +334,11 @@ class MoveTool(QgsMapToolAdvancedDigitizing):
         if not self.__isEditing and not self.__findVertex and not self.__onMove:
             laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
                                                        QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(map_point, self.canvas(), [laySettings])
-            if f_l is not None and self.__lastFeatureId != f_l[0].id():
-                self.__lastFeatureId = f_l[0].id()
-                self.__layer.setSelectedFeatures([f_l[0].id()])
-            if f_l is None:
+            feat = Finder.findClosestFeatureAt(map_point, laySettings, self)
+            if feat is not None and self.__lastFeatureId != feat.id():
+                self.__lastFeatureId = feat.id()
+                self.__layer.setSelectedFeatures([feat.id()])
+            if feat is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
         elif self.__findVertex:

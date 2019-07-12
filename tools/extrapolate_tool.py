@@ -171,14 +171,13 @@ class ExtrapolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
-                                                       QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
-            if f_l is not None:
-                self.__lastFeatureId = f_l[0].id()
-                self.__layer.setSelectedFeatures([f_l[0].id()])
+            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10, QgsTolerance.Pixels)
+            feat = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
+            if feat is not None:
+                self.__lastFeatureId = feat.id()
+                self.__layer.setSelectedFeatures([feat.id()])
                 self.__rubber.reset()
-                geom = f_l[0].geometry()
+                geom = feat.geometry()
                 index = geom.closestVertex(event.mapPoint())[1]
                 line_v2, curved = GeometryV2.asLineV2(geom, self.__iface)
                 num_p = line_v2.numPoints()

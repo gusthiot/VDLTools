@@ -373,13 +373,12 @@ class DuplicateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10,
-                                                       QgsTolerance.Pixels)
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [laySettings])
-            if f_l is not None and self.__lastFeatureId != f_l[0].id():
-                self.__lastFeatureId = f_l[0].id()
-                self.__layer.setSelectedFeatures([f_l[0].id()])
-            if f_l is None:
+            laySettings = QgsSnappingUtils.LayerConfig(self.__layer, QgsPointLocator.All, 10, QgsTolerance.Pixels)
+            feat = Finder.findClosestFeatureAt(event.mapPoint(), laySettings, self)
+            if feat is not None and self.__lastFeatureId != feat.id():
+                self.__lastFeatureId = feat.id()
+                self.__layer.setSelectedFeatures([feat.id()])
+            if feat is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None
 

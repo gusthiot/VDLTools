@@ -45,23 +45,6 @@ class Finder(object):
     """
 
     @staticmethod
-    def findClosestFeatureAt(mapPoint, mapCanvas, layersConfigs=None):
-        """
-        To find closest feature from a given position in given layers
-        :param mapPoint: the map position
-        :param mapCanvas: the used QgsMapCanvas
-        :param layersConfig: the layers in which we are looking for features
-        :return: feature found in layers
-        """
-        match = Finder.snap(mapPoint, mapCanvas, layersConfigs, QgsSnappingUtils.SnapAdvanced)
-        if match.featureId() is not None and match.layer() is not None:
-            feature = QgsFeature()
-            match.layer().getFeatures(QgsFeatureRequest().setFilterFid(match.featureId())).nextFeature(feature)
-            return [feature, match.layer()]
-        else:
-            return None
-
-    @staticmethod
     def sqrDistForPoints(pt1, pt2):
         """
         To calculate the distance between 2 points
@@ -84,26 +67,68 @@ class Finder(object):
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     @staticmethod
-    def findFeaturesLayersAt(mapPoint, layersConfig, mapTool):
+    def findClosestFeatureLayersAt(mapPoint, layersConfigs, mapTool):
+        """
+        To find closest feature from a given position in given layers
+        :param mapPoint: the map position
+        :param layersConfigs: the layers in which we are looking for features
+        :param mapTool: a QgsMapTool instance
+        :return: feature found in layers
+        """
+        features = []
+        for layerConfig in layersConfigs:
+            feat = Finder.findClosestFeatureAt(mapPoint, layerConfig, mapTool)
+            if feat is not None:
+                features.append([feat, layerConfig.layer])
+        miniV = 9999
+        miniI = -1
+        i = 0
+        for f_l in features:
+            geom = f_l[0].geometry()
+            closest = geom.closestVertex(mapPoint)
+            dist = mapPoint.sqrDist(closest[0])
+            if dist < miniV:
+                miniV = dist
+                miniI = i
+            i += 1
+        if miniI > -1:
+            return features[miniI]
+        else:
+            return None
+
+    @staticmethod
+    def findFeaturesLayersAt(mapPoint, layersConfigs, mapTool):
         """
         To find features from a given position in given layers
         :param mapPoint: the map position
-        :param layersConfig: the layers in which we are looking for features
+        :param layersConfigs: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
         :return: features found in layers
         """
         features = []
-        for layerConfig in layersConfig:
+        for layerConfig in layersConfigs:
             features += Finder.findFeaturesAt(mapPoint, layerConfig, mapTool)
         return features
 
     @staticmethod
-    def findFeaturesAt(mapPoint, layerConfig, mapTool):
+    def findClosestFeatureAt(mapPoint, layerConfig, mapTool):
+        """
+        To find closest feature from a given position in a given layer
+        :param mapPoint: the map position
+        :param layerConfig: the layer in which we are looking for features
+        :param mapTool: a QgsMapTool instance
+        :return: feature found in layer
+        """
+        return Finder.findFeaturesAt(mapPoint, layerConfig, mapTool, True)
+
+    @staticmethod
+    def findFeaturesAt(mapPoint, layerConfig, mapTool, closest=False):
         """
         To find features from a given position in a given layer
         :param mapPoint: the map position
         :param layerConfig: the layer in which we are looking for features
         :param mapTool: a QgsMapTool instance
+        :param closest: if we only want the one closest feature
         :return: features found in layer
         """
         if layerConfig is None:
@@ -122,15 +147,23 @@ class Finder(object):
         request = QgsFeatureRequest()
         request.setFilterRect(searchRect)
         request.setFlags(QgsFeatureRequest.ExactIntersect)
-        features = []
-        for feature in layerConfig.layer.getFeatures(request):
-            if layerConfig.layer.geometryType() == QGis.Polygon:
-                dist, nearest, vertex = feature.geometry().closestSegmentWithContext(mapPoint)
-                if QgsGeometry.fromPoint(nearest).intersects(searchRect):
+        if closest:
+            for feature in layerConfig.layer.getFeatures(request):
+                if layerConfig.layer.geometryType() == QGis.Polygon:
+                    dist, nearest, vertex = feature.geometry().closestSegmentWithContext(mapPoint)
+                    if not QgsGeometry.fromPoint(nearest).intersects(searchRect):
+                        return None
+                return QgsFeature(feature)
+        else:
+            features = []
+            for feature in layerConfig.layer.getFeatures(request):
+                if layerConfig.layer.geometryType() == QGis.Polygon:
+                    dist, nearest, vertex = feature.geometry().closestSegmentWithContext(mapPoint)
+                    if QgsGeometry.fromPoint(nearest).intersects(searchRect):
+                        features.append(QgsFeature(feature))
+                else:
                     features.append(QgsFeature(feature))
-            else:
-                features.append(QgsFeature(feature))
-        return features
+            return features
 
     @staticmethod
     def calcCanvasTolerance(pixPoint, layer, mapTool, distance):
