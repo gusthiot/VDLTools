@@ -735,16 +735,16 @@ class ProfileTool(QgsMapTool):
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-                feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
-                if feat is None:
+                found = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
+                if found is None:
                     feat.append(None)
                     z.append(None)
                 else:
                     if layer.geometryType() == QGis.Polygon:
-                        closest = feat.geometry().closestVertex(QgsPoint(x, y))
-                        polygon_v2, curved = GeometryV2.asPolygonV2(feat.geometry(), self.__iface)
+                        closest = found.geometry().closestVertex(QgsPoint(x, y))
+                        polygon_v2, curved = GeometryV2.asPolygonV2(found.geometry(), self.__iface)
                         zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
-                        feat.append(feat)
+                        feat.append(found)
                         if zp is None or zp != zp:
                             z.append(0)
                         else:
@@ -752,8 +752,8 @@ class ProfileTool(QgsMapTool):
                     elif layer.geometryType() == QGis.Line:
                         f_ok = None
                         if layer == self.__lineLayer:
-                            if feat.id() not in self.__selectedIds:
-                                f_ok = feat
+                            if found.id() not in self.__selectedIds:
+                                f_ok = found
                             else:
                                 fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                                 for f in fs:
@@ -763,7 +763,7 @@ class ProfileTool(QgsMapTool):
                                             f_ok = f
                                             break
                         else:
-                            f_ok = feat
+                            f_ok = found
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
                             feat.append(f_ok)
@@ -777,8 +777,8 @@ class ProfileTool(QgsMapTool):
                             feat.append(None)
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(feat.geometry(), self.__iface).z()
-                        feat.append(feat)
+                        zp = GeometryV2.asPointV2(found.geometry(), self.__iface).z()
+                        feat.append(found)
                         if zp is None or zp != zp:
                             z.append(0)
                         else:
