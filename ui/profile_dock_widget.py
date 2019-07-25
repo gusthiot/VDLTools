@@ -180,6 +180,12 @@ class ProfileDockWidget(QDockWidget):
         else:
             self.__displayZeros = True
 
+        self.__scale11 = False
+        self.__scaleButton = QPushButton(QCoreApplication.translate("VDLTools", "Scale 1:1"))
+        self.__scaleButton.setFixedSize(size)
+        self.__scaleButton.clicked.connect(self.__scale)
+        self.__vertLayout.addWidget(self.__scaleButton)
+
         self.__maxLabel = QLabel("y max")
         self.__maxLabel.setFixedSize(size)
         self.__vertLayout.addWidget(self.__maxLabel)
@@ -235,12 +241,27 @@ class ProfileDockWidget(QDockWidget):
         """
         return self.__zerosButton
 
+    def scaleButton(self):
+        """
+        To get the scale button instance
+        :return: scale button instance
+        """
+        return self.__scaleButton
+
     def displayMnt(self):
         """
         To get if we want to display mnt
         :return: true or false
         """
         return self.__displayMnt
+
+    def __scale(self):
+        if self.__scale11:
+            self.__scale11 = False
+            self.__scaleButton.setText(QCoreApplication.translate("VDLTools", "Scale 1:1"))
+        else:
+            self.__scale11 = True
+            self.__scaleButton.setText(QCoreApplication.translate("VDLTools", "Auto scale"))
 
     def __mnt(self):
         """
@@ -533,14 +554,14 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.replot()
             return
 
-        maxi = 0
+        length = 0
         for i in range(len(self.__profiles)):
-            if (ceil(self.__profiles[i]['l'])) > maxi:
-                maxi = ceil(self.__profiles[i]['l'])
+            if (ceil(self.__profiles[i]['l'])) > length:
+                length = ceil(self.__profiles[i]['l'])
         if self.__lib == 'Qwt5':
-            self.__plotWdg.setAxisScale(2, 0, maxi, 0)
+            self.__plotWdg.setAxisScale(2, 0, length, 0)
         elif self.__lib == 'Matplotlib':
-            self.__plotWdg.figure.get_axes()[0].set_xbound(0, maxi)
+            self.__plotWdg.figure.get_axes()[0].set_xbound(0, length)
 
         minimumValue = self.__minSpin.value()
         maximumValue = self.__maxSpin.value()
@@ -565,13 +586,40 @@ class ProfileDockWidget(QDockWidget):
                         maxiMnt = self.__maxTab(pts)
                         if maxiMnt > maximumValue:
                             maximumValue = floor(maxiMnt) + 1
+        if self.__scale11:
+            middle = (maximumValue + minimumValue) / 2
+            i = 0
+            mlength = length
+            while True:
+                if length > 15 * pow(10,i):
+                    i += 1
+                else:
+                    if length > 12 * pow(10, i):
+                        mlength = 12 * pow(10,i)
+                    else:
+                        if length > 6 * pow(10, i):
+                            mlength = 6 * pow(10,i)
+                        else:
+                            if length > 3 * pow(10, i):
+                                mlength = 3 * pow(10,i)
+                            else:
+                                mlength = 15 * pow(10,i-1)
+                    break
+
+            mlength += 1
+            maximumValue = middle + (mlength/2)
+            minimumValue = middle - (mlength/2)
+        self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(maximumValue)
+        self.__maxSpin.valueChanged.connect(self.__reScalePlot)
+        self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__minSpin.setValue(minimumValue)
+        self.__minSpin.valueChanged.connect(self.__reScalePlot)
         self.__maxSpin.setEnabled(True)
         self.__minSpin.setEnabled(True)
 
         if self.__lib == 'Qwt5':
-            rect = QRectF(0, minimumValue, maxi, maximumValue-minimumValue)
+            rect = QRectF(0, minimumValue, length, maximumValue-minimumValue)
             self.__zoomer.setZoomBase(rect)
 
         # to draw vertical lines
@@ -711,8 +759,12 @@ class ProfileDockWidget(QDockWidget):
             self.__manageMatplotlibAxe(self.__plotWdg.figure.get_axes()[0])
         self.__maxSpin.setEnabled(False)
         self.__minSpin.setEnabled(False)
+        self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(0)
+        self.__maxSpin.valueChanged.connect(self.__reScalePlot)
+        self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__minSpin.setValue(0)
+        self.__minSpin.valueChanged.connect(self.__reScalePlot)
 
         # clear legend
         while self.__legendLayout.count():

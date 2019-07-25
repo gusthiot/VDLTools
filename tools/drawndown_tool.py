@@ -103,6 +103,7 @@ class DrawdownTool(QgsMapTool):
         self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom, True, True)
         self.__dockWdg.mntButton().clicked.connect(self.__isDisplayingMnt)
         self.__dockWdg.zerosButton().clicked.connect(self.__isDisplayingZeros)
+        self.__dockWdg.scaleButton().clicked.connect(self.__isScalingOneOne)
         if self.__isfloating:
             self.__dockWdg.show()
         else:
@@ -123,6 +124,14 @@ class DrawdownTool(QgsMapTool):
     def __isDisplayingZeros(self):
         """
         To update the graph when changing zeros choice
+        :return:
+        """
+        if self.__rendered:
+            self.__calculateProfile()
+
+    def __isScalingOneOne(self):
+        """
+        To update the graph when changing scale choice
         :return:
         """
         if self.__rendered:

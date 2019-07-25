@@ -439,7 +439,7 @@ class ProfileTool(QgsMapTool):
         """
         When the Cancel button in Profile Force Dialog is pushed
         """
-        self.__confDlg.reject()
+        self.__forceDlg.reject()
         self.__setZerosDialog()
 
     def __setZerosDialog(self):
