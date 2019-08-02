@@ -299,7 +299,7 @@ class DrawdownTool(QgsMapTool):
                     if f.id() == id_s:
                         selected = f
                         break
-                self.__adjustments.append({'point': p, 'previous': z[i], 'line': True,
+                self.__adjustments.append({'point': p, 'previous': z[i], 'line': True, 'diam': dtemp,
                                            'layer': self.ownSettings.drawdownLayer, 'feature': selected, 'delta': True})
 
             for layer in self.__layers:
@@ -329,7 +329,7 @@ class DrawdownTool(QgsMapTool):
                             dtemp = f_ok.attribute(self.ownSettings.pipeDiam) / 1000
                             if dtemp > diam:
                                 diam = dtemp
-                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False,
+                            self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'diam': dtemp,
                                                        'comp': QCoreApplication.translate("VDLTools", " connected"),
                                                        'feature': f_ok, 'layer': layer, 'delta': True})
                             if zp is None or zp != zp:
