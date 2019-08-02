@@ -310,26 +310,11 @@ class ProfileTool(QgsMapTool):
         self.__extras = []
         for i in range(len(self.__points)):
             if alts[i] == 0:
+                last = len(self.__points)-1
                 if i == 0:
-                    ap = None
-                    app = None
-                    j = 1
-                    while True:
-                        if i+j > len(self.__points)-1:
-                            break
-                        if alts[i+j] != 0:
-                            ap = j
-                            j += 1
-                            while True:
-                                if i+j > len(self.__points)-1:
-                                    break
-                                if alts[i+j] != 0:
-                                    app = j
-                                    break
-                                j += 1
-                            break
-                        j += 1
-                    if ap is None or app is None:
+                    ap = alts[1]
+                    app = alts[2]
+                    if ap == 0 or app == 0:
                         self.__zeros.append([i, None, None, None])
                     else:
                         big_d = Finder.sqrDistForCoords(self.__points[ap]['x'], self.__points[app]['x'],
@@ -342,26 +327,10 @@ class ProfileTool(QgsMapTool):
                         else:
                             self.__zeros.append([i, None, None, 'E'])
                             self.__extras.append([i, zextra, len(self.__zeros)-1, nb_not_none[i]])
-                elif i == len(self.__points)-1:
-                    av = None
-                    avv = None
-                    j = 1
-                    while True:
-                        if i-j < 0:
-                            break
-                        if alts[i-j] != 0:
-                            av = j
-                            j += 1
-                            while True:
-                                if i-j < 0:
-                                    break
-                                if alts[i-j] != 0:
-                                    avv = j
-                                    break
-                                j += 1
-                            break
-                        j += 1
-                    if av is None or avv is None:
+                elif i == last:
+                    av = alts[i-1]
+                    avv = alts[i-2]
+                    if av == 0 or avv == 0:
                         self.__zeros.append([i, None, None, None])
                     else:
                         big_d = Finder.sqrDistForCoords(self.__points[i-av]['x'], self.__points[i-avv]['x'],
@@ -387,7 +356,7 @@ class ProfileTool(QgsMapTool):
                     ap = None
                     j = 1
                     while True:
-                        if i+j > len(self.__points)-1:
+                        if i+j > last:
                             break
                         if alts[i+j] != 0:
                             ap = j

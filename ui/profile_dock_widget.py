@@ -60,7 +60,6 @@ import requests
 from ..core.signal import Signal
 from future.moves.urllib.error import (HTTPError,
                                        URLError)
-
 try:
     from PyQt4.Qwt5.Qwt import (QwtPlot,
                                 QwtText,
@@ -150,6 +149,7 @@ class ProfileDockWidget(QDockWidget):
         self.__printWdg.setLayout(self.__printLayout)
 
         self.__plotWdg = None
+        self.__scaleButton = None
         self.__changePlotWidget()
 
         size = QSize(150, 20)
@@ -184,6 +184,10 @@ class ProfileDockWidget(QDockWidget):
         self.__scaleButton = QPushButton(QCoreApplication.translate("VDLTools", "Scale 1:1"))
         self.__scaleButton.setFixedSize(size)
         self.__scaleButton.clicked.connect(self.__scale)
+        if self.__lib == 'Qwt5':
+            self.__scaleButton.setVisible(True)
+        else:
+            self.__scaleButton.setVisible(False)
         self.__vertLayout.addWidget(self.__scaleButton)
 
         self.__maxLabel = QLabel("y max")
@@ -321,6 +325,8 @@ class ProfileDockWidget(QDockWidget):
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
             self.__frameLayout.addWidget(self.__plotWdg)
+            if self.__scaleButton is not None:
+                self.__scaleButton.setVisible(True)
 
         elif self.__lib == 'Matplotlib':
             fig = Figure((1.0, 1.0), linewidth=0.0, subplotpars=SubplotParams(left=0, bottom=0, right=1, top=1,
@@ -342,6 +348,8 @@ class ProfileDockWidget(QDockWidget):
             sizePolicy.setVerticalStretch(0)
             self.__plotWdg.setSizePolicy(sizePolicy)
             self.__frameLayout.addWidget(self.__plotWdg)
+            if self.__scaleButton is not None:
+                self.__scaleButton.setVisible(False)
 
     def setProfiles(self, profiles, numLines):
         """
@@ -586,29 +594,28 @@ class ProfileDockWidget(QDockWidget):
                         maxiMnt = self.__maxTab(pts)
                         if maxiMnt > maximumValue:
                             maximumValue = floor(maxiMnt) + 1
-        if self.__scale11:
-            middle = (maximumValue + minimumValue) / 2
-            i = 0
-            mlength = length
-            while True:
-                if length > 15 * pow(10,i):
-                    i += 1
-                else:
-                    if length > 12 * pow(10, i):
-                        mlength = 12 * pow(10,i)
-                    else:
-                        if length > 6 * pow(10, i):
-                            mlength = 6 * pow(10,i)
-                        else:
-                            if length > 3 * pow(10, i):
-                                mlength = 3 * pow(10,i)
-                            else:
-                                mlength = 15 * pow(10,i-1)
-                    break
-
-            mlength += 1
-            maximumValue = middle + (mlength/2)
-            minimumValue = middle - (mlength/2)
+        # if self.__scale11:
+        #     middle = (maximumValue + minimumValue) / 2
+        #     i = 0
+        #     while True:
+        #         if length > 15 * pow(10,i):
+        #             i += 1
+        #         else:
+        #             if length > 12 * pow(10, i):
+        #                 mlength = 12 * pow(10,i)
+        #             else:
+        #                 if length > 6 * pow(10, i):
+        #                     mlength = 6 * pow(10,i)
+        #                 else:
+        #                     if length > 3 * pow(10, i):
+        #                         mlength = 3 * pow(10,i)
+        #                     else:
+        #                         mlength = 15 * pow(10,i-1)
+        #             break
+        #
+        #     mlength += 1
+        #     maximumValue = middle + (mlength/2)
+        #     minimumValue = middle - (mlength/2)
         self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(maximumValue)
         self.__maxSpin.valueChanged.connect(self.__reScalePlot)

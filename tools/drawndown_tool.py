@@ -397,7 +397,7 @@ class DrawdownTool(QgsMapTool):
                 elif i == 0 and len(self.__altitudes) > 2:
                     alt1 = self.__altitudes[1]['alt']
                     alt2 = self.__altitudes[2]['alt']
-                    if alt1 is not None and alt2 is not None:
+                    if alt1 != 0 and alt2 != 0:
                         pt2 = self.__points[2]
                         pt1 = self.__points[1]
                         pt = self.__points[0]
@@ -413,7 +413,7 @@ class DrawdownTool(QgsMapTool):
                 elif i == last and len(self.__altitudes) > 2:
                     alt1 = self.__altitudes[i-1]['alt']
                     alt2 = self.__altitudes[i-2]['alt']
-                    if alt1 is not None and alt2 is not None:
+                    if alt1 != 0 and alt2 != 0:
                         pt2 = self.__points[i-2]
                         pt1 = self.__points[i-1]
                         pt = self.__points[i]
