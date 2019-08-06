@@ -313,7 +313,10 @@ class ProfileTool(QgsMapTool):
                 last = len(self.__points)-1
                 if i == 0:
                     ap = alts[1]
-                    app = alts[2]
+                    if len(self.__points) > 2:
+                        app = alts[2]
+                    else:
+                        app = 0
                     if ap == 0 or app == 0:
                         self.__zeros.append([i, None, None, None])
                     else:
@@ -329,7 +332,10 @@ class ProfileTool(QgsMapTool):
                             self.__extras.append([i, zextra, len(self.__zeros)-1, nb_not_none[i]])
                 elif i == last:
                     av = alts[i-1]
-                    avv = alts[i-2]
+                    if len(self.__points) > 2:
+                        avv = alts[i-2]
+                    else:
+                        avv = 0
                     if av == 0 or avv == 0:
                         self.__zeros.append([i, None, None, None])
                     else:

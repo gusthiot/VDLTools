@@ -78,7 +78,7 @@ class DrawdownAdjustmentDialog(QDialog):
                 pos += 1
             msg = "     - " + adj['layer'].name()
             if 'diam' in adj:
-                msg += " (" + adj['layer'].id() + " - " + str(adj['diam']) + "m) "
+                msg += " (" + str(adj['diam']) + "m) "
 
             if 'comp' in adj:
                 msg += adj['comp']

@@ -491,8 +491,13 @@ class ProfileDockWidget(QDockWidget):
                 xx = []
                 yy = []
                 for prof in self.__profiles:
-                    xx.append(prof['l'])
-                    yy.append(prof['z'][i])
+                    if isinstance(prof['z'][i], list):
+                        for z in prof['z'][i]:
+                            xx.append(prof['l'])
+                            yy.append(z)
+                    else:
+                        xx.append(prof['l'])
+                        yy.append(prof['z'][i])
 
                 for j in range(len(yy)):
                     if yy[j] is None:
@@ -678,10 +683,17 @@ class ProfileDockWidget(QDockWidget):
         """
         mini = 1000000000
         for t in tab:
-            if t is None:
-                continue
-            if t < mini:
-                mini = t
+            if isinstance(t, list):
+                for ti in t:
+                    if ti is None:
+                        continue
+                    if ti < mini:
+                        mini = ti
+            else:
+                if t is None:
+                    continue
+                if t < mini:
+                    mini = t
         return mini
 
     @staticmethod
@@ -693,10 +705,17 @@ class ProfileDockWidget(QDockWidget):
         """
         maxi = -1000000000
         for t in tab:
-            if t is None:
-                continue
-            if t > maxi:
-                maxi = t
+            if isinstance(t, list):
+                for ti in t:
+                    if ti is None:
+                        continue
+                    if ti > maxi:
+                        maxi = ti
+            else:
+                if t is None:
+                    continue
+                if t > maxi:
+                    maxi = t
         return maxi
 
     def __setLib(self):
