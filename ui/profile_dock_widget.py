@@ -25,7 +25,7 @@ from __future__ import division
 from future import standard_library
 from future.builtins import str
 from future.builtins import range
-from math import sqrt, ceil, floor
+from math import sqrt, ceil, floor, log10
 from matplotlib import rc
 from past.utils import old_div
 from qgis.core import QgsPoint
@@ -320,6 +320,7 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.setAxisTitle(QwtPlot.yLeft, title)
             self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
                                           self.__plotWdg.canvas())
+            self.__zoomer.zoomed.connect(self.__scaleZoom)
             self.__zoomer.setRubberBandPen(QPen(Qt.blue))
             grid = QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
@@ -557,6 +558,27 @@ class ProfileDockWidget(QDockWidget):
             self.__activateMouseTracking(True)
             self.__marker.show()
 
+    def __scaleZoom(self):
+        if self.__scale11:
+            rect = self.__zoomer.zoomRect()
+            plot = self.__zoomer.plot()
+            width = plot.canvas().width()
+            height = plot.canvas().height()
+            length = rect.right() - rect.left()
+            density = length/width
+            interval = density * height
+            middle = (rect.top() + rect.bottom()) / 2
+            maximumValue = middle + (interval/2)
+            minimumValue = middle - (interval/2)
+
+            inter = pow(10, floor(log10(length)))
+            if length / inter > 5:
+                inter = 2 * inter
+            step = inter / 2
+            plot.setAxisScale(2, rect.left(), rect.right(), step)
+            plot.setAxisScale(0, minimumValue, maximumValue, step)
+            plot.replot()
+
     def __reScalePlot(self, value=None, auto=False):
         """
         To rescale the profile plot depending to the bounds
@@ -599,28 +621,16 @@ class ProfileDockWidget(QDockWidget):
                         maxiMnt = self.__maxTab(pts)
                         if maxiMnt > maximumValue:
                             maximumValue = floor(maxiMnt) + 1
-        # if self.__scale11:
-        #     middle = (maximumValue + minimumValue) / 2
-        #     i = 0
-        #     while True:
-        #         if length > 15 * pow(10,i):
-        #             i += 1
-        #         else:
-        #             if length > 12 * pow(10, i):
-        #                 mlength = 12 * pow(10,i)
-        #             else:
-        #                 if length > 6 * pow(10, i):
-        #                     mlength = 6 * pow(10,i)
-        #                 else:
-        #                     if length > 3 * pow(10, i):
-        #                         mlength = 3 * pow(10,i)
-        #                     else:
-        #                         mlength = 15 * pow(10,i-1)
-        #             break
-        #
-        #     mlength += 1
-        #     maximumValue = middle + (mlength/2)
-        #     minimumValue = middle - (mlength/2)
+
+        if self.__scale11:
+            width = self.__plotWdg.canvas().width()
+            height = self.__plotWdg.canvas().height()
+            density = length/width
+            interval = density * height
+            middle = (maximumValue + minimumValue) / 2
+            maximumValue = middle + (interval/2)
+            minimumValue = middle - (interval/2)
+
         self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(maximumValue)
         self.__maxSpin.valueChanged.connect(self.__reScalePlot)
@@ -629,10 +639,6 @@ class ProfileDockWidget(QDockWidget):
         self.__minSpin.valueChanged.connect(self.__reScalePlot)
         self.__maxSpin.setEnabled(True)
         self.__minSpin.setEnabled(True)
-
-        if self.__lib == 'Qwt5':
-            rect = QRectF(0, minimumValue, length, maximumValue-minimumValue)
-            self.__zoomer.setZoomBase(rect)
 
         # to draw vertical lines
         for i in range(len(self.__profiles)):
@@ -667,12 +673,23 @@ class ProfileDockWidget(QDockWidget):
 
         if minimumValue < maximumValue:
             if self.__lib == 'Qwt5':
-                self.__plotWdg.setAxisScale(0, minimumValue, maximumValue, 0)
+                step = 0
+                if self.__scale11:
+                    inter = pow(10, floor(log10(length)))
+                    if length/inter > 5:
+                        inter = 2 * inter
+                    step = inter/2
+                    self.__plotWdg.setAxisScale(2, 0, length, step)
+                self.__plotWdg.setAxisScale(0, minimumValue, maximumValue, step)
                 self.__plotWdg.replot()
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.get_axes()[0].set_ybound(minimumValue, maximumValue)
                 self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
                 self.__plotWdg.draw()
+
+        if self.__lib == 'Qwt5':
+            rect = QRectF(0, minimumValue, length, maximumValue-minimumValue)
+            self.__zoomer.setZoomBase(rect)
 
     @staticmethod
     def __minTab(tab):
