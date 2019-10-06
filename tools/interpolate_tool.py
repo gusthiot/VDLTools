@@ -404,8 +404,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         d1 = Finder.sqrDistForCoords(x1, vertex_v2.x(), y1, vertex_v2.y())
         z0 = line_v2.zAt(vertex_id.vertex-1)
         z1 = line_v2.zAt(vertex_id.vertex)
-        z = old_div((d0*z1 + d1*z0), (d0 + d1))
-        vertex_v2.addZValue(round(z, 2))
+        z = round(old_div((d0*z1 + d1*z0), (d0 + d1)), 3)
+        vertex_v2.addZValue(z)
 
         if withPoint:
             pt_feat = QgsFeature(self.__layer.pendingFields())

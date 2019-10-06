@@ -37,7 +37,6 @@ from qgis.gui import (QgsMapTool,
                       QgsMessageBar)
 from PyQt4.QtCore import (Qt,
                           QCoreApplication)
-from PyQt4.QtGui import QMessageBox
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_dock_widget import ProfileDockWidget
@@ -85,7 +84,7 @@ class DrawdownTool(QgsMapTool):
         self.__endVertex = None
         self.ownSettings = None
         self.__usedMnts = None
-        self.__isfloating = False
+        self.__isFloating = False
         self.__dockGeom = None
         self.__rendered = False
 
@@ -104,7 +103,7 @@ class DrawdownTool(QgsMapTool):
         self.__dockWdg.mntButton().clicked.connect(self.__isDisplayingMnt)
         self.__dockWdg.zerosButton().clicked.connect(self.__isDisplayingZeros)
         self.__dockWdg.scaleButton().clicked.connect(self.__isScalingOneOne)
-        if self.__isfloating:
+        if self.__isFloating:
             self.__dockWdg.show()
         else:
             self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
@@ -142,7 +141,7 @@ class DrawdownTool(QgsMapTool):
         When the dock is closed
         """
         self.__dockGeom = self.__dockWdg.geometry()
-        self.__isfloating = self.__dockWdg.isFloating()
+        self.__isFloating = self.__dockWdg.isFloating()
         self.__cancel()
         self.__rendered = False
         self.__displayMnt = False
@@ -383,8 +382,8 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[i]
                         d0 = Finder.sqrDistForCoords(pt['x'], prev_pt['x'], pt['y'], prev_pt['y'])
                         d1 = Finder.sqrDistForCoords(next_pt['x'], pt['x'], next_pt['y'], pt['y'])
-                        inter_alt = old_div((d0*next_alt + d1*prev_alt), (d0 + d1))
-                        self.__altitudes[i]['alt'] = round(inter_alt,2)
+                        inter_alt = round(old_div((d0*next_alt + d1*prev_alt), (d0 + d1)), 3)
+                        self.__altitudes[i]['alt'] = inter_alt
                         self.__altitudes[i]['drawdown'] = "interpolation"
                 elif i == 0 and len(self.__altitudes) > 2:
                     alt1 = self.__altitudes[1]['alt']
@@ -395,13 +394,12 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[0]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
-                        extra_alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
-                        alt = round(extra_alt, 2)
+                        extra_alt = round(alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2), 3)
                         if small_d < (old_div(big_d, 4)):
-                            self.__altitudes[i]['alt'] = alt
+                            self.__altitudes[i]['alt'] = extra_alt
                             self.__altitudes[i]['drawdown'] = "extrapolation"
                         else:
-                            self.__extras.append([i, alt])
+                            self.__extras.append([i, extra_alt])
                 elif i == last and len(self.__altitudes) > 2:
                     alt1 = self.__altitudes[i-1]['alt']
                     alt2 = self.__altitudes[i-2]['alt']
@@ -411,13 +409,12 @@ class DrawdownTool(QgsMapTool):
                         pt = self.__points[i]
                         big_d = Finder.sqrDistForCoords(pt2['x'], pt1['x'], pt2['y'], pt1['y'])
                         small_d = Finder.sqrDistForCoords(pt1['x'], pt['x'], pt1['y'], pt['y'])
-                        extra_alt = alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2)
-                        alt = round(extra_alt, 2)
+                        extra_alt = round(alt2 + (1 + old_div(small_d, big_d)) * (alt1 - alt2), 3)
                         if small_d < (old_div(big_d, 4)):
-                            self.__altitudes[i]['alt'] = alt
+                            self.__altitudes[i]['alt'] = extra_alt
                             self.__altitudes[i]['drawdown'] = "extrapolation"
                         else:
-                            self.__extras.append([i, alt])
+                            self.__extras.append([i, extra_alt])
 
         if len(self.__extras) == 0:
             self.__setAdjustements()

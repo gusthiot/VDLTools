@@ -324,7 +324,7 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[ap]['y'], self.__points[app]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
                                                           self.__points[i]['y'], self.__points[ap]['y'])
-                        zextra = alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app])
+                        zextra = round(alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app]), 3)
                         if small_d < (old_div(big_d, 4)):
                             self.__zeros.append([i, zextra, nb_not_none[i], 'E'])
                         else:
@@ -343,7 +343,7 @@ class ProfileTool(QgsMapTool):
                                                         self.__points[i-av]['y'], self.__points[i-avv]['y'])
                         small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
                                                           self.__points[i]['y'], self.__points[i-av]['y'])
-                        zextra = alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv])
+                        zextra = round(alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv]), 3)
                         if small_d < (old_div(big_d, 4)):
                             self.__zeros.append([i, zextra, nb_not_none[i], 'E'])
                         else:
@@ -377,7 +377,7 @@ class ProfileTool(QgsMapTool):
                         d1 = Finder.sqrDistForCoords(
                             self.__points[i+ap]['x'], self.__points[i]['x'], self.__points[i+ap]['y'],
                             self.__points[i]['y'])
-                        zinter = old_div((d0*alts[i+ap] + d1*alts[i-av]), (d0 + d1))
+                        zinter = round(old_div((d0*alts[i+ap] + d1*alts[i-av]), (d0 + d1)), 3)
                         self.__zeros.append([i, zinter, nb_not_none[i], 'I'])
 
         if len(self.__extras) == 0:
@@ -655,26 +655,17 @@ class ProfileTool(QgsMapTool):
                                 continue
                             laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All,
                                                                        self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits)
-                            feat = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings,
-                                                              self)
-
-                            if feat is not None:
-                                if layer == self.__lineLayer:
-                                    other = False
-                                    if feat.id() not in self.__selectedIds:
-                                        other = True
-                                    else:
-                                        fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
-                                        for f in fs:
-                                            if f.id() not in self.__selectedIds:
-                                                vertex = f.geometry().closestVertex(QgsPoint(x, y))
-                                                if vertex[4] < self.SEARCH_TOLERANCE:
-                                                    other = True
-                                                    break
-                                    if other and layer not in otherLayers:
+                            fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
+                            if len(fs) > 0:
+                                for f in fs:
+                                    if layer == self.__lineLayer:
+                                        if f.id() not in self.__selectedIds:
+                                            vertex = f.geometry().closestVertex(QgsPoint(x, y))
+                                            if vertex[4] < self.SEARCH_TOLERANCE:
+                                                if layer not in otherLayers:
+                                                    otherLayers.append(layer)
+                                    elif layer not in otherLayers:
                                         otherLayers.append(layer)
-                                elif layer not in otherLayers:
-                                    otherLayers.append(layer)
             num += 1
         if checkLayers:
             return otherLayers
@@ -710,54 +701,59 @@ class ProfileTool(QgsMapTool):
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-                found = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPoint(x, y)), laySettings, self)
-                if found is None:
+                fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
+                if len(fs) == 0:
                     feat.append(None)
                     z.append(None)
                 else:
-                    if layer.geometryType() == QGis.Polygon:
-                        closest = found.geometry().closestVertex(QgsPoint(x, y))
-                        polygon_v2, curved = GeometryV2.asPolygonV2(found.geometry(), self.__iface)
-                        zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
-                        feat.append(found)
-                        if zp is None or zp != zp:
-                            z.append(0)
-                        else:
-                            z.append(zp)
-                    elif layer.geometryType() == QGis.Line:
-                        f_ok = None
-                        if layer == self.__lineLayer:
-                            if found.id() not in self.__selectedIds:
-                                f_ok = found
-                            else:
-                                fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
-                                for f in fs:
-                                    if f.id() not in self.__selectedIds:
-                                        vertex = f.geometry().closestVertex(QgsPoint(x, y))
-                                        if vertex[4] < self.SEARCH_TOLERANCE:
-                                            f_ok = f
+                    feats = []
+                    zs = []
+                    for f in fs:
+                        if layer.geometryType() == QGis.Polygon:
+                            closest = f.geometry().closestVertex(QgsPoint(x, y))
+                            if closest[4] < self.SEARCH_TOLERANCE:
+                                polygon_v2, curved = GeometryV2.asPolygonV2(f.geometry(), self.__iface)
+                                zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
+                                feats.append(f)
+                                if zp is None or zp != zp:
+                                    zs.append(0)
+                                else:
+                                    zs.append(zp)
+                        elif layer.geometryType() == QGis.Line:
+                                closest = f.geometry().closestVertex(QgsPoint(x, y))
+                                if closest[4] < self.SEARCH_TOLERANCE:
+                                    if layer == self.__lineLayer:
+                                        if f.id() in self.__selectedIds:
                                             break
+                                feats.append(f)
+                                line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
+                                zp = line.zAt(closest[1])
+                                if zp is None or zp != zp:
+                                    zs.append(0)
+                                else:
+                                    zs.append(zp)
                         else:
-                            f_ok = found
-                        if f_ok is not None:
-                            closest = f_ok.geometry().closestVertex(QgsPoint(x, y))
-                            feat.append(f_ok)
-                            line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
-                            zp = line.zAt(closest[1])
+                            zp = GeometryV2.asPointV2(f.geometry(), self.__iface).z()
+                            feats.append(f)
                             if zp is None or zp != zp:
-                                z.append(0)
+                                zs.append(0)
                             else:
-                                z.append(zp)
-                        else:
-                            feat.append(None)
-                            z.append(None)
+                                zs.append(zp)
+
+                    if len(zs) == 0:
+                        z.append(None)
+                    elif len(zs) == 1:
+                        z.append(zs[0])
                     else:
-                        zp = GeometryV2.asPointV2(found.geometry(), self.__iface).z()
-                        feat.append(found)
-                        if zp is None or zp != zp:
-                            z.append(0)
-                        else:
-                            z.append(zp)
+                        z.append(zs)
+
+                    if len(feats) == 0:
+                        feat.append(None)
+                    elif len(feats) == 1:
+                        feat.append(feats[0])
+                    else:
+                        feat.append(feats)
+
             self.__features.append(feat)
         self.__calculateProfile()
 
@@ -927,8 +923,13 @@ class ProfileTool(QgsMapTool):
                 for i in range(num_lines, len(pt['z'])):
                     if pt['z'][i] is None:
                         continue
-                    if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
-                        situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
+                    if isinstance(pt['z'][i], list):
+                        for z in pt['z'][i]:
+                            if abs(z-z0) > self.ALT_TOLERANCE:
+                                situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
+                    else:
+                        if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
+                            situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             elif len(zz) == 2:
                 z0 = pt['z'][zz[0]]
                 if abs(pt['z'][zz[1]] - z0) > self.ALT_TOLERANCE:
@@ -937,8 +938,13 @@ class ProfileTool(QgsMapTool):
                     for i in range(num_lines, len(pt['z'])):
                         if pt['z'][i] is None:
                             continue
-                        if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
-                            situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
+                        if isinstance(pt['z'][i], list):
+                            for z in pt['z'][i]:
+                                if abs(z-z0) > self.ALT_TOLERANCE:
+                                    situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
+                        else:
+                            if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
+                                situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
             else:
                 self.__iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "More than 2 lines z ?!?"), level=QgsMessageBar.WARNING)
