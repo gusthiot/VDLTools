@@ -300,9 +300,16 @@ class ProfileTool(QgsMapTool):
             nb = 0
             for z in zz:
                 if z is not None:
-                    nb += 1
-                    if z > alt:
-                        alt = z
+                    if isinstance(z, list):
+                        for za in z:
+                            if za is not None:
+                                nb += 1
+                                if za > alt:
+                                    alt = za
+                    else:
+                        nb += 1
+                        if z > alt:
+                            alt = z
             alts.append(alt)
             nb_not_none.append(nb)
 
@@ -481,10 +488,13 @@ class ProfileTool(QgsMapTool):
         num_lines = len(self.__selectedIds)
         points = {}
         for s in situations:
+            point = self.__points[s['point']]['z'][s['layer']+num_lines-1]
+            if 'poz' in s:
+                point = point[s['poz']]
             if s['point'] not in points:
-                points[s['point']] = self.__points[s['point']]['z'][s['layer']+num_lines-1]
+                points[s['point']] = point
             else:
-                diff = abs(self.__points[s['point']]['z'][s['layer']+num_lines-1] - points[s['point']])
+                diff = abs(point - points[s['point']])
                 if diff > 0.001:
                     QMessageBox.information(
                         None, QCoreApplication.translate("VDLTools", "Elevation"),
@@ -502,6 +512,8 @@ class ProfileTool(QgsMapTool):
                     break
         for s in situations:
             z = self.__points[s['point']]['z'][s['layer']+num_lines-1]
+            if 'poz' in s:
+                z = z[s['poz']]
             for i in range(num_lines):
                 if self.__points[s['point']]['z'][i] is not None:
                     index = s['point']-self.__selectedStarts[i]
@@ -535,6 +547,8 @@ class ProfileTool(QgsMapTool):
         for s in situations:
             layer = self.__layers[s['layer']-1]
             feat = self.__features[s['point']][s['layer']-1]
+            if 'poz' in s:
+                feat = feat[s['poz']]
             newZ = 0
             for i in range(num_lines):
                 if self.__points[s['point']]['z'][i] is not None:
@@ -692,7 +706,6 @@ class ProfileTool(QgsMapTool):
         Create the profile in the dock
         """
         self.__features = []
-
         for points in self.__points:
             feat = []
             x = points['x']
@@ -724,7 +737,7 @@ class ProfileTool(QgsMapTool):
                                 if closest[4] < self.SEARCH_TOLERANCE:
                                     if layer == self.__lineLayer:
                                         if f.id() in self.__selectedIds:
-                                            break
+                                            continue
                                 feats.append(f)
                                 line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
                                 zp = line.zAt(closest[1])
@@ -924,9 +937,11 @@ class ProfileTool(QgsMapTool):
                     if pt['z'][i] is None:
                         continue
                     if isinstance(pt['z'][i], list):
+                        poz = 0
                         for z in pt['z'][i]:
                             if abs(z-z0) > self.ALT_TOLERANCE:
-                                situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
+                                situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0, 'poz': poz})
+                            poz += 1
                     else:
                         if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
                             situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})

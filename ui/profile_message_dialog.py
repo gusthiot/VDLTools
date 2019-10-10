@@ -60,12 +60,13 @@ class ProfileMessageDialog(QDialog):
         self.__difLabels = []
 
         self.__scrollLayout = QGridLayout()
-
         for i in range(len(self.__situations)):
             line = self.__situations[i]
-            ptz = self.__points[line['point']]['z']
+            ptz = self.__points[line['point']]['z'][line['layer']+num_lines-1]
+            if 'poz' in line:
+                ptz = ptz[line['poz']]
             msg = "- point " + str(line['point']) + QCoreApplication.translate("VDLTools", " in layer '") + \
-                  self.__names[line['layer']] + "' (point: " + str(ptz[line['layer']+num_lines-1]) + "m |" + \
+                  self.__names[line['layer']] + "' (point: " + str(ptz) + "m |" + \
                   QCoreApplication.translate("VDLTools", "line vertex: ") + str(line['vertex']) + "m) \n"
 
             msgLabel = QLabel(msg)

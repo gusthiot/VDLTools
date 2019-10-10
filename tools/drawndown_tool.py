@@ -599,7 +599,7 @@ class DrawdownTool(QgsMapTool):
                 y = pt_v2.y()
                 doublon = False
                 for position in rg_positions:
-                    if position['x'] == x and position['y'] == y:
+                    if position['x'] == x and position['y'] == y and position['iden'] == iden:
                         self.__iface.messageBar().pushMessage(
                            QCoreApplication.translate("VDLTools", "Beware! the line ") + str(iden) +
                            QCoreApplication.translate("VDLTools", " has 2 identical summits on the vertex ") +
@@ -612,10 +612,11 @@ class DrawdownTool(QgsMapTool):
                 for item in self.__points:
                     if item['x'] == x and item['y'] == y:
                         item['z'][num] = pt_v2.z()
+                        rg_positions.append({'x': x, 'y': y, 'iden': iden})
                         doublon = True
                         break
                 if not doublon:
-                    rg_positions.append({'x': x, 'y': y})
+                    rg_positions.append({'x': x, 'y': y, 'iden': iden})
                     z = []
                     for j in range(num_lines):
                         if j == num:
