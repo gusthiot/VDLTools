@@ -42,6 +42,7 @@ from .tools.pointer_tool import PointerTool
 from .tools.multi_attributes_tool import MultiAttributesTool
 from .tools.control_tool import ControlTool
 from .tools.drawndown_tool import DrawdownTool
+from .tools.rebuild_index import RebuildIndex
 
 # Initialize Qt resources from file resources.py
 from . import resources
@@ -73,6 +74,7 @@ class VDLTools(object):
         self.moveTool = None
         self.multiAttributesTool = None
         self.showSettings = None
+        self.rebuildIndex = None
         if VDLTools.MORE_TOOLS:
             self.importMeasures = None
             self.controlTool = None
@@ -155,6 +157,8 @@ class VDLTools(object):
         self.add_action(self.moveTool, self.iface.mainWindow(), False)
         self.drawdownTool = DrawdownTool(self.iface)
         self.add_action(self.drawdownTool, self.iface.mainWindow())
+        self.rebuildIndex = RebuildIndex(self.iface)
+        self.add_action(self.rebuildIndex, self.iface.mainWindow(), isMapTool=False)
 
         self.intersectTool.ownSettings = self.showSettings
         self.profileTool.ownSettings = self.showSettings
@@ -175,13 +179,13 @@ class VDLTools(object):
         self.showSettings.changedSignal.connect(self.drawdownTool.setEnable)
 
         if VDLTools.MORE_TOOLS:
-            self.importMeasures.ownSettings = self.showSettings
-            self.controlTool.ownSettings = self.showSettings
-
             self.importMeasures = ImportMeasures(self.iface)
             self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
             self.controlTool = ControlTool(self.iface)
             self.add_action(self.controlTool, self.iface.mainWindow())
+
+            self.importMeasures.ownSettings = self.showSettings
+            self.controlTool.ownSettings = self.showSettings
 
     def unload(self):
         """
