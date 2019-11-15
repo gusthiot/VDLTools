@@ -44,11 +44,13 @@ class RebuildIndex(object):
         To start the rebuild
         """
         snap_util = self.__iface.mapCanvas().snappingUtils()
+        extent = self.__iface.mapCanvas().extent()
         # print(snap_util.indexingStrategy())
         lcs_list = snap_util.layers()
         for lc in lcs_list:
             # print(lc.layer.name())
             locator = snap_util.locatorForLayer(lc.layer)
+            locator.setExtent(extent)
             # print(locator.hasIndex())
             if not locator.hasIndex():
                 locator.init()
