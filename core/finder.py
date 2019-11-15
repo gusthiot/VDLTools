@@ -121,7 +121,7 @@ class Finder(object):
         features = []
         for feature in layer.getFeatures(request):
             if layer.geometryType() == QgsWkbTypes.PolygonGeometry:
-                dist, nearest, vertex = feature.geometry().closestSegmentWithContext(mapPoint)
+                dist, nearest, vertex, val = feature.geometry().closestSegmentWithContext(mapPoint)
                 if QgsGeometry.fromPointXY(nearest).intersects(searchRect):
                     features.append(QgsFeature(feature))
             else:
