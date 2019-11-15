@@ -325,37 +325,37 @@ class ProfileTool(QgsMapTool):
                     else:
                         app = 0
                     if ap == 0 or app == 0:
-                        self.__zeros.append([i, None, None, None])
+                        self.__zeros.append([0, None, None, None])
                     else:
-                        big_d = Finder.sqrDistForCoords(self.__points[ap]['x'], self.__points[app]['x'],
-                                                        self.__points[ap]['y'], self.__points[app]['y'])
-                        small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[ap]['x'],
-                                                          self.__points[i]['y'], self.__points[ap]['y'])
-                        zextra = round(alts[app] + (1 + old_div(small_d, big_d)) * (alts[ap] - alts[app]), 3)
+                        big_d = Finder.sqrDistForCoords(self.__points[1]['x'], self.__points[2]['x'],
+                                                        self.__points[1]['y'], self.__points[2]['y'])
+                        small_d = Finder.sqrDistForCoords(self.__points[0]['x'], self.__points[1]['x'],
+                                                          self.__points[0]['y'], self.__points[1]['y'])
+                        zextra = round(app + (1 + old_div(small_d, big_d)) * (ap - app), 3)
                         if small_d < (old_div(big_d, 4)):
-                            self.__zeros.append([i, zextra, nb_not_none[i], 'E'])
+                            self.__zeros.append([0, zextra, nb_not_none[0], 'E'])
                         else:
-                            self.__zeros.append([i, None, None, 'E'])
-                            self.__extras.append([i, zextra, len(self.__zeros)-1, nb_not_none[i]])
+                            self.__zeros.append([0, None, None, 'E'])
+                            self.__extras.append([0, zextra, len(self.__zeros)-1, nb_not_none[0]])
                 elif i == last:
-                    av = alts[i-1]
+                    av = alts[last-1]
                     if len(self.__points) > 2:
-                        avv = alts[i-2]
+                        avv = alts[last-2]
                     else:
                         avv = 0
                     if av == 0 or avv == 0:
-                        self.__zeros.append([i, None, None, None])
+                        self.__zeros.append([last, None, None, None])
                     else:
-                        big_d = Finder.sqrDistForCoords(self.__points[i-av]['x'], self.__points[i-avv]['x'],
-                                                        self.__points[i-av]['y'], self.__points[i-avv]['y'])
-                        small_d = Finder.sqrDistForCoords(self.__points[i]['x'], self.__points[i-av]['x'],
-                                                          self.__points[i]['y'], self.__points[i-av]['y'])
-                        zextra = round(alts[i-avv] + (1 + old_div(small_d, big_d)) * (alts[i-av] - alts[i-avv]), 3)
+                        big_d = Finder.sqrDistForCoords(self.__points[last-1]['x'], self.__points[last-2]['x'],
+                                                        self.__points[last-1]['y'], self.__points[last-2]['y'])
+                        small_d = Finder.sqrDistForCoords(self.__points[last]['x'], self.__points[last-1]['x'],
+                                                          self.__points[last]['y'], self.__points[last-1]['y'])
+                        zextra = round(avv + (1 + old_div(small_d, big_d)) * (av - avv), 3)
                         if small_d < (old_div(big_d, 4)):
-                            self.__zeros.append([i, zextra, nb_not_none[i], 'E'])
+                            self.__zeros.append([last, zextra, nb_not_none[last], 'E'])
                         else:
-                            self.__zeros.append([i, None, None, 'E'])
-                            self.__extras.append([i, zextra, len(self.__zeros)-1, nb_not_none[i]])
+                            self.__zeros.append([last, None, None, 'E'])
+                            self.__extras.append([last, zextra, len(self.__zeros)-1, nb_not_none[last]])
                 else:
                     av = None
                     j = 1
