@@ -25,7 +25,6 @@ from builtins import range
 from math import (sqrt,
                   ceil,
                   floor)
-from matplotlib import rc
 from qgis.core import QgsPoint, Qgis
 from qgis.gui import QgsVertexMarker
 from qgis.PyQt.QtWidgets import (QDockWidget,
@@ -70,6 +69,7 @@ try:
 except ImportError:
     Qwt5_loaded = False
 try:
+    from matplotlib import rc
     from matplotlib.figure import Figure, SubplotParams
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
     matplotlib_loaded = True
