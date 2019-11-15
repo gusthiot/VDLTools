@@ -269,11 +269,11 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         """
         for layer, config in snap_layers.items():
             if layer.id() == self.__lastLayer.id():
-                tolerance = config["tolerance"]
-                unit = config["unit"]
-                if unit == QgsTolerance.Pixels:
+                tolerance = config['tolerance']
+                units = config['units']
+                if units == QgsTolerance.Pixels:
                     tolerance = Finder.calcCanvasTolerance(self.toCanvasCoordinates(point), layer, self, tolerance)
-                elif unit == QgsTolerance.ProjectUnits:
+                elif units == QgsTolerance.ProjectUnits:
                     tolerance = Finder.calcMapTolerance(point, layer, self, tolerance)
                 layPoint = self.toLayerCoordinates(layer, point)
                 geom = self.__selectedFeature.geometry()
@@ -388,7 +388,9 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         :param withVertex: if we want a new interpolated vertex
         :param withPoint: if we want a new interpolated point
         """
-        line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
+        line_v2 = self.__selectedFeature.geometry().constGet().clone()
+
+        # line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
 
         dist, vertex, vertex_id, val = line_v2.closestSegment(QgsPoint(self.__mapPoint))
 

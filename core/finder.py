@@ -95,7 +95,7 @@ class Finder(object):
         """
         features = []
         for layer, config in layersConfig.items():
-            features += Finder.findFeaturesAt(mapPoint, layer, config["tolerance"], config["units"], mapTool)
+            features += Finder.findFeaturesAt(mapPoint, layer, config['tolerance'], config['units'], mapTool)
         return features
 
     @staticmethod
@@ -292,7 +292,7 @@ class Finder(object):
         :return: intersection point
         """
         snap_layers = Finder.getLayersSettings(mapCanvas, [QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry, QgsWkbTypes.PointGeometry])
-        print(snap_layers)
+    #    print(snap_layers)
         features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
         inter = None
         if len(features) > 1:
@@ -319,9 +319,9 @@ class Finder(object):
         old_config = snap_util.config()
         for lay, iConf in config.individualLayerSettings().items():
             if lay in layersConfigs:
-                iConf.setTolerance(layersConfigs[lay]["tolerance"])
-                iConf.setType(layersConfigs[lay]["type"])
-                iConf.setUnits(layersConfigs[lay]["units"])
+                iConf.setTolerance(layersConfigs[lay]['tolerance'])
+                iConf.setType(layersConfigs[lay]['type'])
+                iConf.setUnits(layersConfigs[lay]['units'])
                 iConf.setEnabled(True)
             else:
                 iConf.setEnabled(False)

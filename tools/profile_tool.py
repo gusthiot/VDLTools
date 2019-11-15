@@ -24,6 +24,7 @@ from builtins import str
 from builtins import range
 from qgis.core import (QgsMapLayer,
                        Qgis,
+                       QgsVertexId,
                        QgsSnappingConfig,
                        QgsGeometry,
                        QgsTolerance,
@@ -421,7 +422,8 @@ class ProfileTool(QgsMapTool):
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
                 if f.id() == iden:
-                    line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
+                    # line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
+                    line = f.geometry().constGet().clone()
                     lines.append(line)
                     break
         for z in zeros:
@@ -473,7 +475,8 @@ class ProfileTool(QgsMapTool):
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
                 if f.id() == iden:
-                    line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
+                    # line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
+                    line = self.f.geometry().constGet().clone()
                     lines.append(line)
                     break
         for s in situations:
@@ -532,18 +535,21 @@ class ProfileTool(QgsMapTool):
         """
         if layer.geometryType() == QgsWkbTypes.PolygonGeometry:
             closest = feat.geometry().closestVertex(QgsPointXY(self.__points[pos]['x'], self.__points[pos]['y']))
-            feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry(), self.__iface)
-            position = GeometryV2.polygonVertexId(feat_v2, closest[1])
+            # feat_v2, curved = GeometryV2.asPolygonV2(feat.geometry(), self.__iface)
+            feat_v2 = feat.geometry().constGet().clone()
+            position = ProfileTool.polygonVertexId(feat_v2, closest[1])
             vertex = feat_v2.vertexAt(position)
             feat_v2.deleteVertex(position)
             vertex.setZ(newZ)
             feat_v2.insertVertex(position, vertex)
         elif layer.geometryType() == QgsWkbTypes.LineGeometry:
             closest = feat.geometry().closestVertex(QgsPointXY(self.__points[pos]['x'], self.__points[pos]['y']))
-            feat_v2, curved = GeometryV2.asLineV2(feat.geometry(), self.__iface)
+            # feat_v2, curved = GeometryV2.asLineV2(feat.geometry(), self.__iface)
+            feat_v2 = feat.geometry().constGet().clone()
             feat_v2.setZAt(closest[1], newZ)
         else:
-            feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
+            # feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
+            feat_v2 = feat.geometry().constGet().clone()
             feat_v2.setZ(newZ)
         if not layer.isEditable():
             layer.startEditing()
@@ -583,7 +589,8 @@ class ProfileTool(QgsMapTool):
                     duration=0
                 )
                 continue
-            line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
+            # line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
+            line_v2 = selected.geometry().constGet()
             if direction:
                 rg = list(range(line_v2.numPoints()))
             else:
@@ -691,8 +698,9 @@ class ProfileTool(QgsMapTool):
                 else:
                     if f_l[1].geometryType() == QgsWkbTypes.PolygonGeometry:
                         closest = f_l[0].geometry().closestVertex(QgsPointXY(x, y))
-                        polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry(), self.__iface)
-                        zp = polygon_v2.vertexAt(GeometryV2.polygonVertexId(polygon_v2, closest[1])).z()
+                        # polygon_v2, curved = GeometryV2.asPolygonV2(f_l[0].geometry(), self.__iface)
+                        polygon_v2 = f_l[0].geometry().constGet()
+                        zp = polygon_v2.vertexAt(ProfileTool.polygonVertexId(polygon_v2, closest[1])).z()
                         feat.append(f_l[0])
                         if zp is None or zp != zp:
                             z.append(0)
@@ -717,7 +725,8 @@ class ProfileTool(QgsMapTool):
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPointXY(x, y))
                             feat.append(f_ok)
-                            line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
+                            # line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
+                            line = f_ok.geometry().constGet()
                             zp = line.zAt(closest[1])
                             if zp is None or zp != zp:
                                 z.append(0)
@@ -727,7 +736,8 @@ class ProfileTool(QgsMapTool):
                             feat.append(None)
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        # zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        zp = f_l[0].geometry().constGet().z()
                         feat.append(f_l[0])
                         if zp is None or zp != zp:
                             z.append(0)
@@ -939,3 +949,23 @@ class ProfileTool(QgsMapTool):
             self.__msgDlg.show()
         else:
             self.__checkZeros()
+
+    @staticmethod
+    def polygonVertexId(polygon_v2, vertex_id):
+        """
+        To get the id of the selected vertex from a polygon
+        :param polygon_v2: the polygon as polygonV2
+        :param vertex_id: selected vertex
+        :return: id as QgsVertexId
+        """
+        eR = polygon_v2.exteriorRing()
+        if vertex_id < eR.numPoints():
+            return QgsVertexId(0, 0, vertex_id, 1)
+        else:
+            sel = vertex_id - eR.numPoints()
+            for num in range(polygon_v2.numInteriorRings()):
+                iR = polygon_v2.interiorRing(num)
+                if sel < iR.numPoints():
+                    return QgsVertexId(0, num + 1, sel, 1)
+                sel -= iR.numPoints()
+            return QgsVertexId()

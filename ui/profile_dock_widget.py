@@ -58,7 +58,7 @@ from ..core.signal import Signal
 from urllib.error import HTTPError, URLError
 
 try:
-    from PyQt4.Qwt5.Qwt import (QwtPlot,
+    from qgis.PyQt.Qwt5.Qwt import (QwtPlot,
                                 QwtText,
                                 QwtPlotZoomer,
                                 QwtPicker,
@@ -67,7 +67,8 @@ try:
                                 QwtPlotMarker,
                                 QwtPlotCurve)
     Qwt5_loaded = True
-except ImportError:
+except ImportError as e:
+    print(e)
     Qwt5_loaded = False
 try:
     from matplotlib.figure import Figure, SubplotParams

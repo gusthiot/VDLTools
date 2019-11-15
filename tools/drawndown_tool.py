@@ -209,7 +209,8 @@ class DrawdownTool(QgsMapTool):
                                         break
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPointXY(x, y))
-                            line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
+                            # line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
+                            line = f_ok.geometry().constGet()
                             zp = line.zAt(closest[1])
                             if zp is None or zp != zp:
                                 z.append(0)
@@ -218,7 +219,8 @@ class DrawdownTool(QgsMapTool):
                         else:
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        # zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        zp = f_l[0].geometry().constGet().z()
                         if zp is None or zp != zp:
                             zp = 0
                         z.append(zp)
@@ -247,7 +249,8 @@ class DrawdownTool(QgsMapTool):
                                                   QgsTolerance.LayerUnits)
                 if f_l is not None:
                     feature = f_l[0]
-                    point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
+                    # point_v2 = GeometryV2.asPointV2(feature.geometry(), self.__iface)
+                    point_v2 = feature.geometry().constGet()
                     if point_v2.z() > 0:
                         if level is not None:
                             if (level - point_v2.z()) > 0.005:
@@ -307,7 +310,8 @@ class DrawdownTool(QgsMapTool):
                                         break
                         if f_ok is not None:
                             closest = f_ok.geometry().closestVertex(QgsPointXY(x, y))
-                            line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
+                            # line, curved = GeometryV2.asLineV2(f_ok.geometry(), self.__iface)
+                            line = f_ok.geometry().constGet()
                             zp = line.zAt(closest[1])
 
                             dtemp = f_ok.attribute(self.ownSettings.pipeDiam) / 1000
@@ -323,7 +327,8 @@ class DrawdownTool(QgsMapTool):
                         else:
                             z.append(None)
                     else:
-                        zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        # zp = GeometryV2.asPointV2(f_l[0].geometry(), self.__iface).z()
+                        zp = f_l[0].geometry().constGet().z()
                         if zp is None or zp != zp:
                             zp = 0
                         z.append(zp)
@@ -492,7 +497,8 @@ class DrawdownTool(QgsMapTool):
             if adj['line']:
                 id_f = adj['feature'].id()
                 if id_f not in lines:
-                    line_v2, curved = GeometryV2.asLineV2(adj['feature'].geometry(), self.__iface)
+                    # line_v2, curved = GeometryV2.asLineV2(adj['feature'].geometry(), self.__iface)
+                    line_v2 = adj['feature'].geometry().constGet()
                     lines[id_f] = line_v2
                 line = lines[id_f]
                 i = 0
@@ -535,10 +541,12 @@ class DrawdownTool(QgsMapTool):
         """
         if layer.geometryType() == QgsWkbTypes.LineGeometry:
             closest = feat.geometry().closestVertex(QgsPointXY(self.__points[pos]['x'], self.__points[pos]['y']))
-            feat_v2, curved = GeometryV2.asLineV2(feat.geometry(), self.__iface)
+            # feat_v2, curved = GeometryV2.asLineV2(feat.geometry(), self.__iface)
+            feat_v2 = feat.geometry().constGet().clone()
             feat_v2.setZAt(closest[1], newZ)
         else:
-            feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
+            # feat_v2 = GeometryV2.asPointV2(feat.geometry(), self.__iface)
+            feat_v2 = feat.geometry().constGet().clone()
             feat_v2.setZ(newZ)
         layer.changeGeometry(feat.id(), QgsGeometry(feat_v2))
 
@@ -568,7 +576,8 @@ class DrawdownTool(QgsMapTool):
                     duration=0
                 )
                 continue
-            line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
+            # line_v2, curved = GeometryV2.asLineV2(selected.geometry(), self.__iface)
+            line_v2 = selected.geometry().constGet()
             if direction:
                 rg = list(range(line_v2.numPoints()))
             else:
