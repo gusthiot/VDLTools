@@ -26,7 +26,6 @@ from future import standard_library
 from future.builtins import str
 from future.builtins import range
 from math import sqrt, ceil, floor, log10
-from matplotlib import rc
 from past.utils import old_div
 from qgis.core import QgsPoint
 from qgis.gui import (QgsVertexMarker,
@@ -73,6 +72,7 @@ try:
 except ImportError:
     Qwt5_loaded = False
 try:
+    from matplotlib import rc
     from matplotlib.figure import Figure, SubplotParams
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
     matplotlib_loaded = True

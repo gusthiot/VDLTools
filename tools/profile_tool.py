@@ -733,11 +733,11 @@ class ProfileTool(QgsMapTool):
                                 else:
                                     zs.append(zp)
                         elif layer.geometryType() == QGis.Line:
-                                closest = f.geometry().closestVertex(QgsPoint(x, y))
-                                if closest[4] < self.SEARCH_TOLERANCE:
-                                    if layer == self.__lineLayer:
-                                        if f.id() in self.__selectedIds:
-                                            continue
+                            closest = f.geometry().closestVertex(QgsPoint(x, y))
+                            if closest[4] < self.SEARCH_TOLERANCE:
+                                if layer == self.__lineLayer:
+                                    if f.id() in self.__selectedIds:
+                                        continue
                                 feats.append(f)
                                 line, curved = GeometryV2.asLineV2(f.geometry(), self.__iface)
                                 zp = line.zAt(closest[1])

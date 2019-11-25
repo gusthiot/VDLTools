@@ -131,9 +131,9 @@ class IntersectTool(QgsMapTool):
         if "distance" in fieldsNames:
             feature.setAttribute("distance", self.__distance)
         if "x" in fieldsNames:
-            feature.setAttribute("x", self.__dstDlg.mapPoint().x())
+            feature.setAttribute("x", x)
         if "y" in fieldsNames:
-            feature.setAttribute("y", self.__dstDlg.mapPoint().y())
+            feature.setAttribute("y", y)
         lineLayer.addFeature(feature)
         # lineLayer.updateExtents()
         lineLayer.commitChanges()
@@ -143,8 +143,7 @@ class IntersectTool(QgsMapTool):
         pointLayer.startEditing()
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry().fromPoint(self.__dstDlg.mapPoint()))
-        fields = pointLayer.pendingFields()
-        feature.setFields(fields)
+        feature.setFields(pointLayer.pendingFields())
         pointLayer.addFeature(feature)
         pointLayer.commitChanges()
 

@@ -49,6 +49,7 @@ from . import resources
 
 import os
 
+
 class VDLTools(object):
     """
     Main plugin class

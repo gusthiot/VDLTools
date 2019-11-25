@@ -171,8 +171,7 @@ class ControlTool(AreaTool):
         for i in range(len(geometries)):
             feature = QgsFeature()
             feature.setGeometry(QgsGeometry().fromWkt(geometries[i]))
-            fields = layer.pendingFields()
-            feature.setFields(fields)
+            feature.setFields(layer.pendingFields())
             for j in range(len(fNames)):
                 feature.setAttribute(fNames[j], attributes[i][j])
             layer.addFeature(feature)

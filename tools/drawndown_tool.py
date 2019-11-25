@@ -123,7 +123,6 @@ class DrawdownTool(QgsMapTool):
     def __isDisplayingZeros(self):
         """
         To update the graph when changing zeros choice
-        :return:
         """
         if self.__rendered:
             self.__calculateProfile()
@@ -131,7 +130,6 @@ class DrawdownTool(QgsMapTool):
     def __isScalingOneOne(self):
         """
         To update the graph when changing scale choice
-        :return:
         """
         if self.__rendered:
             self.__calculateProfile()
@@ -300,7 +298,6 @@ class DrawdownTool(QgsMapTool):
             for layer in self.__layers:
                 laySettings = QgsSnappingUtils.LayerConfig(layer, QgsPointLocator.All, self.SEARCH_TOLERANCE,
                                                            QgsTolerance.LayerUnits)
-
                 fs = Finder.findFeaturesAt(QgsPoint(x, y), laySettings, self)
                 if len(fs) == 0:
                     z.append(None)
