@@ -16,8 +16,6 @@ author=Christophe Gusthiot (Ville de Lausanne)
 email=cgusthiot@gmail.com
 
 about=This plugin contains tools needed by the Ville de Lausanne for water system.
-    - a tool to duplicate a feature at a given distance (geometry not kept)
-    - a tool to move/copy a feature, driven by a vertex (geometry kept)
     - a tool to make an elevation profile of a 3d line
     - a tool to make a MNT profile along a polyline
     - a tool to create temporary circles from snapped points

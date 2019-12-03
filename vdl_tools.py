@@ -160,13 +160,13 @@ class VDLTools(object):
         self.showSettings.changedSignal.connect(self.drawdownTool.setEnable)
 
         if VDLTools.MORE_TOOLS:
-            self.importMeasures.ownSettings = self.showSettings
-            self.controlTool.ownSettings = self.showSettings
-
             self.importMeasures = ImportMeasures(self.iface)
             self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
             self.controlTool = ControlTool(self.iface)
             self.add_action(self.controlTool, self.iface.mainWindow())
+
+            self.importMeasures.ownSettings = self.showSettings
+            self.controlTool.ownSettings = self.showSettings
 
     def unload(self):
         """

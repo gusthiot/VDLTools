@@ -71,6 +71,9 @@ class DrawdownAdjustmentDialog(QDialog):
                 self.__scrollLayout.addWidget(self.__msgLabels[pos], pos+1, 0, 1, 2)
                 pos += 1
             msg = "     - " + adj['layer'].name()
+            if 'diam' in adj:
+                msg += " (" + str(adj['diam']) + "m) "
+
             if 'comp' in adj:
                 msg += adj['comp']
             previous = adj['previous']
