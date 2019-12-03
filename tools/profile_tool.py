@@ -25,7 +25,6 @@ from builtins import range
 from qgis.core import (QgsMapLayer,
                        Qgis,
                        QgsVertexId,
-                       QgsSnappingConfig,
                        QgsGeometry,
                        QgsTolerance,
                        QgsPoint,
@@ -667,7 +666,7 @@ class ProfileTool(QgsMapTool):
                                 for f in fs:
                                     if layer == self.__lineLayer:
                                         if f.id() not in self.__selectedIds:
-                                            vertex = f.geometry().closestVertex(QgsPoint(x, y))
+                                            vertex = f.geometry().closestVertex(QgsPointXY(x, y))
                                             if vertex[4] < self.SEARCH_TOLERANCE:
                                                 if layer not in otherLayers:
                                                     otherLayers.append(layer)
@@ -807,12 +806,12 @@ class ProfileTool(QgsMapTool):
         """
         if not self.__isChoosed:
             if self.__lineLayer is not None:
-                feat = Finder.findFeaturesAt(event.mapPoint(), self.__lineLayer, 10, QgsTolerance.Pixels, self)
+                feat = Finder.findClosestFeatureAt(event.mapPoint(), self.__lineLayer, 10, QgsTolerance.Pixels, self)
                 if not self.__inSelection:
                     if feat is not None and self.__lastFeatureId != feat.id():
                         self.__lastFeature = feat
                         self.__lastFeatureId = feat.id()
-                        self.__lineLayer.setSelectedFeatures([feat.id()])
+                        self.__lineLayer.selectByIds([feat.id()])
                     if feat is None:
                         self.__cancel()
                 else:
