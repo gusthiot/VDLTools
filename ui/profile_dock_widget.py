@@ -23,6 +23,7 @@
 from builtins import str
 from builtins import range
 from math import (sqrt,
+                  log10,
                   ceil,
                   floor)
 from qgis.core import QgsPoint, Qgis
@@ -145,6 +146,7 @@ class ProfileDockWidget(QDockWidget):
         self.__printWdg.setLayout(self.__printLayout)
 
         self.__plotWdg = None
+        self.__scaleButton = None
         self.__changePlotWidget()
 
         size = QSize(150, 20)
@@ -174,6 +176,16 @@ class ProfileDockWidget(QDockWidget):
             self.__vertLayout.addWidget(self.__zerosButton)
         else:
             self.__displayZeros = True
+
+        self.__scale11 = False
+        self.__scaleButton = QPushButton(QCoreApplication.translate("VDLTools", "Scale 1:1"))
+        self.__scaleButton.setFixedSize(size)
+        self.__scaleButton.clicked.connect(self.__scale)
+        if self.__lib == 'Qwt5':
+            self.__scaleButton.setVisible(True)
+        else:
+            self.__scaleButton.setVisible(False)
+        self.__vertLayout.addWidget(self.__scaleButton)
 
         self.__maxLabel = QLabel("y max")
         self.__maxLabel.setFixedSize(size)
@@ -230,12 +242,27 @@ class ProfileDockWidget(QDockWidget):
         """
         return self.__zerosButton
 
+    def scaleButton(self):
+        """
+        To get the scale button instance
+        :return: scale button instance
+        """
+        return self.__scaleButton
+
     def displayMnt(self):
         """
         To get if we want to display mnt
         :return: true or false
         """
         return self.__displayMnt
+
+    def __scale(self):
+        if self.__scale11:
+            self.__scale11 = False
+            self.__scaleButton.setText(QCoreApplication.translate("VDLTools", "Scale 1:1"))
+        else:
+            self.__scale11 = True
+            self.__scaleButton.setText(QCoreApplication.translate("VDLTools", "Auto scale"))
 
     def __mnt(self):
         """
@@ -290,11 +317,14 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.setAxisTitle(QwtPlot.yLeft, title)
             self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
                                           self.__plotWdg.canvas())
+            self.__zoomer.zoomed.connect(self.__scaleZoom)
             self.__zoomer.setRubberBandPen(QPen(Qt.blue))
             grid = QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
             self.__frameLayout.addWidget(self.__plotWdg)
+            if self.__scaleButton is not None:
+                self.__scaleButton.setVisible(True)
 
         elif self.__lib == 'Matplotlib':
             fig = Figure((1.0, 1.0), linewidth=0.0, subplotpars=SubplotParams(left=0, bottom=0, right=1, top=1,
@@ -316,6 +346,8 @@ class ProfileDockWidget(QDockWidget):
             sizePolicy.setVerticalStretch(0)
             self.__plotWdg.setSizePolicy(sizePolicy)
             self.__frameLayout.addWidget(self.__plotWdg)
+            if self.__scaleButton is not None:
+                self.__scaleButton.setVisible(False)
 
     def setProfiles(self, profiles, numLines):
         """
@@ -457,8 +489,13 @@ class ProfileDockWidget(QDockWidget):
                 xx = []
                 yy = []
                 for prof in self.__profiles:
-                    xx.append(prof['l'])
-                    yy.append(prof['z'][i])
+                    if isinstance(prof['z'][i], list):
+                        for z in prof['z'][i]:
+                            xx.append(prof['l'])
+                            yy.append(z)
+                    else:
+                        xx.append(prof['l'])
+                        yy.append(prof['z'][i])
 
                 for j in range(len(yy)):
                     if yy[j] is None:
@@ -518,6 +555,27 @@ class ProfileDockWidget(QDockWidget):
             self.__activateMouseTracking(True)
             self.__marker.show()
 
+    def __scaleZoom(self):
+        if self.__scale11:
+            rect = self.__zoomer.zoomRect()
+            plot = self.__zoomer.plot()
+            width = plot.canvas().width()
+            height = plot.canvas().height()
+            length = rect.right() - rect.left()
+            density = length/width
+            interval = density * height
+            middle = (rect.top() + rect.bottom()) / 2
+            maximumValue = middle + (interval/2)
+            minimumValue = middle - (interval/2)
+
+            inter = pow(10, floor(log10(length)))
+            if length / inter > 5:
+                inter = 2 * inter
+            step = inter / 2
+            plot.setAxisScale(2, rect.left(), rect.right(), step)
+            plot.setAxisScale(0, minimumValue, maximumValue, step)
+            plot.replot()
+
     def __reScalePlot(self, value=None, auto=False):
         """
         To rescale the profile plot depending to the bounds
@@ -528,14 +586,14 @@ class ProfileDockWidget(QDockWidget):
             self.__plotWdg.replot()
             return
 
-        maxi = 0
+        length = 0
         for i in range(len(self.__profiles)):
-            if (ceil(self.__profiles[i]['l'])) > maxi:
-                maxi = ceil(self.__profiles[i]['l'])
+            if (ceil(self.__profiles[i]['l'])) > length:
+                length = ceil(self.__profiles[i]['l'])
         if self.__lib == 'Qwt5':
-            self.__plotWdg.setAxisScale(2, 0, maxi, 0)
+            self.__plotWdg.setAxisScale(2, 0, length, 0)
         elif self.__lib == 'Matplotlib':
-            self.__plotWdg.figure.get_axes()[0].set_xbound(0, maxi)
+            self.__plotWdg.figure.get_axes()[0].set_xbound(0, length)
 
         minimumValue = self.__minSpin.value()
         maximumValue = self.__maxSpin.value()
@@ -560,14 +618,24 @@ class ProfileDockWidget(QDockWidget):
                         maxiMnt = self.__maxTab(pts)
                         if maxiMnt > maximumValue:
                             maximumValue = floor(maxiMnt) + 1
+
+        if self.__scale11:
+            width = self.__plotWdg.canvas().width()
+            height = self.__plotWdg.canvas().height()
+            density = length/width
+            interval = density * height
+            middle = (maximumValue + minimumValue) / 2
+            maximumValue = middle + (interval/2)
+            minimumValue = middle - (interval/2)
+
+        self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(maximumValue)
+        self.__maxSpin.valueChanged.connect(self.__reScalePlot)
+        self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__minSpin.setValue(minimumValue)
+        self.__minSpin.valueChanged.connect(self.__reScalePlot)
         self.__maxSpin.setEnabled(True)
         self.__minSpin.setEnabled(True)
-
-        if self.__lib == 'Qwt5':
-            rect = QRectF(0, minimumValue, maxi, maximumValue-minimumValue)
-            self.__zoomer.setZoomBase(rect)
 
         # to draw vertical lines
         for i in range(len(self.__profiles)):
@@ -602,12 +670,23 @@ class ProfileDockWidget(QDockWidget):
 
         if minimumValue < maximumValue:
             if self.__lib == 'Qwt5':
-                self.__plotWdg.setAxisScale(0, minimumValue, maximumValue, 0)
+                step = 0
+                if self.__scale11:
+                    inter = pow(10, floor(log10(length)))
+                    if length/inter > 5:
+                        inter = 2 * inter
+                    step = inter/2
+                    self.__plotWdg.setAxisScale(2, 0, length, step)
+                self.__plotWdg.setAxisScale(0, minimumValue, maximumValue, step)
                 self.__plotWdg.replot()
             elif self.__lib == 'Matplotlib':
                 self.__plotWdg.figure.get_axes()[0].set_ybound(minimumValue, maximumValue)
                 self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
                 self.__plotWdg.draw()
+
+        if self.__lib == 'Qwt5':
+            rect = QRectF(0, minimumValue, length, maximumValue-minimumValue)
+            self.__zoomer.setZoomBase(rect)
 
     @staticmethod
     def __minTab(tab):
@@ -618,10 +697,17 @@ class ProfileDockWidget(QDockWidget):
         """
         mini = 1000000000
         for t in tab:
-            if t is None:
-                continue
-            if t < mini:
-                mini = t
+            if isinstance(t, list):
+                for ti in t:
+                    if ti is None:
+                        continue
+                    if ti < mini:
+                        mini = ti
+            else:
+                if t is None:
+                    continue
+                if t < mini:
+                    mini = t
         return mini
 
     @staticmethod
@@ -633,10 +719,17 @@ class ProfileDockWidget(QDockWidget):
         """
         maxi = -1000000000
         for t in tab:
-            if t is None:
-                continue
-            if t > maxi:
-                maxi = t
+            if isinstance(t, list):
+                for ti in t:
+                    if ti is None:
+                        continue
+                    if ti > maxi:
+                        maxi = ti
+            else:
+                if t is None:
+                    continue
+                if t > maxi:
+                    maxi = t
         return maxi
 
     def __setLib(self):
@@ -706,8 +799,12 @@ class ProfileDockWidget(QDockWidget):
             self.__manageMatplotlibAxe(self.__plotWdg.figure.get_axes()[0])
         self.__maxSpin.setEnabled(False)
         self.__minSpin.setEnabled(False)
+        self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(0)
+        self.__maxSpin.valueChanged.connect(self.__reScalePlot)
+        self.__minSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__minSpin.setValue(0)
+        self.__minSpin.valueChanged.connect(self.__reScalePlot)
 
         # clear legend
         while self.__legendLayout.count():

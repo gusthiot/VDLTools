@@ -37,7 +37,6 @@ from qgis.core import (QgsExpression,
 from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtGui import QColor, QMoveEvent
 from ..core.finder import Finder
-from ..core.geometry_v2 import GeometryV2
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 from ..core.signal import Signal
 
@@ -213,8 +212,7 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             map_point = event.mapPoint()
 
         if not self.__isEditing and not self.__findVertex and self.__layerList is not None:
-            f_l = Finder.findClosestFeatureAt(map_point, self.canvas(), self.__layerList, QgsSnappingConfig.VertexAndSegment, 10,
-                                              QgsTolerance.Pixels)
+            f_l = Finder.findClosestFeatureLayersAt(map_point, self.__layerList, 10, QgsTolerance.Pixels, self)
 
             if f_l is not None and self.__lastFeatureId != f_l[0].id():
                 f = f_l[0]
@@ -389,9 +387,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         :param withPoint: if we want a new interpolated point
         """
         line_v2 = self.__selectedFeature.geometry().constGet().clone()
-
-        # line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
-
         dist, vertex, vertex_id, val = line_v2.closestSegment(QgsPoint(self.__mapPoint))
 
         x0 = line_v2.xAt(vertex_id.vertex-1)
@@ -402,8 +397,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         d1 = Finder.sqrDistForCoords(x1, vertex.x(), y1, vertex.y())
         z0 = line_v2.zAt(vertex_id.vertex-1)
         z1 = line_v2.zAt(vertex_id.vertex)
-        z = (d0*z1 + d1*z0) / (d0 + d1)
-        vertex.addZValue(round(z, 2))
+        z = round((d0*z1 + d1*z0) / (d0 + d1), 3)
+        vertex.addZValue(z)
 
         if withPoint:
             pt_feat = QgsFeature(self.__layer.fields())

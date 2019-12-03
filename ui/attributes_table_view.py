@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 from qgis.gui import QgsDualView, QgsAttributeEditorContext
 from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QMenu
 
@@ -37,7 +38,6 @@ class AttributesTableView(QDialog):
         self.setWindowTitle(layer.name())
         self.__layout = QVBoxLayout()
         self.__menu = QMenu()
-        print(len(layer.actions().listActions()))
         for a in layer.actions().listActions():
             self.__menu.addAction(a)
         self.__layout.addWidget(self.__menu)

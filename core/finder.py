@@ -69,17 +69,16 @@ class Finder(object):
         return sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2))
 
     @staticmethod
-    def findClosestFeatureLayersAt(mapPoint, layersConfigs, mapTool):
+    def findClosestFeatureLayersAt(mapPoint, layers, tolerance, units, mapTool):
         """
         To find closest feature from a given position in given layers
         :param mapPoint: the map position
-        :param layersConfigs: the layers in which we are looking for features
         :param mapTool: a QgsMapTool instance
         :return: feature found in layers
         """
         features = []
-        for layer, config in layersConfigs.items():
-            feat = Finder.findClosestFeatureAt(mapPoint, layer, config['tolerance'], config['units'], mapTool)
+        for layer in layers.items():
+            feat = Finder.findClosestFeatureAt(mapPoint, layer, tolerance, units, mapTool)
             if feat is not None:
                 features.append([feat, layer])
         miniV = 9999

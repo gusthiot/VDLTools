@@ -166,15 +166,13 @@ class ExtrapolateTool(QgsMapTool):
         :param event: mouse event
         """
         if not self.__isEditing:
-            f_l = Finder.findClosestFeatureAt(event.mapPoint(), self.canvas(), [self.__layer], QgsSnappingConfig.VertexAndSegment, 10,
-                                              QgsTolerance.Pixels)
-            if f_l is not None:
-                self.__lastFeatureId = f_l[0].id()
-                self.__layer.selectByIds([f_l[0].id()])
+            feat = Finder.findClosestFeatureAt(event.mapPoint(), self.__layer, 10, QgsTolerance.Pixels, self)
+            if feat is not None:
+                self.__lastFeatureId = feat.id()
+                self.__layer.selectByIds([feat.id()])
                 self.__rubber.reset()
-                geom = f_l[0].geometry()
+                geom = feat.geometry()
                 index = geom.closestVertex(event.mapPoint())[1]
-                # line_v2, curved = GeometryV2.asLineV2(geom, self.__iface)
                 line_v2 = geom.constGet().clone()
                 num_p = line_v2.numPoints()
                 if num_p > 2 and (index == 0 or index == (num_p-1)):
@@ -198,7 +196,6 @@ class ExtrapolateTool(QgsMapTool):
                 return
             geom = found_features[0].geometry()
             self.__selectedVertex = geom.closestVertex(event.mapPoint())[1]
-            # line_v2, curved = GeometryV2.asLineV2(geom, self.__iface)
             line_v2 = geom.constGet().clone()
             num_p = line_v2.numPoints()
             if num_p > 2 and (self.__selectedVertex == 0 or self.__selectedVertex == (num_p-1)):
@@ -213,7 +210,7 @@ class ExtrapolateTool(QgsMapTool):
                 small_d = Finder.sqrDistForPoints(pt1, pt)
                 self.__isEditing = True
                 self.__selectedFeature = found_features[0]
-                self.__elevation = round(pt0.z() + (1 + small_d / big_d) * (pt1.z() - pt0.z()), 2)
+                self.__elevation = round(pt0.z() + (1 + small_d / big_d) * (pt1.z() - pt0.z()), 3)
                 if small_d < (big_d / 4):
                     if pt.z() is not None and pt.z() != 0:
                         message = QCoreApplication.translate("VDLTools", "This vertex has already an elevation ") + \
@@ -256,7 +253,6 @@ class ExtrapolateTool(QgsMapTool):
         """
         To add the new extrapolate elevation
         """
-        # line_v2, curved = GeometryV2.asLineV2(self.__selectedFeature.geometry(), self.__iface)
         line_v2 = self.__selectedFeature.geometry().constGet().clone()
         line_v2.setZAt(self.__selectedVertex, self.__elevation)
         self.__layer.changeGeometry(self.__selectedFeature.id(), QgsGeometry(line_v2))
