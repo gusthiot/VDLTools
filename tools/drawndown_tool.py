@@ -175,21 +175,17 @@ class DrawdownTool(QgsMapTool):
         """
         To check if we can enable the action for the selected layer
         """
-        enable = True
         if self.ownSettings is None or self.ownSettings.refLayers is None or len(self.ownSettings.refLayers) == 0 \
                 or self.ownSettings.levelAtt is None or self.ownSettings.levelVals is None \
                 or self.ownSettings.levelVals == [] or self.ownSettings.drawdownLayer is None \
                 or self.ownSettings.pipeDiam is None:
-            enable = False
-
-        if enable:
-            self.action().setEnabled(True)
-        else:
             self.action().setEnabled(False)
             if self.canvas().mapTool() == self:
                 self.__iface.actionPan().trigger()
             if self.__dockWdg is not None:
                 self.__dockWdg.close()
+        else:
+            self.action().setEnabled(True)
         return
 
     def __updateProfile(self):
