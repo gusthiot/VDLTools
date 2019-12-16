@@ -23,6 +23,7 @@
 from future.builtins import object
 
 from PyQt4.QtCore import QCoreApplication
+from PyQt4.QtGui import QProgressBar, QPushButton, QProgressDialog
 
 
 class RebuildIndex(object):
@@ -38,6 +39,7 @@ class RebuildIndex(object):
         self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/rebuild_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Rebuild Index")
+        self.killed = False
 
     def start(self):
         """
@@ -45,14 +47,34 @@ class RebuildIndex(object):
         """
         snap_util = self.__iface.mapCanvas().snappingUtils()
         extent = self.__iface.mapCanvas().extent()
-        # print(snap_util.indexingStrategy())
+        self.__progressDialog = QProgressDialog()
+        self.__progressDialog.setWindowTitle("Rebuild Index...")
+        self.__progressDialog.setLabelText("text")
+        progressBar = QProgressBar(self.__progressDialog)
+        progressBar.setTextVisible(True)
+        cancelButton = QPushButton()
+        cancelButton.setText('Cancel')
+        cancelButton.clicked.connect(self.kill)
+        self.__progressDialog.setBar(progressBar)
+        self.__progressDialog.setCancelButton(cancelButton)
+        self.__progressDialog.setMinimumWidth(300)
+        self.__progressDialog.show()
+
         lcs_list = snap_util.layers()
+        step = 0
+        self.killed = False
         for lc in lcs_list:
-            # print(lc.layer.name())
+            if self.killed:
+                break
             locator = snap_util.locatorForLayer(lc.layer)
             locator.setExtent(extent)
-            # print(locator.hasIndex())
             if not locator.hasIndex():
                 locator.init()
             else:
                 locator.rebuildIndex()
+            progressBar.setValue(100 * step / len(lcs_list))
+            step += 1
+        self.__progressDialog.close()
+
+    def kill(self):
+        self.killed = True
