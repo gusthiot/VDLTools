@@ -67,7 +67,7 @@ class RebuildIndex(object):
             if self.killed:
                 break
             locator = snap_util.locatorForLayer(lc.layer)
-            locator.setExtent(extent)
+            # locator.setExtent(extent)
             if not locator.hasIndex():
                 locator.init()
             else:
