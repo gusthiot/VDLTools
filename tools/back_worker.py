@@ -27,14 +27,14 @@ from PyQt4.QtCore import QThread, pyqtSignal
 
 class BackWorker(QThread):
 
-    # progressSignal = pyqtSignal(float)
+    progressSignal = pyqtSignal(float)
     finishedSignal = pyqtSignal(object)
     errorSignal = pyqtSignal(Exception, basestring)
 
     def __init__(self, iface):
         QThread.__init__(self)
         self.__iface = iface
-        # self.killed = False
+        self.killed = False
 
     def run(self):
         ret = None
@@ -44,20 +44,20 @@ class BackWorker(QThread):
             lcs_list = snap_util.layers()
             step = 0
             for lc in lcs_list:
-                # if self.killed:
-                #     break
+                if self.killed:
+                    break
                 locator = snap_util.locatorForLayer(lc.layer)
                 locator.setExtent(extent)
                 if not locator.hasIndex():
                     locator.init()
                 else:
                     locator.rebuildIndex()
-                # self.progressSignal.emit(100 * step / len(lcs_list))
+                self.progressSignal.emit(100 * step / len(lcs_list))
                 step += 1
         except Exception as e:
             print(e)
             self.errorSignal.emit(e, traceback.format_exc())
         self.finishedSignal.emit(ret)
 
-    # def kill(self):
-    #     self.killed = True
+    def kill(self):
+        self.killed = True

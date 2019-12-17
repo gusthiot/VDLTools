@@ -24,7 +24,7 @@ from future.builtins import object
 from .back_worker import BackWorker
 
 from PyQt4.QtCore import QCoreApplication
-# from PyQt4.QtGui import QProgressBar, QPushButton, QProgressDialog
+from PyQt4.QtGui import QProgressBar, QPushButton, QProgressDialog
 from qgis.gui import QgsMessageBar
 
 
@@ -52,23 +52,23 @@ class RebuildIndex(object):
 
         self.__backWorker.finishedSignal.connect(self.finished)
         self.__backWorker.errorSignal.connect(self.error)
-        # self.__backWorker.progressSignal.connect(progressBar.setValue)
-        self.__backWorker.start()
 
         # snap_util = self.__iface.mapCanvas().snappingUtils()
         # extent = self.__iface.mapCanvas().extent()
-        # self.__progressDialog = QProgressDialog()
-        # self.__progressDialog.setWindowTitle("Rebuild Index...")
-        # self.__progressDialog.setLabelText("text")
-        # progressBar = QProgressBar(self.__progressDialog)
-        # progressBar.setTextVisible(True)
-        # cancelButton = QPushButton()
-        # cancelButton.setText('Cancel')
-        # cancelButton.clicked.connect(self.kill)
-        # self.__progressDialog.setBar(progressBar)
-        # self.__progressDialog.setCancelButton(cancelButton)
-        # self.__progressDialog.setMinimumWidth(300)
-        # self.__progressDialog.show()
+        self.__progressDialog = QProgressDialog()
+        self.__progressDialog.setWindowTitle("Rebuild Index...")
+        self.__progressDialog.setLabelText("text")
+        progressBar = QProgressBar(self.__progressDialog)
+        progressBar.setTextVisible(True)
+        cancelButton = QPushButton()
+        cancelButton.setText('Cancel')
+        cancelButton.clicked.connect(self.__backWorker.kill)
+        self.__progressDialog.setBar(progressBar)
+        self.__progressDialog.setCancelButton(cancelButton)
+        self.__progressDialog.setMinimumWidth(300)
+        self.__progressDialog.show()
+        self.__backWorker.progressSignal.connect(progressBar.setValue)
+        self.__backWorker.start()
 
         # lcs_list = snap_util.layers()
         # step = 0
@@ -93,7 +93,7 @@ class RebuildIndex(object):
         self.__backWorker.quit()
         self.__backWorker.wait()
         self.__backWorker.deleteLater()
-        # self.__progressDialog.close()
+        self.__progressDialog.close()
 
     def error(self, e, exception_string):
         self.__iface.messageBar().pushMessage(
