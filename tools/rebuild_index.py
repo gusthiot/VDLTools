@@ -28,7 +28,7 @@ from PyQt4.QtGui import QProgressBar, QPushButton, QProgressDialog
 
 class RebuildIndex(object):
     """
-    Class to
+    Tool class to rebuild the indexation
     """
 
     def __init__(self, iface):
@@ -77,4 +77,7 @@ class RebuildIndex(object):
         self.__progressDialog.close()
 
     def kill(self):
+        """
+        To stop the rebuild at the end of the current working layer
+        """
         self.killed = True

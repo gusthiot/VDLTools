@@ -116,92 +116,92 @@
         <translation>Voulez-vous vraiment éditer la (les) couches(s) Point ?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="515"/>
+        <location filename="../tools/profile_tool.py" line="500"/>
         <source>Elevation</source>
         <translation>Altitude</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="516"/>
+        <location filename="../tools/profile_tool.py" line="501"/>
         <source>There is more than one elevation for the point </source>
         <translation>Il y a plus qu&apos;une altitude pour le point </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="65"/>
+        <location filename="../tools/drawndown_tool.py" line="64"/>
         <source>Drawdown</source>
         <translation>Rabattement</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="272"/>
+        <location filename="../tools/drawndown_tool.py" line="261"/>
         <source>More than one reference point, with 2 different elevations !!</source>
         <translation>Plus d&apos;un point de référence, avec 2 altitudes différentes !!</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="278"/>
+        <location filename="../tools/drawndown_tool.py" line="267"/>
         <source> (at invert)</source>
         <translation> (au radier)</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="281"/>
+        <location filename="../tools/drawndown_tool.py" line="270"/>
         <source> (on pipe)</source>
         <translation> (sur conduite)</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="283"/>
+        <location filename="../tools/drawndown_tool.py" line="272"/>
         <source> (no elevation)</source>
         <translation> (sans altitude)</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="333"/>
+        <location filename="../tools/drawndown_tool.py" line="313"/>
         <source> connected</source>
         <translation> connecté(e)</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="360"/>
+        <location filename="../tools/drawndown_tool.py" line="344"/>
         <source>drawdown</source>
         <translation>rabattement</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="480"/>
+        <location filename="../tools/drawndown_tool.py" line="462"/>
         <source>cannot be extrapolated</source>
         <translation>ne peut pas être extrapolé</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="597"/>
-        <location filename="../tools/profile_tool.py" line="633"/>
+        <location filename="../tools/drawndown_tool.py" line="579"/>
+        <location filename="../tools/profile_tool.py" line="622"/>
         <source>Error on selected</source>
         <translation>Erreur à la sélection</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="615"/>
-        <location filename="../tools/profile_tool.py" line="651"/>
+        <location filename="../tools/drawndown_tool.py" line="597"/>
+        <location filename="../tools/profile_tool.py" line="640"/>
         <source>Beware! the line </source>
         <translation>Attention ! La ligne </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="616"/>
-        <location filename="../tools/profile_tool.py" line="652"/>
+        <location filename="../tools/drawndown_tool.py" line="598"/>
+        <location filename="../tools/profile_tool.py" line="641"/>
         <source> has 2 identical summits on the vertex </source>
         <translation> possède 2 sommets identiques sur le vertex </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="617"/>
-        <location filename="../tools/profile_tool.py" line="653"/>
+        <location filename="../tools/drawndown_tool.py" line="599"/>
+        <location filename="../tools/profile_tool.py" line="642"/>
         <source> same coordinates (X and Y). Please correct the line geometry.</source>
         <translation> (mêmes coordonnées X et Y). Veuillez corriger la géométrie de la ligne.</translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="769"/>
-        <location filename="../tools/profile_tool.py" line="887"/>
+        <location filename="../tools/drawndown_tool.py" line="744"/>
+        <location filename="../tools/profile_tool.py" line="871"/>
         <source>Select more lines with click left or process with click right (ESC to undo)</source>
         <translation>Sélectionner plus de lignes avec le clic gauche ou lancer le profil avec le clic droit (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="949"/>
+        <location filename="../tools/profile_tool.py" line="933"/>
         <source>No line z ?!?</source>
         <translation>Pas de z ligne ?!?</translation>
     </message>
     <message>
-        <location filename="../tools/profile_tool.py" line="969"/>
+        <location filename="../tools/profile_tool.py" line="965"/>
         <source>More than 2 lines z ?!?</source>
         <translation>Plus que 2 z ligne ?!?</translation>
     </message>
@@ -236,12 +236,12 @@
         <translation>, altitude radier</translation>
     </message>
     <message>
-        <location filename="../ui/drawdown_adjustment_dialog.py" line="86"/>
+        <location filename="../ui/drawdown_adjustment_dialog.py" line="89"/>
         <source>, adjustment : </source>
         <translation>, correction : </translation>
     </message>
     <message>
-        <location filename="../ui/drawdown_adjustment_dialog.py" line="117"/>
+        <location filename="../ui/drawdown_adjustment_dialog.py" line="120"/>
         <source>Apply correction(s)</source>
         <translation>Appliquer correction(s)</translation>
     </message>
@@ -279,8 +279,24 @@
         <translation>Ok</translation>
     </message>
     <message>
+        <location filename="../tools/rebuild_index.py" line="41"/>
+        <source>Rebuild Index</source>
+        <translation>Reconstruction de l&apos;indexation</translation>
+    </message>
+    <message>
+        <location filename="../tools/rebuild_index.py" line="51"/>
+        <source>Rebuild Index...</source>
+        <translation>Reconstruction de l&apos;indexation...</translation>
+    </message>
+    <message>
+        <location filename="../tools/rebuild_index.py" line="52"/>
+        <source>Percentage of indexed layers</source>
+        <translation>Pourcentage des couches indexées</translation>
+    </message>
+    <message>
+        <location filename="../tools/rebuild_index.py" line="56"/>
         <location filename="../ui/choose_control_dialog.py" line="86"/>
-        <location filename="../ui/drawdown_adjustment_dialog.py" line="110"/>
+        <location filename="../ui/drawdown_adjustment_dialog.py" line="113"/>
         <location filename="../ui/drawdown_edition_dialog.py" line="59"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="69"/>
         <location filename="../ui/fields_settings_dialog.py" line="67"/>
@@ -321,9 +337,9 @@
         <translation>voulez-vous vraiment la changer (nouvelle altitude : </translation>
     </message>
     <message>
-        <location filename="../tools/drawndown_tool.py" line="455"/>
+        <location filename="../tools/drawndown_tool.py" line="437"/>
         <location filename="../tools/extrapolate_tool.py" line="235"/>
-        <location filename="../tools/profile_tool.py" line="420"/>
+        <location filename="../tools/profile_tool.py" line="402"/>
         <source>The segment is too big, do you really want to extrapolate anyway ? (elevation : </source>
         <translation>Le segment est trop grand, voulez-vous extrapoler malgré tout ? (altitude : </translation>
     </message>
@@ -386,123 +402,123 @@
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="100"/>
+        <location filename="../ui/profile_dock_widget.py" line="99"/>
         <source>Profile Tool</source>
         <translation>Outil de profil</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="117"/>
+        <location filename="../ui/profile_dock_widget.py" line="116"/>
         <source>No graph lib available (qwt5 or matplotlib)</source>
         <translation>Librairie graphique non disponible (qwt5 ou matplotlib)</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="169"/>
-        <location filename="../ui/profile_dock_widget.py" line="272"/>
+        <location filename="../ui/profile_dock_widget.py" line="276"/>
         <source>Display MNT</source>
         <translation>Afficher MNT</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="176"/>
-        <location filename="../ui/profile_dock_widget.py" line="283"/>
+        <location filename="../ui/profile_dock_widget.py" line="287"/>
         <source>Display Zeros</source>
         <translation>Afficher les zéros</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="184"/>
-        <location filename="../ui/profile_dock_widget.py" line="261"/>
+        <location filename="../ui/profile_dock_widget.py" line="265"/>
         <source>Scale 1:1</source>
         <translation>Echelle 1:1</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="213"/>
+        <location filename="../ui/profile_dock_widget.py" line="217"/>
         <source>Save</source>
         <translation>Sauver</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="264"/>
+        <location filename="../ui/profile_dock_widget.py" line="268"/>
         <source>Auto scale</source>
         <translation>Echelle automatique</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="275"/>
+        <location filename="../ui/profile_dock_widget.py" line="279"/>
         <source>Remove MNT</source>
         <translation>Effacer MNT</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="286"/>
+        <location filename="../ui/profile_dock_widget.py" line="290"/>
         <source>Remove Zeros</source>
         <translation>Cacher les zéros</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="311"/>
-        <location filename="../ui/profile_dock_widget.py" line="785"/>
+        <location filename="../ui/profile_dock_widget.py" line="315"/>
+        <location filename="../ui/profile_dock_widget.py" line="828"/>
         <source>Distance [m]</source>
         <translation>Distance [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="314"/>
-        <location filename="../ui/profile_dock_widget.py" line="786"/>
+        <location filename="../ui/profile_dock_widget.py" line="318"/>
+        <location filename="../ui/profile_dock_widget.py" line="829"/>
         <source>Elevation [m]</source>
         <translation>Altitude [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="416"/>
+        <location filename="../ui/profile_dock_widget.py" line="425"/>
         <source>HTTP Error</source>
         <translation>Erreur HTTP</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="417"/>
+        <location filename="../ui/profile_dock_widget.py" line="426"/>
         <source>status error</source>
         <translation>erreur status</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="421"/>
+        <location filename="../ui/profile_dock_widget.py" line="430"/>
         <source>URL Error</source>
         <translation>Erreur URL</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="425"/>
+        <location filename="../ui/profile_dock_widget.py" line="434"/>
         <source>No MNT values here</source>
         <translation>Pas de mesures MNT ici</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="536"/>
+        <location filename="../ui/profile_dock_widget.py" line="550"/>
         <source>Rescale problem... (trace printed)</source>
         <translation>Problème de rescale... (trace imrpimée dans la console)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="808"/>
+        <location filename="../ui/profile_dock_widget.py" line="851"/>
         <source>Tracking exception : </source>
         <translation>Exception de tracking : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="822"/>
+        <location filename="../ui/profile_dock_widget.py" line="865"/>
         <source>Mouse event exception : </source>
         <translation>Exception d&apos;évènement souris : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="713"/>
+        <location filename="../ui/profile_dock_widget.py" line="756"/>
         <source>Invalid index </source>
         <translation>Index invalide </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="721"/>
-        <location filename="../ui/profile_dock_widget.py" line="739"/>
+        <location filename="../ui/profile_dock_widget.py" line="764"/>
+        <location filename="../ui/profile_dock_widget.py" line="782"/>
         <source>Save As</source>
         <translation>Sauver sous</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="722"/>
+        <location filename="../ui/profile_dock_widget.py" line="765"/>
         <source>Profile.pdf</source>
         <translation>Profil.pdf</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="740"/>
+        <location filename="../ui/profile_dock_widget.py" line="783"/>
         <source>Profile.png</source>
         <translation>Profil.png</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="726"/>
+        <location filename="../ui/profile_dock_widget.py" line="769"/>
         <source>QGIS Profile Plugin</source>
         <translation>Pllugin QGIS de profil</translation>
     </message>
@@ -522,33 +538,33 @@
         <translation>Problèmes d&apos;altitudes</translation>
     </message>
     <message>
-        <location filename="../ui/profile_message_dialog.py" line="67"/>
+        <location filename="../ui/profile_message_dialog.py" line="68"/>
         <source> in layer &apos;</source>
         <translation> dans la couche &apos;</translation>
     </message>
     <message>
-        <location filename="../ui/profile_message_dialog.py" line="69"/>
+        <location filename="../ui/profile_message_dialog.py" line="70"/>
         <source>line vertex: </source>
         <translation>vertex ligne: </translation>
     </message>
     <message>
-        <location filename="../ui/profile_message_dialog.py" line="82"/>
+        <location filename="../ui/profile_message_dialog.py" line="83"/>
         <source> in layer : different elevations on same position </source>
         <translation> dans la couche : différentes altitudes pour la même position </translation>
     </message>
     <message>
-        <location filename="../ui/profile_message_dialog.py" line="98"/>
+        <location filename="../ui/profile_message_dialog.py" line="99"/>
         <location filename="../ui/profile_zeros_dialog.py" line="92"/>
         <source>Pass</source>
         <translation>Passe</translation>
     </message>
     <message>
-        <location filename="../ui/profile_message_dialog.py" line="105"/>
+        <location filename="../ui/profile_message_dialog.py" line="106"/>
         <source>Apply line elevations to points</source>
         <translation>Appliquer l&apos;altitude de la ligne aux points</translation>
     </message>
     <message>
-        <location filename="../ui/profile_message_dialog.py" line="109"/>
+        <location filename="../ui/profile_message_dialog.py" line="110"/>
         <source>Apply points elevations to line</source>
         <translation>Appliquer l&apos;altitude des points à la ligne</translation>
     </message>
