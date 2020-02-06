@@ -87,19 +87,19 @@ class ControlTool(AreaTool):
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control db given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
-        if self.ownSettings.controlConfigTable is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control table given !!"),
+        if self.ownSettings.controlSchemaDb is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control db schema given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.ownSettings.controlConfigTable is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No config table given !!"),
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No control config table given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
 
-        self.__configTable = self.ownSettings.configTable
-        self.__schemaDb = self.ownSettings.schemaDb
+        self.__configTable = self.ownSettings.controlConfigTable
+        self.__schemaDb = self.ownSettings.controlSchemaDb
 
-        self.connector = DBConnector(self.ownSettings.uriDb, self.__iface)
+        self.connector = DBConnector(self.ownSettings.controlUriDb, self.__iface)
         self.db = self.connector.setConnection()
         """
         Test si la couche / table qui contient l'ensemble des contrôles existe bien dans le projet
@@ -183,10 +183,7 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg.accept()
 
-        self.__connector = DBConnector(self.ownSettings.uriDb, self.__iface)
-        self.__db = self.__connector.setConnection()
-
-        if self.__db is not None and self.geom.area() > 0:
+        if self.db is not None and self.geom.area() > 0:
             if len(self.__chooseDlg.controls()) == 0:
                 self.__iface.messageBar().pushMessage("Avertissement", u"Aucun contrôle sélectionné ", level=QgsMessageBar.INFO, duration=5)
             else:

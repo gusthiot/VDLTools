@@ -74,11 +74,11 @@ class ImportMeasures(object):
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.ownSettings.importSchemaDb is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No db schema given !!"),
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import db schema given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
         if self.ownSettings.importConfigTable is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No config table given !!"),
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import config table given !!"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
             return
         self.__configTable = self.ownSettings.importConfigTable
