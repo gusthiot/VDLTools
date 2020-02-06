@@ -47,8 +47,9 @@ class ShowSettingsDialog(QDialog):
     Dialog class for plugin settings
     """
 
-    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, ctllDb, configTable, uriDb, schemaDb, mntUrl,
-                 refLayers, adjLayers, levelAtt, levelVal, drawdowmLayer, pipeDiam, moreTools):
+    def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, importConfigTable, importUriDb, importSchemaDb,
+                 controlConfigTable, controlUriDb, controlSchemaDb, mntUrl, refLayers, adjLayers, levelAtt, levelVal,
+                 drawdowmLayer, pipeDiam, moreTools):
         """
         Constructor
         :param iface: interface
@@ -60,10 +61,12 @@ class ShowSettingsDialog(QDialog):
         self.__iface = iface
         self.__memoryPointsLayer = memoryPointsLayer
         self.__memoryLinesLayer = memoryLinesLayer
-        self.__ctlDb = ctllDb
-        self.__configTable = configTable
-        self.__uriDb = uriDb
-        self.__schemaDb = schemaDb
+        self.__importConfigTable = importConfigTable
+        self.__importUriDb = importUriDb
+        self.__importSchemaDb = importSchemaDb
+        self.__controlConfigTable = controlConfigTable
+        self.__controlUriDb = controlUriDb
+        self.__controlSchemaDb = controlSchemaDb
         self.__mntUrl = mntUrl
         self.__refLayers = refLayers
         self.__adjLayers = adjLayers
@@ -263,6 +266,55 @@ class ShowSettingsDialog(QDialog):
             if self.__drawdowmLayer in self.__drawdownLayers:
                 self.__drawdownCombo.setCurrentIndex(self.__drawdownLayers.index(self.__drawdowmLayer)+1)
 
+        line += 1
+
+        controlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control "))
+        self.__layout.addWidget(controlLabel, line, 0)
+
+        line += 1
+
+        controlDbLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database : "))
+        self.__layout.addWidget(controlDbLabel, line, 1)
+
+        self.__controlDbCombo = QComboBox()
+        self.__controlDbCombo.setMinimumHeight(20)
+        self.__controlDbCombo.setMinimumWidth(50)
+        self.__controlDbCombo.addItem("")
+        for db in list(self.__dbs.keys()):
+            self.__controlDbCombo.addItem(db)
+        self.__layout.addWidget(self.__controlDbCombo, line, 2)
+
+        line += 1
+
+        controlSchemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database schema : "))
+        self.__layout.addWidget(controlSchemaLabel, line, 1)
+
+        self.__controlSchemaCombo = QComboBox()
+        self.__controlSchemaCombo.setMinimumHeight(20)
+        self.__controlSchemaCombo.setMinimumWidth(50)
+        self.__controlSchemaCombo.addItem("")
+        self.__layout.addWidget(self.__controlSchemaCombo, line, 2)
+
+        line += 1
+
+        controlTableLabel = QLabel(QCoreApplication.translate("VDLTools", "Control config table : "))
+        self.__layout.addWidget(controlTableLabel, line, 1)
+
+        self.__controlTableCombo = QComboBox()
+        self.__controlTableCombo.setMinimumHeight(20)
+        self.__controlTableCombo.setMinimumWidth(50)
+        self.__controlTableCombo.addItem("")
+        self.__layout.addWidget(self.__controlTableCombo, line, 2)
+
+
+        self.__controlDbCombo.currentIndexChanged.connect(self.__controlDbComboChanged)
+        self.__controlSchemaCombo.currentIndexChanged.connect(self.__controlSchemaComboChanged)
+        self.__controlTableCombo.currentIndexChanged.connect(self.__controlTableComboChanged)
+
+        if self.__controlUriDb is not None:
+            if self.__controlUriDb.database() in list(self.__dbs.keys()):
+                self.__controlDbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__controlUriDb.database()) + 1)
+
         if moreTools:
             line += 1
 
@@ -271,75 +323,52 @@ class ShowSettingsDialog(QDialog):
 
             line += 1
 
-            dbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
-            self.__layout.addWidget(dbLabel, line, 1)
+            importDbLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database : "))
+            self.__layout.addWidget(importDbLabel, line, 1)
 
-            self.__dbCombo = QComboBox()
-            self.__dbCombo.setMinimumHeight(20)
-            self.__dbCombo.setMinimumWidth(50)
-            self.__dbCombo.addItem("")
+            self.__importDbCombo = QComboBox()
+            self.__importDbCombo.setMinimumHeight(20)
+            self.__importDbCombo.setMinimumWidth(50)
+            self.__importDbCombo.addItem("")
             for db in list(self.__dbs.keys()):
-                self.__dbCombo.addItem(db)
-            self.__layout.addWidget(self.__dbCombo, line, 2)
+                self.__importDbCombo.addItem(db)
+            self.__layout.addWidget(self.__importDbCombo, line, 2)
 
             line += 1
 
-            schemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Database schema : "))
-            self.__layout.addWidget(schemaLabel, line, 1)
+            importSchemaLabel = QLabel(QCoreApplication.translate("VDLTools", "Import database schema : "))
+            self.__layout.addWidget(importSchemaLabel, line, 1)
 
-            self.__schemaCombo = QComboBox()
-            self.__schemaCombo.setMinimumHeight(20)
-            self.__schemaCombo.setMinimumWidth(50)
-            self.__schemaCombo.addItem("")
-            self.__layout.addWidget(self.__schemaCombo, line, 2)
-
-            line += 1
-
-            tableLabel = QLabel(QCoreApplication.translate("VDLTools", "Config table : "))
-            self.__layout.addWidget(tableLabel, line, 1)
-
-            self.__tableCombo = QComboBox()
-            self.__tableCombo.setMinimumHeight(20)
-            self.__tableCombo.setMinimumWidth(50)
-            self.__tableCombo.addItem("")
-            self.__layout.addWidget(self.__tableCombo, line, 2)
+            self.__importSchemaCombo = QComboBox()
+            self.__importSchemaCombo.setMinimumHeight(20)
+            self.__importSchemaCombo.setMinimumWidth(50)
+            self.__importSchemaCombo.addItem("")
+            self.__layout.addWidget(self.__importSchemaCombo, line, 2)
 
             line += 1
 
-            controlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control "))
-            self.__layout.addWidget(controlLabel, line, 0)
+            importTableLabel = QLabel(QCoreApplication.translate("VDLTools", "Import config table : "))
+            self.__layout.addWidget(importTableLabel, line, 1)
 
-            line += 1
+            self.__importTableCombo = QComboBox()
+            self.__importTableCombo.setMinimumHeight(20)
+            self.__importTableCombo.setMinimumWidth(50)
+            self.__importTableCombo.addItem("")
+            self.__layout.addWidget(self.__importTableCombo, line, 2)
 
-            ctlLabel = QLabel(QCoreApplication.translate("VDLTools", "Control database : "))
-            self.__layout.addWidget(ctlLabel, line, 1)
 
-            self.__ctlCombo = QComboBox()
-            self.__ctlCombo.setMinimumHeight(20)
-            self.__ctlCombo.setMinimumWidth(50)
-            self.__ctlCombo.addItem("")
-            for db in list(self.__dbs.keys()):
-                self.__ctlCombo.addItem(db)
-            self.__layout.addWidget(self.__ctlCombo, line, 2)
+            self.__importDbCombo.currentIndexChanged.connect(self.__importDbComboChanged)
+            self.__importSchemaCombo.currentIndexChanged.connect(self.__importSchemaComboChanged)
+            self.__importTableCombo.currentIndexChanged.connect(self.__importTableComboChanged)
 
-            self.__dbCombo.currentIndexChanged.connect(self.__dbComboChanged)
-            self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
-            self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
+            if self.__importUriDb is not None:
+                if self.__importUriDb.database() in list(self.__dbs.keys()):
+                    self.__importDbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__importUriDb.database()) + 1)
 
-            self.__ctlCombo.currentIndexChanged.connect(self.__ctlComboChanged)
-
-            if self.__uriDb is not None:
-                if self.__uriDb.database() in list(self.__dbs.keys()):
-                    self.__dbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__uriDb.database()) + 1)
-
-            if self.__ctlDb is not None:
-                if self.__ctlDb.database() in list(self.__dbs.keys()):
-                    self.__ctlCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__ctlDb.database()) + 1)
         else:
-            self.__dbCombo = None
-            self.__schemaCombo = None
-            self.__tableCombo = None
-            self.__ctlCombo = None
+            self.__importDbCombo = None
+            self.__importSchemaCombo = None
+            self.__importTableCombo = None
 
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "OK"))
         self.__okButton.setMinimumHeight(20)
@@ -362,7 +391,7 @@ class ShowSettingsDialog(QDialog):
         while combo.count() > 0:
             combo.removeItem(combo.count()-1)
 
-    def __setSchemaCombo(self, uriDb):
+    def __setSchemaCombo(self, uriDb, schemaCombo, schemaComboChanged, schemaDb):
         """
         To fill the schema combo list
         :param uriDb: selected database uri
@@ -370,9 +399,9 @@ class ShowSettingsDialog(QDialog):
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
         if db:
-            Signal.safelyDisconnect(self.__schemaCombo.currentIndexChanged, self.__schemaComboChanged)
-            self.__resetCombo(self.__schemaCombo)
-            self.__schemaCombo.addItem("")
+            Signal.safelyDisconnect(schemaCombo.currentIndexChanged, schemaComboChanged)
+            self.__resetCombo(schemaCombo)
+            schemaCombo.addItem("")
             self.__schemas = []
             query = db.exec_("""SELECT DISTINCT table_schema FROM information_schema.tables WHERE table_schema NOT IN
                 ('pg_catalog', 'information_schema', 'topology') AND table_type = 'BASE TABLE' AND table_name NOT IN
@@ -384,13 +413,13 @@ class ShowSettingsDialog(QDialog):
                     self.__schemas.append(query.value(0))
                 db.close()
                 for schema in self.__schemas:
-                    self.__schemaCombo.addItem(schema)
-                self.__schemaCombo.currentIndexChanged.connect(self.__schemaComboChanged)
-                if self.__schemaDb is not None:
-                    if self.__schemaDb in self.__schemas:
-                        self.__schemaCombo.setCurrentIndex(self.__schemas.index(self.__schemaDb) + 1)
+                    schemaCombo.addItem(schema)
+                schemaCombo.currentIndexChanged.connect(schemaComboChanged)
+                if schemaDb is not None:
+                    if schemaDb in self.__schemas:
+                        schemaCombo.setCurrentIndex(self.__schemas.index(schemaDb) + 1)
 
-    def __setTableCombo(self, uriDb, schema):
+    def __setTableCombo(self, uriDb, schema, tableCombo, tableComboChanged, configTable):
         """
         To fill the table combo list
         :param uriDb: selected database uri
@@ -399,9 +428,9 @@ class ShowSettingsDialog(QDialog):
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
         if db:
-            Signal.safelyDisconnect(self.__tableCombo.currentIndexChanged, self.__tableComboChanged)
-            self.__resetCombo(self.__tableCombo)
-            self.__tableCombo.addItem("")
+            Signal.safelyDisconnect(tableCombo.currentIndexChanged, tableComboChanged)
+            self.__resetCombo(tableCombo)
+            tableCombo.addItem("")
             self.__tables = []
             query = db.exec_("""SELECT table_name FROM information_schema.tables WHERE table_schema = '""" + schema +
                              """' ORDER BY table_name""")
@@ -412,12 +441,12 @@ class ShowSettingsDialog(QDialog):
                     self.__tables.append(query.value(0))
                 db.close()
                 for table in self.__tables:
-                    if self.__tableCombo.findText(table) == -1:
-                        self.__tableCombo.addItem(table)
-                self.__tableCombo.currentIndexChanged.connect(self.__tableComboChanged)
-                if self.__configTable is not None:
-                    if self.__configTable in self.__tables:
-                        self.__tableCombo.setCurrentIndex(self.__tables.index(self.__configTable) + 1)
+                    if tableCombo.findText(table) == -1:
+                        tableCombo.addItem(table)
+                tableCombo.currentIndexChanged.connect(tableComboChanged)
+                if configTable is not None:
+                    if configTable in self.__tables:
+                        tableCombo.setCurrentIndex(self.__tables.index(configTable) + 1)
 
     def __setPipeDiamCombo(self, drawdownLayer):
         """
@@ -501,30 +530,59 @@ class ShowSettingsDialog(QDialog):
         if self.drawdownLayer() is not None:
             self.__setPipeDiamCombo(self.drawdownLayer())
 
-    def __tableComboChanged(self):
+    def __controlTableComboChanged(self):
         """
         To remove blank item when another one is selected
         """
-        if self.__tableCombo.itemText(0) == "":
-            self.__tableCombo.removeItem(0)
+        if self.__controlTableCombo.itemText(0) == "":
+            self.__controlTableCombo.removeItem(0)
 
-    def __dbComboChanged(self):
+    def __importTableComboChanged(self):
+        """
+        To remove blank item when another one is selected
+        """
+        if self.__importTableCombo.itemText(0) == "":
+            self.__importTableCombo.removeItem(0)
+
+    def __controlDbComboChanged(self):
         """
         When the selection in db combo has changed
         """
-        if self.__dbCombo.itemText(0) == "":
-            self.__dbCombo.removeItem(0)
-        if self.uriDb() is not None:
-            self.__setSchemaCombo(self.uriDb())
+        if self.__controlDbCombo.itemText(0) == "":
+            self.__controlDbCombo.removeItem(0)
+        if self.controlUriDb() is not None:
+            self.__setSchemaCombo(self.controlUriDb(), self.__controlSchemaCombo, self.__controlSchemaComboChanged,
+                                  self.__controlSchemaDb)
 
-    def __schemaComboChanged(self):
+    def __importDbComboChanged(self):
+        """
+        When the selection in db combo has changed
+        """
+        if self.__importDbCombo.itemText(0) == "":
+            self.__importDbCombo.removeItem(0)
+        if self.importUriDb() is not None:
+            self.__setSchemaCombo(self.importUriDb(), self.__importSchemaCombo, self.__importSchemaComboChanged,
+                                  self.__importSchemaDb)
+
+    def __controlSchemaComboChanged(self):
         """
         When the selection in schema combo has changed
         """
-        if self.__schemaCombo.itemText(0) == "":
-            self.__schemaCombo.removeItem(0)
-        if self.schemaDb() is not None:
-            self.__setTableCombo(self.uriDb(), self.schemaDb())
+        if self.__controlSchemaCombo.itemText(0) == "":
+            self.__controlSchemaCombo.removeItem(0)
+        if self.controlSchemaDb() is not None:
+            self.__setTableCombo(self.controlUriDb(), self.controlSchemaDb(), self.__controlTableCombo,
+                                 self.__controlTableComboChanged, self.__controlConfigTable)
+
+    def __importSchemaComboChanged(self):
+        """
+        When the selection in schema combo has changed
+        """
+        if self.__importSchemaaCombo.itemText(0) == "":
+            self.__importSchemaCombo.removeItem(0)
+        if self.importSchemaDb() is not None:
+            self.__setTableCombo(self.importUriDb(), self.importSchemaDb(), self.__importTableCombo,
+                                 self.__importTableComboChanged, self.__importConfigTable)
 
     def __pipeDiamComboChanged(self):
         """
@@ -539,13 +597,6 @@ class ShowSettingsDialog(QDialog):
         """
         if self.__levelAttCombo.itemText(0) == "":
             self.__levelAttCombo.removeItem(0)
-
-    def __ctlComboChanged(self):
-        """
-        When the selection in ctl combo has changed
-        """
-        if self.__ctlCombo.itemText(0) == "":
-            self.__ctlCombo.removeItem(0)
 
     def okButton(self):
         """
@@ -653,41 +704,80 @@ class ShowSettingsDialog(QDialog):
         else:
             return self.__pipeDiamFields[index]
 
-    def configTable(self):
+    def controlConfigTable(self):
         """
         To get the selected config table
         :return: selected config table, or none
         """
-        if self.__tableCombo is None:
+        if self.__controlTableCombo is None:
             return None
-        index = self.__tableCombo.currentIndex()
-        if self.__tableCombo.itemText(index) == "":
+        index = self.__controlTableCombo.currentIndex()
+        if self.__controlTableCombo.itemText(index) == "":
             return None
         else:
             return self.__tables[index]
 
-    def uriDb(self):
+    def importConfigTable(self):
+        """
+        To get the selected config table
+        :return: selected config table, or none
+        """
+        if self.__importTableCombo is None:
+            return None
+        index = self.__importTableCombo.currentIndex()
+        if self.__importTableCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__tables[index]
+
+    def controlUriDb(self):
         """
         To get selected import database uri
         :return: import database uri
         """
-        if self.__dbCombo is None:
+        if self.__controlDbCombo is None:
             return None
-        index = self.__dbCombo.currentIndex()
-        if self.__dbCombo.itemText(index) == "":
+        index = self.__controlDbCombo.currentIndex()
+        if self.__controlDbCombo.itemText(index) == "":
             return None
         else:
             return self.__dbs[list(self.__dbs.keys())[index]]
 
-    def schemaDb(self):
+    def importUriDb(self):
+        """
+        To get selected import database uri
+        :return: import database uri
+        """
+        if self.__importDbCombo is None:
+            return None
+        index = self.__importDbCombo.currentIndex()
+        if self.__importDbCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__dbs[list(self.__dbs.keys())[index]]
+
+    def controlSchemaDb(self):
         """
         To get selected import database schema
         :return: import database schema
         """
-        if self.__schemaCombo is None:
+        if self.__controlSchemaCombo is None:
             return None
-        index = self.__schemaCombo.currentIndex()
-        if self.__schemaCombo.itemText(index) == "":
+        index = self.__controlSchemaCombo.currentIndex()
+        if self.__controlSchemaCombo.itemText(index) == "":
+            return None
+        else:
+            return self.__schemas[index]
+
+    def importSchemaDb(self):
+        """
+        To get selected import database schema
+        :return: import database schema
+        """
+        if self.__importSchemaCombo is None:
+            return None
+        index = self.__importSchemaCombo.currentIndex()
+        if self.__importSchemaCombo.itemText(index) == "":
             return None
         else:
             return self.__schemas[index]
@@ -699,15 +789,3 @@ class ShowSettingsDialog(QDialog):
         """
         return self.__mntText.text()
 
-    def ctlDb(self):
-        """
-        To get selected control database uri
-        :return: control database uri
-        """
-        if self.__ctlCombo is None:
-            return None
-        index = self.__ctlCombo.currentIndex()
-        if self.__ctlCombo.itemText(index) == "":
-            return None
-        else:
-            return self.__dbs[list(self.__dbs.keys())[index]]
