@@ -100,19 +100,19 @@ class ControlTool(AreaTool):
         self.__schemaDb = self.ownSettings.controlSchemaDb
 
         self.connector = DBConnector(self.ownSettings.controlUriDb, self.__iface)
-        self.db = self.connector.setConnection()
+        self.__db = self.connector.setConnection()
         """
         Test si la couche / table qui contient l'ensemble des contrôles existe bien dans le projet
         """
-        if self.db is not None:
+        if self.__db is not None:
             uricfg = QgsDataSourceURI()
-            uricfg.setConnection(self.db.hostName(),str(self.db.port()), self.db.databaseName(),self.db.userName(),self.db.password())
+            uricfg.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),self.__db.userName(),self.__db.password())
             uricfg.setDataSource(self.__schemaDb,self.__configTable,None,"","id")
             self.__layerCfgControl = QgsVectorLayer(uricfg.uri(),u"Liste des contrôles", "postgres")  #définition d'une couche QMapLayer au niveau QGIS
 
             '''
             # par requête SQL sans définir de couche avec l'API QGIS
-            query = self.db.exec_("""SELECT * FROM """+ self.__schemaDb+ """.""" + self.__configTable + """ WHERE active is true ORDER BY 1""")
+            query = self.__db.exec_("""SELECT * FROM """+ self.__schemaDb+ """.""" + self.__configTable + """ WHERE active is true ORDER BY 1""")
             while query.next():
                 print query.value(0)
             '''
@@ -183,7 +183,7 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg.accept()
 
-        if self.db is not None and self.geom.area() > 0:
+        if self.__db is not None and self.geom.area() > 0:
             if len(self.__chooseDlg.controls()) == 0:
                 self.__iface.messageBar().pushMessage("Avertissement", u"Aucun contrôle sélectionné ", level=QgsMessageBar.INFO, duration=5)
             else:
