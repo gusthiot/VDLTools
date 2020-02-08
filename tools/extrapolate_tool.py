@@ -23,8 +23,7 @@
 from builtins import str
 
 from qgis.gui import QgsMapTool, QgsRubberBand
-from qgis.core import (QgsSnappingConfig,
-                       Qgis,
+from qgis.core import (Qgis,
                        QgsTolerance,
                        QgsMapLayer,
                        QgsGeometry,

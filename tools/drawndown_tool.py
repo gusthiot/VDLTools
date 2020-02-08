@@ -22,8 +22,7 @@
 """
 from builtins import str
 from builtins import range
-from qgis.core import (QgsSnappingConfig,
-                       Qgis,
+from qgis.core import (Qgis,
                        QgsWkbTypes,
                        QgsGeometry,
                        QgsFeatureRequest,
@@ -33,7 +32,6 @@ from qgis.core import (QgsSnappingConfig,
 from qgis.gui import QgsMapTool
 from qgis.PyQt.QtCore import Qt, QCoreApplication
 from ..core.finder import Finder
-from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.drawdown_adjustment_dialog import DrawdownAdjustmentDialog
 from ..ui.drawdown_edition_dialog import DrawdownEditionDialog
@@ -195,7 +193,8 @@ class DrawdownTool(QgsMapTool):
             z = pt['z']
 
             for layer in self.__layers:
-                fs = Finder.findFeaturesAt(self.toMapCoordinates(layer, QgsPointXY(x, y)), layer, self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits, self)
+                fs = Finder.findFeaturesAt(self.toMapCoordinates(layer, QgsPointXY(x, y)), layer, self.SEARCH_TOLERANCE,
+                                           QgsTolerance.LayerUnits, self)
                 if len(fs) == 0:
                     z.append(None)
                 else:
@@ -686,7 +685,7 @@ class DrawdownTool(QgsMapTool):
                     if feat is not None and self.__lastFeatureId != feat.id():
                         self.__lastFeature = feat
                         self.__lastFeatureId = feat.id()
-                        self.ownSettings.drawdownLayer.setSelectedFeatures([feat.id()])
+                        self.ownSettings.drawdownLayer.selectByIds([feat.id()])
                     if feat is None:
                         self.__cancel()
                 else:
