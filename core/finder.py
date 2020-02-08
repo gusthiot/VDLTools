@@ -77,7 +77,7 @@ class Finder(object):
         :return: feature found in layers
         """
         features = []
-        for layer in layers.items():
+        for layer in layers:
             feat = Finder.findClosestFeatureAt(mapPoint, layer, tolerance, units, mapTool)
             if feat is not None:
                 features.append([feat, layer])
