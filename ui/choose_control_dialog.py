@@ -91,7 +91,7 @@ class ChooseControlDialog(QDialog):
         """
 
         for i in range(len(self.__listReq)):
-            textLabel = u""+ self.__listReq[i].get("id") + " - " + self.__listReq[i].get("name") + " (" + self.__listReq[i].get("code") + ")"
+            textLabel = self.__listReq[i].get("id") + " - " + self.__listReq[i].get("name") + " (" + self.__listReq[i].get("code") + ")"
             label = QLabel(textLabel)
             label.setMinimumHeight(20)
             self.__controlsLabels.append(label)
@@ -113,10 +113,10 @@ class ChooseControlDialog(QDialog):
 
         self.__layout.addWidget(scroll, 1, 0, 1, 2)
 
-        self.__allSelect = QPushButton(u"Tout sélectionner")
+        self.__allSelect = QPushButton(QCoreApplication.translate("VDLTools", "Select all"))
         self.__allSelect.setMinimumHeight(20)
         self.__allSelect.setMinimumWidth(100)
-        self.__deSelect = QPushButton(u"Desélectionner")
+        self.__deSelect = QPushButton(QCoreApplication.translate("VDLTools", "Unselect"))
         self.__deSelect.setMinimumHeight(20)
         self.__deSelect.setMinimumWidth(100)
 
@@ -135,7 +135,10 @@ class ChooseControlDialog(QDialog):
         self.__layout.addWidget(self.__okButton, 100, 0)
         self.__layout.addWidget(self.__cancelButton, 100, 1)
 
-        helpText = u"""<html><head/><body><p><a href="https://golux.lausanne.ch/goeland/document/document_view2.php?iddocument=1059148">Lien sur la description des contrôles (document goéland) </span></a></p></body></html>"""
+        helpText = '<html><head/><body><p>' + \
+                   '<a href="https://golux.lausanne.ch/goeland/document/document_view2.php?iddocument=1059148">' + \
+                   QCoreApplication.translate("VDLTools", "Link on controls description (goeland document)") + \
+                   '</span></a></p></body></html>'
         self.__linkHelp = QLabel(helpText)
         self.__linkHelp.setOpenExternalLinks(True)
         #self.__linkHelp.setTextInteractionFlags(Qt.LinksAccessibleByMouse)

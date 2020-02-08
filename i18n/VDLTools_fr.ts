@@ -15,19 +15,69 @@
         <translation>Dupliquer</translation>
     </message>
     <message>
-        <location filename="../tools/control_tool.py" line="48"/>
+        <location filename="../tools/control_tool.py" line="52"/>
         <source>Make control requests on selected area</source>
         <translation>Faire des requêtes de contrôle sur la zone sélectionnée</translation>
     </message>
     <message>
-        <location filename="../tools/control_tool.py" line="63"/>
+        <location filename="../tools/control_tool.py" line="70"/>
         <source>Control</source>
         <translation>Contrôle</translation>
     </message>
     <message>
-        <location filename="../tools/control_tool.py" line="80"/>
+        <location filename="../tools/control_tool.py" line="87"/>
         <source>No control db given !!</source>
-        <translation>Pas de bd à contrôler choisie !!</translation>
+        <translation>Pas de bd de contrôle choisie !!</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="91"/>
+        <source>No control db schema given !!</source>
+        <translation>Pas de schéma de bd de contrôle choisie !!</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="95"/>
+        <source>No control config table given !!</source>
+        <translation>Pas de table de configuration de contrôle choisie !!</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="126"/>
+        <source>Request Area not defined, </source>
+        <translation>Zone de requête non définie, </translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="127"/>
+        <source>please define a control area (maintain mouse clic)</source>
+        <translation>veuillez définir une zone de contrôle (maintenir le clic de la souris)</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="132"/>
+        <source>Please define a smaller control area, max = 1 km2</source>
+        <translation>Veuillez définir une zone de contrôle plus petite, max. = 1 km2</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="194"/>
+        <source>No control selected</source>
+        <translation>Aucun contrôle sélectionné</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="202"/>
+        <source>Database onnection problem, or too small area</source>
+        <translation>Problème de connexion à la base de données ou surface trop petite</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="254"/>
+        <source>All layers have been charged with success in the projet. |</source>
+        <translation>Toutes les couches ont été chargées avec succès dans le projet. |</translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="255"/>
+        <source>Total errors : </source>
+        <translation>Total des erreurs : </translation>
+    </message>
+    <message>
+        <location filename="../tools/control_tool.py" line="262"/>
+        <source>Good !! No error detected on the defined area</source>
+        <translation>Bien !! Aucune erreur a été détectée sur la zone définie</translation>
     </message>
     <message>
         <location filename="../tools/duplicate_tool.py" line="354"/>
@@ -259,7 +309,7 @@
         <location filename="../ui/intersect_distance_dialog.py" line="62"/>
         <location filename="../ui/profile_confirm_dialog.py" line="49"/>
         <location filename="../ui/profile_layers_dialog.py" line="50"/>
-        <location filename="../ui/show_settings_dialog.py" line="344"/>
+        <location filename="../ui/show_settings_dialog.py" line="373"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
@@ -269,14 +319,29 @@
         <translation>Choisir les contrôles</translation>
     </message>
     <message>
-        <location filename="../ui/choose_control_dialog.py" line="50"/>
+        <location filename="../ui/choose_control_dialog.py" line="52"/>
         <source>Choose which controls you want to process :</source>
         <translation>Choisir les contrôles que vous voulez lancer :</translation>
     </message>
     <message>
-        <location filename="../ui/choose_control_dialog.py" line="82"/>
+        <location filename="../ui/choose_control_dialog.py" line="116"/>
+        <source>Select all</source>
+        <translation>Tout sélectionner</translation>
+    </message>
+    <message>
+        <location filename="../ui/choose_control_dialog.py" line="119"/>
+        <source>Unselect</source>
+        <translation>Désélectionner</translation>
+    </message>
+    <message>
+        <location filename="../ui/choose_control_dialog.py" line="126"/>
         <source>Ok</source>
         <translation>Ok</translation>
+    </message>
+    <message>
+        <location filename="../ui/choose_control_dialog.py" line="140"/>
+        <source>Link on controls description (goeland document)</source>
+        <translation>Lien sur la description des contrôles (document goéland)</translation>
     </message>
     <message>
         <location filename="../tools/rebuild_index.py" line="41"/>
@@ -295,7 +360,7 @@
     </message>
     <message>
         <location filename="../tools/rebuild_index.py" line="56"/>
-        <location filename="../ui/choose_control_dialog.py" line="86"/>
+        <location filename="../ui/choose_control_dialog.py" line="131"/>
         <location filename="../ui/drawdown_adjustment_dialog.py" line="113"/>
         <location filename="../ui/drawdown_edition_dialog.py" line="59"/>
         <location filename="../ui/duplicate_distance_dialog.py" line="69"/>
@@ -307,7 +372,7 @@
         <location filename="../ui/move_confirm_dialog.py" line="58"/>
         <location filename="../ui/profile_confirm_dialog.py" line="53"/>
         <location filename="../ui/profile_layers_dialog.py" line="54"/>
-        <location filename="../ui/show_settings_dialog.py" line="348"/>
+        <location filename="../ui/show_settings_dialog.py" line="377"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -570,107 +635,117 @@
     </message>
     <message>
         <location filename="../tools/show_settings.py" line="57"/>
-        <location filename="../ui/show_settings_dialog.py" line="74"/>
+        <location filename="../ui/show_settings_dialog.py" line="77"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="../tools/show_settings.py" line="176"/>
+        <location filename="../tools/show_settings.py" line="183"/>
         <source>Point code attribute has to be numbers separated by comma</source>
         <translation>L&apos;attribut code point doit contenir des nombres séparés par une virgule</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="111"/>
+        <location filename="../ui/show_settings_dialog.py" line="114"/>
         <source>Working points layer : </source>
         <translation>Couche de points de travail : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="128"/>
+        <location filename="../ui/show_settings_dialog.py" line="131"/>
         <source>Working lines layer : </source>
         <translation>Couche de lignes de travail : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="145"/>
+        <location filename="../ui/show_settings_dialog.py" line="148"/>
         <source>Profiles </source>
         <translation>Profils</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="164"/>
+        <location filename="../ui/show_settings_dialog.py" line="167"/>
         <source>Drawdown </source>
         <translation>Rabattement</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="237"/>
+        <location filename="../ui/show_settings_dialog.py" line="240"/>
         <source>drawdown layer : </source>
         <translation>Couche à rabattre : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="269"/>
+        <location filename="../ui/show_settings_dialog.py" line="289"/>
+        <source>Control database schema : </source>
+        <translation>Schéma base de données de contrôle : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="300"/>
+        <source>Control config table : </source>
+        <translation>Table de configuration de contrôle : </translation>
+    </message>
+    <message>
+        <location filename="../ui/show_settings_dialog.py" line="321"/>
         <source>Import </source>
         <translation>Import</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="274"/>
+        <location filename="../ui/show_settings_dialog.py" line="326"/>
         <source>Import database : </source>
         <translation>Import base de données : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="287"/>
-        <source>Database schema : </source>
-        <translation>Schéma base de données : </translation>
+        <location filename="../ui/show_settings_dialog.py" line="339"/>
+        <source>Import database schema : </source>
+        <translation>Schéma base de données d&apos;import : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="298"/>
-        <source>Config table : </source>
-        <translation>Table de configuration : </translation>
+        <location filename="../ui/show_settings_dialog.py" line="350"/>
+        <source>Import config table : </source>
+        <translation>Table de configuration d&apos;import : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="150"/>
+        <location filename="../ui/show_settings_dialog.py" line="153"/>
         <source>Url for MNT : </source>
         <translation>Url pour MNT : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="106"/>
+        <location filename="../ui/show_settings_dialog.py" line="109"/>
         <source>Intersect </source>
         <translation>Intersection</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="169"/>
+        <location filename="../ui/show_settings_dialog.py" line="172"/>
         <source>Layer</source>
         <translation>Couche</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="173"/>
+        <location filename="../ui/show_settings_dialog.py" line="176"/>
         <source>Reference</source>
         <translation>Référence</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="174"/>
+        <location filename="../ui/show_settings_dialog.py" line="177"/>
         <source>Adjustable</source>
         <translation>Ajustable</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="204"/>
+        <location filename="../ui/show_settings_dialog.py" line="207"/>
         <source>Code(s) on pipe : </source>
         <translation>Code(s) sur conduite : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="225"/>
+        <location filename="../ui/show_settings_dialog.py" line="228"/>
         <source>Point code attribute : </source>
         <translation>Attribut code point : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="250"/>
+        <location filename="../ui/show_settings_dialog.py" line="253"/>
         <source>Pipe diameter attribute [cm] : </source>
         <translation>Attribut de diamètre de conduite [cm] : </translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="309"/>
+        <location filename="../ui/show_settings_dialog.py" line="271"/>
         <source>Control </source>
         <translation>Contrôle</translation>
     </message>
     <message>
-        <location filename="../ui/show_settings_dialog.py" line="314"/>
+        <location filename="../ui/show_settings_dialog.py" line="276"/>
         <source>Control database : </source>
         <translation>Base de données à contrôler : </translation>
     </message>
@@ -720,7 +795,7 @@
         <translation>Importer des  mesures</translation>
     </message>
     <message>
-        <location filename="../tools/control_tool.py" line="76"/>
+        <location filename="../tools/control_tool.py" line="83"/>
         <location filename="../tools/import_measures.py" line="69"/>
         <source>No settings given !!</source>
         <translation>Pas de paramètres entrés !!</translation>
@@ -732,13 +807,13 @@
     </message>
     <message>
         <location filename="../tools/import_measures.py" line="77"/>
-        <source>No db schema given !!</source>
-        <translation>Pas de schéma de bd choisi !!</translation>
+        <source>No import db schema given !!</source>
+        <translation>Pas de schéma bd d&apos;import choisie !!</translation>
     </message>
     <message>
         <location filename="../tools/import_measures.py" line="81"/>
-        <source>No config table given !!</source>
-        <translation>Pas de table de configuration choisie !!</translation>
+        <source>No import config table given !!</source>
+        <translation>Pas de table de configuration d&apos;import choisie !!</translation>
     </message>
     <message>
         <location filename="../tools/import_measures.py" line="102"/>
@@ -894,7 +969,7 @@
     </message>
     <message>
         <location filename="../tools/multiselect_tool.py" line="85"/>
-        <location filename="../tools/show_settings.py" line="175"/>
+        <location filename="../tools/show_settings.py" line="182"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>

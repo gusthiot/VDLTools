@@ -108,7 +108,7 @@ class ControlTool(AreaTool):
             uricfg = QgsDataSourceURI()
             uricfg.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),self.__db.userName(),self.__db.password())
             uricfg.setDataSource(self.__schemaDb,self.__configTable,None,"","id")
-            self.__layerCfgControl = QgsVectorLayer(uricfg.uri(),u"Liste des contrôles", "postgres")  #définition d'une couche QMapLayer au niveau QGIS
+            self.__layerCfgControl = QgsVectorLayer(uricfg.uri(),"Liste des contrôles", "postgres")  #définition d'une couche QMapLayer au niveau QGIS
 
             '''
             # par requête SQL sans définir de couche avec l'API QGIS
@@ -122,11 +122,15 @@ class ControlTool(AreaTool):
         """
 
         if self.geom is None:
-             self.__iface.messageBar().pushMessage(u"zone de requête non définie, Veuillez définir une zone de contrôle (maintenir le clic de la souris)", level=QgsMessageBar.CRITICAL, duration=5)
+             self.__iface.messageBar().pushMessage(
+                 QCoreApplication.translate("VDLTools", "Request Area not defined, ") +
+                 QCoreApplication.translate("VDLTools", "please define a control area (maintain mouse clic)")
+                 , level=QgsMessageBar.CRITICAL, duration=5)
         else:
-            #print self.geom.area()
             if self.geom.area() > self.areaMax:
-                self.__iface.messageBar().pushMessage(u"Veuillez définir une zone de contrôle plus petite , max. = 1 km2", level=QgsMessageBar.CRITICAL, duration=5)
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "Please define a smaller control area, max = 1 km2"),
+                    level=QgsMessageBar.CRITICAL, duration=5)
 
                 """
                 Question à l'utilisateur s'il veut continuer ou pas par rapport à une zone de contrôle hors tolérance
@@ -155,10 +159,10 @@ class ControlTool(AreaTool):
                 req = QgsFeatureRequest().setFilterExpression('"active" is true')
                 for f in self.__layerCfgControl.getFeatures(req):
                     lrequests = {}
-                    lrequests["id"]=str(f[u"id"])
-                    lrequests["name"]=f[u"layer_name"]
-                    lrequests["code"]=f[u"code_error"]
-                    lrequests["check"]=f[u"check_defaut"]
+                    lrequests["id"]=str(f["id"])
+                    lrequests["name"]=f["layer_name"]
+                    lrequests["code"]=f["code_error"]
+                    lrequests["check"]=f["check_defaut"]
                     self.__lrequests.append(lrequests)
                 # trier la liste de dictionnaire
                 self.__lrequests = sorted( self.__lrequests,key=lambda k: int(k['id']))
@@ -185,12 +189,18 @@ class ControlTool(AreaTool):
 
         if self.__db is not None and self.geom.area() > 0:
             if len(self.__chooseDlg.controls()) == 0:
-                self.__iface.messageBar().pushMessage("Avertissement", u"Aucun contrôle sélectionné ", level=QgsMessageBar.INFO, duration=5)
+                self.__iface.messageBar().pushMessage(
+                    "Avertissement",
+                    QCoreApplication.translate("VDLTools", "No control selected"),
+                    level=QgsMessageBar.INFO, duration=5)
             else:
                 self.__createCtrlLayers(self.__chooseDlg.controls())
             self.__cancel()
         else:
-            self.__iface.messageBar().pushMessage("Avertissement", u"Problème de connexion à la base de données ou surface trop petite ", level=QgsMessageBar.INFO, duration=5)
+            self.__iface.messageBar().pushMessage(
+                "Avertissement",
+                QCoreApplication.translate("VDLTools", "Database onnection problem, or too small area"),
+                level=QgsMessageBar.INFO, duration=5)
 
     def __createCtrlLayers(self,requete):
         """
@@ -221,17 +231,17 @@ class ControlTool(AreaTool):
         totalError = 0                                                  # décompte des erreurs détectées (nombre d'objets dans chaque couche)
         for name in requete:
             for q in self.__layerCfgControl.getFeatures(QgsFeatureRequest(int(name))):
-                query_fct = q[u"sql_function"]
+                query_fct = q["sql_function"]
                 query_fct = query_fct.replace("bbox",bbox)
-                geom_type = QgsWKBTypes.parseType(q[u"geom_type"])      # récupérer le type de géométrie QGIS "QgsWKBTypes" depuis un type de géométrie WKT Postgis
+                geom_type = QgsWKBTypes.parseType(q["geom_type"])      # récupérer le type de géométrie QGIS "QgsWKBTypes" depuis un type de géométrie WKT Postgis
                 uri.setWkbType(geom_type)
-                uri.setDataSource('',query_fct,q[u"geom_name"],"",q[u"key_attribute"])
-                layer = QgsVectorLayer(uri.uri(),q[u"layer_name"], "postgres")
+                uri.setDataSource('',query_fct,q["geom_name"],"",q["key_attribute"])
+                layer = QgsVectorLayer(uri.uri(),q["layer_name"], "postgres")
 
                 totalError = totalError + layer.featureCount()
                 if layer.featureCount() > 0:
                     outputLayers.append(layer)
-                    styleLayers.append(str(q[u"layer_style"]))
+                    styleLayers.append(str(q["layer_style"]))
             percent = (float(i+1.0)/float(len(requete))) * 100           # Faire évoluer la barre de progression du traitement
             progress.setValue(percent)
             i += 1
@@ -239,11 +249,18 @@ class ControlTool(AreaTool):
             self.__addCtrlLayers(outputLayers, styleLayers)
             #print "Erreur totale : " + str(totalError)
             self.__iface.messageBar().clearWidgets()
-            self.__iface.messageBar().pushMessage("Info", u"Toutes les couches ont été chargées avec succès dans le projet / Total des erreurs :" + str(totalError), level=QgsMessageBar.INFO, duration=10)
+            self.__iface.messageBar().pushMessage(
+                "Info",
+                QCoreApplication.translate("VDLTools", "All layers have been charged with success in the projet. |") +
+                QCoreApplication.translate("VDLTools", "Total errors : ") +
+                        str(totalError), level=QgsMessageBar.INFO, duration=10)
         else:
             #print "Erreur totale : " + str(totalError)
             self.__iface.messageBar().clearWidgets()
-            self.__iface.messageBar().pushMessage("Info", u"Yes !! Aucune erreur a été détectée sur la zone définie ", level=QgsMessageBar.INFO, duration=5)
+            self.__iface.messageBar().pushMessage(
+                "Info",
+                QCoreApplication.translate("VDLTools", "Good !! No error detected on the defined area"),
+                level=QgsMessageBar.INFO, duration=5)
 
     def __addCtrlLayers(self, layers, styles):
         """
