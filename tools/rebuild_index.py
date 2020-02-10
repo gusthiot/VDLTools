@@ -67,11 +67,18 @@ class RebuildIndex(object):
             if self.killed:
                 break
             locator = snap_util.locatorForLayer(lc.layer)
+            if locator.extent() is not None:
+                txt = locator.extent().toString()
+            else:
+                txt = "None"
+            print("old extent : " + txt)
+            print("new extent : " + extent.toString())
             locator.setExtent(extent)
             if not locator.hasIndex():
                 locator.init()
             else:
                 locator.rebuildIndex()
+            locator.setExtent(None)
             progressBar.setValue(100 * step / len(lcs_list))
             step += 1
         self.__progressDialog.close()
