@@ -55,7 +55,7 @@ class ControlTool(AreaTool):
         self.__db = None
         self.ownSettings = None
         self.__crs = None
-        self.__geom
+        self.__geom = None
         self.__registry = QgsMapLayerRegistry.instance()        # définition du registre des couches dans le projet
         self.__configTable = None                               # nom de la table dans la base de données qui liste
                                                                 # tous les contrôles possible
