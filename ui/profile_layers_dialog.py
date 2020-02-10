@@ -41,6 +41,7 @@ class ProfileLayersDialog(QDialog):
         """
         Constructor
         :param pointLayers: available points layers
+        :param with_mnt: use mnt or not
         """
         QDialog.__init__(self)
         self.__pointLayers = pointLayers
@@ -81,7 +82,7 @@ class ProfileLayersDialog(QDialog):
         self.__mntChecks = []
         self.__mntTitles = ["MNT", "MNS", "Rocher"]
 
-        if with_mnt:
+        if self.__with_mnt:
             k = len(self.__pointLayers)
             for i in range(len(self.__mntTitles)):
                 label = QLabel(self.__mntTitles[i] + " :")

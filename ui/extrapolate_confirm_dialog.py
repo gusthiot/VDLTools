@@ -35,6 +35,7 @@ class ExtrapolateConfirmDialog(QDialog):
     def __init__(self, message):
         """
         Constructor
+        :param message: label for the dialog
         """
         QDialog.__init__(self)
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Edition Confirmation"))

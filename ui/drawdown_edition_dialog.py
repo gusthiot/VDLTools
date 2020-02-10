@@ -20,16 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from future.builtins import str
-from future.builtins import range
 
 from PyQt4.QtGui import (QDialog,
-                         QWidget,
-                         QScrollArea,
                          QGridLayout,
                          QPushButton,
-                         QLabel,
-                         QCheckBox)
+                         QLabel)
 from PyQt4.QtCore import QCoreApplication
 
 

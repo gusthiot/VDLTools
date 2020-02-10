@@ -42,6 +42,7 @@ class ImportJobsDialog(QDialog):
         """
         Constructor
         :param jobs: all the jobs available for import
+        :param selected: True if features are selected
         """
         QDialog.__init__(self)
         self.__jobs = jobs

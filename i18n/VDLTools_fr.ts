@@ -747,7 +747,7 @@
     <message>
         <location filename="../ui/show_settings_dialog.py" line="276"/>
         <source>Control database : </source>
-        <translation>Base de données à contrôler : </translation>
+        <translation>Base de données de contrôle : </translation>
     </message>
     <message>
         <location filename="../ui/fields_settings_dialog.py" line="42"/>

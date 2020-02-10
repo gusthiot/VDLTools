@@ -36,6 +36,7 @@ class ImportMeasuresDialog(QDialog):
     def __init__(self, data):
         """
         Constructor
+        :param data: data to be imported
         """
         QDialog.__init__(self)
         self.__data = data

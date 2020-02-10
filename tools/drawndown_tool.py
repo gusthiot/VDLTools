@@ -417,7 +417,6 @@ class DrawdownTool(QgsMapTool):
     def __setAdjustements(self):
         """
         To display adjustments window
-        :return:
         """
         self.__renderedIds = self.__selectedIds
         self.__calculateProfile()

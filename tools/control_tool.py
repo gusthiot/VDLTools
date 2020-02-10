@@ -55,10 +55,13 @@ class ControlTool(AreaTool):
         self.__db = None
         self.ownSettings = None
         self.__crs = None
+        self.__geom
         self.__registry = QgsMapLayerRegistry.instance()        # définition du registre des couches dans le projet
-        self.__configTable = None                                 # nom de la table dans la base de données qui liste tous les contrôles possible
+        self.__configTable = None                               # nom de la table dans la base de données qui liste
+                                                                # tous les contrôles possible
         self.__schemaDb = None
-        self.__layerCfgControl = None                           # nom de la couche dans le projet qui correspond à la table de la liste des contrôles
+        self.__layerCfgControl = None                           # nom de la couche dans le projet qui correspond à la
+                                                                # table de la liste des contrôles
         self.__lrequests = []                                   # liste des requêtes actives
         self.areaMax = 1000000                                  # tolérance de surface max. pour lancer un contrôle
 
@@ -106,52 +109,26 @@ class ControlTool(AreaTool):
         """
         if self.__db is not None:
             uricfg = QgsDataSourceURI()
-            uricfg.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),self.__db.userName(),self.__db.password())
+            uricfg.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),
+                                 self.__db.userName(),self.__db.password())
             uricfg.setDataSource(self.__schemaDb,self.__configTable,None,"","id")
-            self.__layerCfgControl = QgsVectorLayer(uricfg.uri(),"Liste des contrôles", "postgres")  #définition d'une couche QMapLayer au niveau QGIS
-
-            '''
-            # par requête SQL sans définir de couche avec l'API QGIS
-            query = self.__db.exec_("""SELECT * FROM """+ self.__schemaDb+ """.""" + self.__configTable + """ WHERE active is true ORDER BY 1""")
-            while query.next():
-                print query.value(0)
-            '''
+            self.__layerCfgControl = QgsVectorLayer(uricfg.uri(),"Liste des contrôles", "postgres")
+                    # définition d'une couche QMapLayer au niveau QGIS
 
         """
         Test si la zone de contrôle a bien été définie par l'utilisateur
         """
 
-        if self.geom is None:
+        if self.__geom is None:
              self.__iface.messageBar().pushMessage(
                  QCoreApplication.translate("VDLTools", "Request Area not defined, ") +
                  QCoreApplication.translate("VDLTools", "please define a control area (maintain mouse clic)")
                  , level=QgsMessageBar.CRITICAL, duration=5)
         else:
-            if self.geom.area() > self.areaMax:
+            if self.__geom.area() > self.areaMax:
                 self.__iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "Please define a smaller control area, max = 1 km2"),
                     level=QgsMessageBar.CRITICAL, duration=5)
-
-                """
-                Question à l'utilisateur s'il veut continuer ou pas par rapport à une zone de contrôle hors tolérance
-                """
-                """
-                qstBox = QMessageBox()
-                qstText = u"Voulez-vous quand même continuer ??, le traitement peut prendre plusieurs minutes, voire plusieurs heures "
-                qstBox.setText(qstText)
-                qstBox.setWindowTitle(u"Zone de contrôle trop grande")
-                qstBox.setIcon(QMessageBox.Question)
-                qstBox.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-                repArea = qstBox.exec_()
-                # print qstBox.clickedButton().text() # retourne le texte du bouton cliqué
-                #bb = qstBox.clickedButton() # role du bouton cliqué (objet)
-                repMaxArea = qstBox.buttonRole(qstBox.clickedButton())
-                if repMaxArea == 0:
-                    print u"on continue malgré tout le traitement"
-                elif repMaxArea == 1:
-                    print u"on arrête le traitement"
-                #print repArea # réponse donnée par la touche cliqué sur la boite de dialogue
-                """
             else:
                 """
                 Liste des contrôles actifs existants
@@ -166,7 +143,6 @@ class ControlTool(AreaTool):
                     self.__lrequests.append(lrequests)
                 # trier la liste de dictionnaire
                 self.__lrequests = sorted( self.__lrequests,key=lambda k: int(k['id']))
-                #print self.__lrequests
 
                 self.__chooseDlg = ChooseControlDialog(self.__lrequests)
                 self.__chooseDlg.okButton().clicked.connect(self.__onOk)
@@ -178,8 +154,7 @@ class ControlTool(AreaTool):
         When the Cancel button in Choose Control Dialog is pushed
         """
         self.__chooseDlg.reject()
-        self.geom = None # supprimer la géométrie définie
-        self.__lrequests = [] # vider la liste des requêtes actives
+        self.__cancel()
 
     def __onOk(self):
         """
@@ -187,7 +162,7 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg.accept()
 
-        if self.__db is not None and self.geom.area() > 0:
+        if self.__db is not None and self.__geom.area() > 0:
             if len(self.__chooseDlg.controls()) == 0:
                 self.__iface.messageBar().pushMessage(
                     "Avertissement",
@@ -208,32 +183,36 @@ class ControlTool(AreaTool):
         - selon une requête SQL dans la base de données (choix  ou des contrôle par l'utilisateur)
         - selon une zone géographique définie par l'utilisateur
         :param requete: liste des requêtes
-        :return:
         """
 
         self.__iface.messageBar().clearWidgets()
-        progressMessageBar = self.__iface.messageBar()                  # ajout d'une barre de progression pour voir le chargement progressif des couches
+        progressMessageBar = self.__iface.messageBar()
+                # ajout d'une barre de progression pour voir le chargement progressif des couches
         progress = QProgressBar()
         progress.setMaximum(100)
         progressMessageBar.pushWidget(progress)
 
-        # récupérer la géométrie définie par l'utilisateur pour l'utiliser dans les requêtes SQL , conversion en géométrie binaire et dans le bon système de coordonnée)
-        self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid() # défintion du système de coordonnées en sortie (par défaut 21781), récupérer des paramètres du projets
-        bbox = "(SELECT ST_GeomFromText('" + self.geom.exportToWkt() + "'," + str(self.__crs) + "))"
+        # récupérer la géométrie définie par l'utilisateur pour l'utiliser dans les requêtes SQL
+        # conversion en géométrie binaire et dans le bon système de coordonnée)
+        self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
+                # défintion du système de coordonnées en sortie (par défaut 21781), récupérer des paramètres du projets
+        bbox = "(SELECT ST_GeomFromText('" + self.__geom.exportToWkt() + "'," + str(self.__crs) + "))"
 
         # paramètres de la source des couches à ajouter au projet
         uri = QgsDataSourceURI()
-        uri.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),self.__db.userName(),self.__db.password())
+        uri.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),
+                          self.__db.userName(),self.__db.password())
         uri.setSrid(str(self.__crs))
-        outputLayers = [] # listes des couches de résultats à charger dans le projet
-        styleLayers = []       # listes des styles de couches (fichier qml)
+        outputLayers = []       # listes des couches de résultats à charger dans le projet
+        styleLayers = []        # listes des styles de couches (fichier qml)
         i = 0
-        totalError = 0                                                  # décompte des erreurs détectées (nombre d'objets dans chaque couche)
+        totalError = 0          # décompte des erreurs détectées (nombre d'objets dans chaque couche)
         for name in requete:
             for q in self.__layerCfgControl.getFeatures(QgsFeatureRequest(int(name))):
                 query_fct = q["sql_function"]
                 query_fct = query_fct.replace("bbox",bbox)
-                geom_type = QgsWKBTypes.parseType(q["geom_type"])      # récupérer le type de géométrie QGIS "QgsWKBTypes" depuis un type de géométrie WKT Postgis
+                geom_type = QgsWKBTypes.parseType(q["geom_type"])
+                    # récupérer le type de géométrie QGIS "QgsWKBTypes" depuis un type de géométrie WKT Postgis
                 uri.setWkbType(geom_type)
                 uri.setDataSource('',query_fct,q["geom_name"],"",q["key_attribute"])
                 layer = QgsVectorLayer(uri.uri(),q["layer_name"], "postgres")
@@ -242,12 +221,11 @@ class ControlTool(AreaTool):
                 if layer.featureCount() > 0:
                     outputLayers.append(layer)
                     styleLayers.append(str(q["layer_style"]))
-            percent = (float(i+1.0)/float(len(requete))) * 100           # Faire évoluer la barre de progression du traitement
+            percent = (float(i+1.0)/float(len(requete))) * 100    # Faire évoluer la barre de progression du traitement
             progress.setValue(percent)
             i += 1
         if len(outputLayers) > 0:
             self.__addCtrlLayers(outputLayers, styleLayers)
-            #print "Erreur totale : " + str(totalError)
             self.__iface.messageBar().clearWidgets()
             self.__iface.messageBar().pushMessage(
                 "Info",
@@ -255,7 +233,6 @@ class ControlTool(AreaTool):
                 QCoreApplication.translate("VDLTools", "Total errors : ") +
                         str(totalError), level=QgsMessageBar.INFO, duration=10)
         else:
-            #print "Erreur totale : " + str(totalError)
             self.__iface.messageBar().clearWidgets()
             self.__iface.messageBar().pushMessage(
                 "Info",
@@ -266,28 +243,19 @@ class ControlTool(AreaTool):
         """
         Ajout des couches du résultats des requêtes de contrôles
         :param layers: Liste des couches à ajouter au projet
-        :return:
+        :param styles: Liste des styles de couches
         """
 
-        groupName = 'CONTROL (' +datetime.now().strftime("%Y-%m-%d")+')' # définir le nom du groupe dans lequel seront ajouté chaque couche
+        groupName = 'CONTROL (' +datetime.now().strftime("%Y-%m-%d")+')'
+                # définir le nom du groupe dans lequel seront ajouté chaque couche
         project_tree = QgsProject.instance().layerTreeRoot()             # arbre des couches
         if project_tree.findGroup(groupName) is None:
-            #iface.legendInterface().addGroup( 'CONTROL')
             ctrl_group = project_tree.insertGroup(0,groupName)
         else:
             ctrl_group = project_tree.findGroup(groupName)
-        ctrl_group.removeAllChildren()                                  # effacer les couches existantes prend du temps !!
-
+            ctrl_group.removeAllChildren()                          # effacer les couches existantes prend du temps !!
 
         for i in range(0,len(layers)):
-            '''
-            layerStyle = QgsMapLayerStyle('//geodata.lausanne.ch/data/QGIS_projet/eauservice/qwat_lausanne/qml/control_layer/conduites_non_connectees.qml')
-            layerStyle.writeToLayer(layers[i])
-            layers[i].triggerRepaint()
-            layerStyleManager = layers[i].styleManager()
-            layerStyleManager.addStyle('control_style', layerStyle)
-            layerStyleManager.setCurrentStyle('control_style')
-            '''
             layers[i].loadNamedStyle(styles[i])
             QgsMapLayerRegistry.instance().addMapLayer(layers[i],False)
             ctrl_group.insertLayer(i,layers[i])
@@ -300,5 +268,5 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg = None
         self.__db.close()
-        self.geom = None # supprimer la géométrie définie
+        self.__geom = None # supprimer la géométrie définie
         self.__lrequests = [] # vider la liste des requêtes actives

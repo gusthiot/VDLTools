@@ -393,7 +393,7 @@ class ShowSettings(QObject):
 
     def __cancel(self):
         """
-        To cancel used variables
+        To cancel linesLayer
         """
         self.__linesLayer = None
 

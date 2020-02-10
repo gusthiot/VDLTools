@@ -40,6 +40,7 @@ class ProfileZerosDialog(QDialog):
     def __init__(self, zeros):
         """
         Constructor
+        :param zeros: zeros to display
         """
         QDialog.__init__(self)
         self.__zeros = zeros

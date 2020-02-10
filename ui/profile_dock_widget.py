@@ -379,8 +379,8 @@ class ProfileDockWidget(QDockWidget):
 
     def __getMnt(self, settings):
         """
-        To get the MN data for the profile
-        :param settings: settings containing MN url
+        To get the MNT data for the profile
+        :param settings: settings containing MNT url
         """
         if settings is None or settings.mntUrl is None or settings.mntUrl == "None":
             url = 'https://map.lausanne.ch/prod/wsgi/profile.json'
@@ -439,6 +439,8 @@ class ProfileDockWidget(QDockWidget):
         """
         To attach the curves for the layers to the profile
         :param names: layers names
+        :param settings: project settings
+        :param usedMnts: if use mnt or not
         """
         if (self.__profiles is None) or (self.__profiles == 0):
             return

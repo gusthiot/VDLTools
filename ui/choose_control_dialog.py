@@ -53,37 +53,9 @@ class ChooseControlDialog(QDialog):
                                        "Choose which controls you want to process :"))
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 2)
-
-        """
-        Boite de dialogue avec une liste de contrôle à sélectionner (QListWidget / QListWidgetItem)
-        """
-        '''
-
-        self.__controlsSelected = []
-        self.__viewReq = QListWidget()                                      # contructeur de la liste
-        self.__viewReq.setSelectionMode(3)                                  # mode de sélection (sélection étendue)
-        self.__layout.addWidget(self.__viewReq,2,0,1,2)                     # ajout de la liste (widget) dans la boite de dialogue)
-
-        for i in range(len(self.__listReq)):
-            textItem = u""+ self.__listReq[i].get("id") + " - " + self.__listReq[i].get("name") + " (" + self.__listReq[i].get("code") + ")"
-            itemReq = QListWidgetItem()                                     # ajout des items pour chaque objet contrôle
-            itemReq.setText(textItem)
-            self.__viewReq.insertItem(i,itemReq)
-            #self.__viewReq.addItem(itemReq)
-            if self.__listReq[i].get("check") == 't':
-                itemReq.setSelected(True)
-                itemReq.setCheckState(Qt.Checked)
-            else:
-                itemReq.setSelected(False)
-                itemReq.setCheckState(Qt.Unchecked)
-            self.__controlsSelected.append(itemReq)
-        '''
-
         self.__group = QButtonGroup()
-
         self.__controlsLabels = []
         self.__controlsChecks = []
-
         self.__scrollLayout = QGridLayout()
 
         """
@@ -91,7 +63,8 @@ class ChooseControlDialog(QDialog):
         """
 
         for i in range(len(self.__listReq)):
-            textLabel = self.__listReq[i].get("id") + " - " + self.__listReq[i].get("name") + " (" + self.__listReq[i].get("code") + ")"
+            textLabel = self.__listReq[i].get("id") + " - " + self.__listReq[i].get("name") + \
+                        " (" + self.__listReq[i].get("code") + ")"
             label = QLabel(textLabel)
             label.setMinimumHeight(20)
             self.__controlsLabels.append(label)
@@ -141,7 +114,6 @@ class ChooseControlDialog(QDialog):
                    '</span></a></p></body></html>'
         self.__linkHelp = QLabel(helpText)
         self.__linkHelp.setOpenExternalLinks(True)
-        #self.__linkHelp.setTextInteractionFlags(Qt.LinksAccessibleByMouse)
         self.__layout.addWidget(self.__linkHelp, 110, 0)
 
         self.setLayout(self.__layout)
@@ -165,12 +137,16 @@ class ChooseControlDialog(QDialog):
         return self.__cancelButton
 
     def allSelect(self):
-        #self.__viewReq.selectAll()
+        """
+        When the allSelect button is clicked
+        """
         for i in range(len(self.__controlsChecks)):
             self.__controlsChecks[i].setChecked(True)
 
     def deSelect(self):
-        #self.__viewReq.clearSelection()
+        """
+        When the deSelect button is clicked
+        """
         for i in range(len(self.__controlsChecks)):
             self.__controlsChecks[i].setChecked(False)
 
@@ -183,14 +159,4 @@ class ChooseControlDialog(QDialog):
         for i in range(len(self.__listReq)):
             if self.__controlsChecks[i].isChecked():
                 controls.append(self.__listReq[i].get("id"))
-
-        '''
-        # liste des contrôles sélectionnés dans la liste si on utilise le widget QListWidgetItem / QListWidget
-        controls = []
-        for i in range(len(self.__listReq)):
-            if self.__controlsSelected[i].isSelected():
-                controls.append(self.__listReq[i].get("id"))
-        #print controls
-        '''
-
         return controls

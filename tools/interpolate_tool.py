@@ -411,11 +411,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             pt_feat = QgsFeature(self.__layer.pendingFields())
             pt_feat.setGeometry(QgsGeometry(vertex_v2))
             for i in range(len(self.__layer.pendingFields())):
-                # default = self.__layer.defaultValue(i, pt_feat)
-                # if default is not None:
-                #     print(pt_feat.fields().at(i).name(), pt_feat.fields().at(i).defaultValueExpression(), default)
-                #     print(self.__layer.defaultValueExpression(i), self.__layer.expressionField(i))
-
                 e = QgsExpression(self.__layer.defaultValueExpression(i))
                 default = e.evaluate(pt_feat)
                 pt_feat.setAttribute(i, default)

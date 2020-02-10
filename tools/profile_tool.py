@@ -425,7 +425,9 @@ class ProfileTool(QgsMapTool):
         self.__setZerosDialog()
 
     def __setZerosDialog(self):
-
+        """
+        To create a Zeros Dialog
+        """
         if len(self.__zeros) > 0:
             self.__zeroDlg = ProfileZerosDialog(self.__zeros)
             self.__zeroDlg.rejected.connect(self.__cancel)

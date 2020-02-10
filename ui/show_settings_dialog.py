@@ -55,7 +55,20 @@ class ShowSettingsDialog(QDialog):
         :param iface: interface
         :param memoryPointsLayer: working memory points layer
         :param memoryLinesLayer: working memory lines layer
-        :param configTable: config table selected for import
+        :param importConfigTable: config table selected for import
+        :param importUriDb: database for import
+        :param importSchemaDb: db schema for import
+        :param controlConfigTable: config table selected for control
+        :param controlUriDb: database for control
+        :param controlSchemaDb: db schema for control
+        :param mntUrl: url to get mnt
+        :param refLayers: reference layers for drawdown
+        :param adjLayers: adjustement layers for drawdown
+        :param levelAtt: level attribute for drawdown
+        :param levelVal: level value for drawdown
+        :param drawdowmLayer: line layer for drawdown
+        :param pipeDiam: pipe diameter for drawdown
+        :param moreTools: if more tools or not
         """
         QDialog.__init__(self)
         self.__iface = iface
@@ -395,6 +408,9 @@ class ShowSettingsDialog(QDialog):
         """
         To fill the schema combo list
         :param uriDb: selected database uri
+        :param schemaCombo: concerned schema combo
+        :param schemaComboChanged: concerned schema combo change event
+        :param schemaDb: selected schema db
         """
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()
@@ -424,6 +440,9 @@ class ShowSettingsDialog(QDialog):
         To fill the table combo list
         :param uriDb: selected database uri
         :param schema: selected database schema
+        :param tableCombo: concerned table combo
+        :param tableComboChanged: concerned table combo change event
+        :param configTable: selected config table
         """
         connector = DBConnector(uriDb, self.__iface)
         db = connector.setConnection()

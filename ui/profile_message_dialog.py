@@ -86,7 +86,6 @@ class ProfileMessageDialog(QDialog):
             self.__difLabels.append(difLabel)
             self.__scrollLayout.addWidget(self.__difLabels[i], len(self.__situations) + (i+1), 0, 1, 2)
 
-
         widget = QWidget()
         widget.setLayout(self.__scrollLayout)
 
