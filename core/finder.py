@@ -287,11 +287,12 @@ class Finder(object):
                     tolerance = individual.tolerance()
                     unitType = individual.units()
                 else:
-                    noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
-                        QgsProject.instance().snapSettingsForLayer(layer.id())
-                    if layer.type() == QgsMapLayer.VectorLayer and enabled:
+                    individual = QgsProject.instance().snappingConfig ().individualLayerSettings(layer)
+                    # noUse, enabled, snappingType, unitType, tolerance, avoidIntersection = \
+                    #     QgsProject.instance().snapSettingsForLayer(layer.id())
+                    if layer.type() == QgsMapLayer.VectorLayer and individual.enabled():
                         if snapType is None:
-                            snap_type = snappingType
+                            snap_type = individual.type()
                         else:
                             snap_type = snapType
                     else:
