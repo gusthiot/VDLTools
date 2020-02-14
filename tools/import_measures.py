@@ -31,6 +31,7 @@ from qgis.PyQt.QtCore import QCoreApplication
 from ..ui.import_confirm_dialog import ImportConfirmDialog
 from datetime import datetime
 from ..ui.import_measures_dialog import ImportMeasuresDialog
+from qgis.gui import QgsMessageBar
 
 
 class ImportMeasures(object):

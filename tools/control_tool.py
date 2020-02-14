@@ -23,14 +23,18 @@
 from builtins import str
 from builtins import range
 from qgis.PyQt.QtCore import QCoreApplication
+from qgis.PyQt.QtWidgets import QProgressBar
 from .area_tool import AreaTool
 from ..ui.choose_control_dialog import ChooseControlDialog
-from qgis.core import (QgsProject,
-                       Qgis,
+from qgis.gui import QgsMessageBar
+from qgis.core import (Qgis,
                        QgsVectorLayer,
-                       QgsGeometry,
-                       QgsFeature)
+                       QgsDataSourceUri,
+                       QgsFeatureRequest,
+                       QgsProject,
+                       QgsWkbTypes)
 from ..core.db_connector import DBConnector
+from datetime import datetime
 
 
 class ControlTool(AreaTool):
@@ -53,7 +57,7 @@ class ControlTool(AreaTool):
         self.ownSettings = None
         self.__crs = None
         self.__geom = None
-        self.__registry = QgsMapLayerRegistry.instance()        # définition du registre des couches dans le projet
+        self.__registry = QgsProject.instance()                 # définition du registre des couches dans le projet
         self.__configTable = None                               # nom de la table dans la base de données qui liste
                                                                 # tous les contrôles possible
         self.__schemaDb = None
@@ -105,7 +109,7 @@ class ControlTool(AreaTool):
         Test si la couche / table qui contient l'ensemble des contrôles existe bien dans le projet
         """
         if self.__db is not None:
-            uricfg = QgsDataSourceURI()
+            uricfg = QgsDataSourceUri()
             uricfg.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),
                                  self.__db.userName(),self.__db.password())
             uricfg.setDataSource(self.__schemaDb,self.__configTable,None,"","id")
@@ -196,7 +200,7 @@ class ControlTool(AreaTool):
         bbox = "(SELECT ST_GeomFromText('" + self.__geom.exportToWkt() + "'," + str(self.__crs) + "))"
 
         # paramètres de la source des couches à ajouter au projet
-        uri = QgsDataSourceURI()
+        uri = QgsDataSourceUri()
         uri.setConnection(self.__db.hostName(),str(self.__db.port()), self.__db.databaseName(),
                           self.__db.userName(),self.__db.password())
         uri.setSrid(str(self.__crs))
@@ -208,7 +212,7 @@ class ControlTool(AreaTool):
             for q in self.__layerCfgControl.getFeatures(QgsFeatureRequest(int(name))):
                 query_fct = q["sql_function"]
                 query_fct = query_fct.replace("bbox",bbox)
-                geom_type = QgsWKBTypes.parseType(q["geom_type"])
+                geom_type = QgsWkbTypes.parseType(q["geom_type"])
                     # récupérer le type de géométrie QGIS "QgsWKBTypes" depuis un type de géométrie WKT Postgis
                 uri.setWkbType(geom_type)
                 uri.setDataSource('',query_fct,q["geom_name"],"",q["key_attribute"])
@@ -254,7 +258,7 @@ class ControlTool(AreaTool):
 
         for i in range(0,len(layers)):
             layers[i].loadNamedStyle(styles[i])
-            QgsMapLayerRegistry.instance().addMapLayer(layers[i],False)
+            QgsProject.instance().addMapLayer(layers[i],False)
             ctrl_group.insertLayer(i,layers[i])
         self.__iface.mapCanvas().refresh()                              # rafraîchir la carte
 

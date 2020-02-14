@@ -959,14 +959,14 @@ class ProfileTool(QgsMapTool):
             self.__rubberDif.reset()
             for situation in situations:
                 pt = self.__points[situation['point']]
-                point = QgsPoint(pt['x'], pt['y'])
+                point = QgsPointXY(pt['x'], pt['y'])
                 if self.__rubberSit.numberOfVertices() == 0:
                     self.__rubberSit.setToGeometry(QgsGeometry().fromPointXY(point), None)
                 else:
                     self.__rubberSit.addPoint(point)
             for difference in differences:
                 pt = self.__points[difference['point']]
-                point = QgsPoint(pt['x'], pt['y'])
+                point = QgsPointXY(pt['x'], pt['y'])
                 if self.__rubberDif.numberOfVertices() == 0:
                     self.__rubberDif.setToGeometry(QgsGeometry().fromPointXY(point), None)
                 else:
