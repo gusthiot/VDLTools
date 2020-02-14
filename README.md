@@ -80,5 +80,21 @@ L'outil "Extrapolate" permet d'extrapoler une altitude en bout de ligne.
 
 L'outil "Pointer" permet d'obtenir l'altitude de différents éléments en un point donné.
 
+---
+
+- Control
+
+Utilisation du modèle de représentation "Contrôle"
+
+Voir la démo ci-dessous
+
+![Modèle représentation "Contrôle"](gifs/control_model_use.gif)
+
+Utilisation de l'outil de contrôle du plugin "VDLNetwork"
+
+Voir la démo ci-dessous
+
+
+![Utilisation outils de contrôle (plugin)](gifs/control.gif)
 
 

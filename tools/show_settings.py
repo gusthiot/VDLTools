@@ -56,10 +56,12 @@ class ShowSettings(QObject):
         self.icon_path = ':/plugins/VDLTools/icons/settings_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Settings")
         self.__showDlg = None
-        self.__ctlDb = None
-        self.__configTable = None
-        self.__uriDb = None
-        self.__schemaDb = None
+        self.__importConfigTable = None
+        self.__importUriDb = None
+        self.__importSchemaDb = None
+        self.__controlConfigTable = None
+        self.__controlUriDb = None
+        self.__controlSchemaDb = None
         self.__memoryPointsLayer = None
         self.__memoryLinesLayer = None
         self.__refLayers = []
@@ -105,16 +107,22 @@ class ShowSettings(QObject):
         self.__mntUrl = QgsProject.instance().readEntry("VDLTools", "mnt_url", "None")[0]
 
         """ Config table in Database for importing new Lausanne data """
-        self.__configTable = QgsProject.instance().readEntry("VDLTools", "config_table", None)[0]
+        self.__importConfigTable = QgsProject.instance().readEntry("VDLTools", "import_config_table", None)[0]
+
+        """ Config table in Database for controling """
+        self.__controlConfigTable = QgsProject.instance().readEntry("VDLTools", "control_config_table", None)[0]
 
         """ Database used for importing new Lausanne data """
-        dbName = QgsProject.instance().readEntry("VDLTools", "db_name", None)[0]
+        importDbName = QgsProject.instance().readEntry("VDLTools", "import_db_name", None)[0]
 
-        """ Table in Database containing control values for importing new Lausanne data """
-        ctlDbName = QgsProject.instance().readEntry("VDLTools", "ctl_db_name", None)[0]
+        """ Database used for controling """
+        controlDbName = QgsProject.instance().readEntry("VDLTools", "control_db_name", None)[0]
 
         """ Schema of the Database used for importing new Lausanne data """
-        self.__schemaDb = QgsProject.instance().readEntry("VDLTools", "schema_db", None)[0]
+        self.__importSchemaDb = QgsProject.instance().readEntry("VDLTools", "import_schema_db", None)[0]
+
+        """ Schema of the Database used for controling """
+        self.__controlSchemaDb = QgsProject.instance().readEntry("VDLTools", "control_schema_db", None)[0]
 
         """ Temporarly points layer for the project """
         mpl_id = QgsProject.instance().readEntry("VDLTools", "memory_points_layer", None)[0]
@@ -140,14 +148,12 @@ class ShowSettings(QObject):
                         if layer.id() in adj_ids:
                             self.__adjLayers.append(layer)
 
-        if dbName != "":
+        if importDbName != "" or controlDbName != "":
             usedDbs = DBConnector.getUsedDatabases()
-            if dbName in list(usedDbs.keys()):
-                self.__uriDb = usedDbs[dbName]
-        if ctlDbName != "":
-            usedDbs = DBConnector.getUsedDatabases()
-            if ctlDbName in list(usedDbs.keys()):
-                self.__ctlDb = usedDbs[ctlDbName]
+            if importDbName != "" and importDbName in list(usedDbs.keys()):
+                self.__importUriDb = usedDbs[importDbName]
+            if controlDbName != "" and controlDbName in list(usedDbs.keys()):
+                self.__controlUriDb = usedDbs[controlDbName]
 
         self.changedSignal.emit()
 
@@ -157,7 +163,8 @@ class ShowSettings(QObject):
         """
         levelVal = ','.join(str(x) for x in self.__levelVals)
         self.__showDlg = ShowSettingsDialog(self.__iface, self.__memoryPointsLayer, self.__memoryLinesLayer,
-                                            self.__ctlDb, self.__configTable, self.__uriDb, self.__schemaDb,
+                                            self.__importConfigTable, self.__importUriDb, self.__importSchemaDb,
+                                            self.__controlConfigTable, self.__controlUriDb, self.__controlSchemaDb,
                                             self.__mntUrl, self.__refLayers, self.__adjLayers, self.__levelAtt,
                                             levelVal, self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
@@ -180,10 +187,12 @@ class ShowSettings(QObject):
         self.__showDlg.accept()
         self.linesLayer = self.__showDlg.linesLayer()
         self.pointsLayer = self.__showDlg.pointsLayer()
-        self.configTable = self.__showDlg.configTable()
-        self.uriDb = self.__showDlg.uriDb()
-        self.ctlDb = self.__showDlg.ctlDb()
-        self.schemaDb = self.__showDlg.schemaDb()
+        self.importConfigTable = self.__showDlg.importConfigTable()
+        self.importUriDb = self.__showDlg.importUriDb()
+        self.importSchemaDb = self.__showDlg.importSchemaDb()
+        self.controlConfigTable = self.__showDlg.controlConfigTable()
+        self.controlUriDb = self.__showDlg.controlUriDb()
+        self.controlSchemaDb = self.__showDlg.controlSchemaDb()
         self.mntUrl = self.__showDlg.mntUrl()
         self.refLayers = self.__showDlg.refLayers()
         self.adjLayers = self.__showDlg.adjLayers()
@@ -235,14 +244,6 @@ class ShowSettings(QObject):
         :return: saved memory lines layer
         """
         return self.__memoryLinesLayer
-
-    @property
-    def configTable(self):
-        """
-        To get the saved config table (for import tool)
-        :return: saved config table
-        """
-        return self.__configTable
 
     @property
     def mntUrl(self):
@@ -301,28 +302,52 @@ class ShowSettings(QObject):
         return self.__pipeDiam
 
     @property
-    def uriDb(self):
+    def importConfigTable(self):
         """
-        To get the saved uri import database
+        To get the saved config table (for import tool)
+        :return: saved config table
+        """
+        return self.__importConfigTable
+
+    @property
+    def importUriDb(self):
+        """
+        To get the saved uri import database (for import tool)
         :return: saved uri import database
         """
-        return self.__uriDb
+        return self.__importUriDb
 
     @property
-    def ctlDb(self):
+    def importSchemaDb(self):
         """
-        To get the saved uri control database
-        :return: saved uri control database
-        """
-        return self.__ctlDb
-
-    @property
-    def schemaDb(self):
-        """
-        To get the saved schema import database
+        To get the saved schema import database (for import tool)
         :return: saved schema import database
         """
-        return self.__schemaDb
+        return self.__importSchemaDb
+
+    @property
+    def controlConfigTable(self):
+        """
+        To get the saved config table (for control tool)
+        :return: saved config table
+        """
+        return self.__controlConfigTable
+
+    @property
+    def controlUriDb(self):
+        """
+        To get the saved uri import database (for control tool)
+        :return: saved uri import database
+        """
+        return self.__controlUriDb
+
+    @property
+    def controlSchemaDb(self):
+        """
+        To get the saved schema import database (for control tool)
+        :return: saved schema import database
+        """
+        return self.__controlSchemaDb
 
     @pointsLayer.setter
     def pointsLayer(self, pointsLayer):
@@ -368,7 +393,7 @@ class ShowSettings(QObject):
 
     def __cancel(self):
         """
-        To cancel used variables
+        To cancel linesLayer
         """
         self.__linesLayer = None
 
@@ -404,16 +429,6 @@ class ShowSettings(QObject):
             self.__memoryLinesLayer.destroyed.connect(self.__memoryLinesLayerDeleted)
         QgsProject.instance().writeEntry("VDLTools", "memory_lines_layer", layer_id)
         self.__cancel()
-
-    @configTable.setter
-    def configTable(self, configTable):
-        """
-        To set the saved config table
-        :param configTable: config table to save
-        """
-        self.__configTable = configTable
-        if configTable is not None:
-            QgsProject.instance().writeEntry("VDLTools", "config_table", configTable)
 
     @mntUrl.setter
     def mntUrl(self, mntUrl):
@@ -499,32 +514,62 @@ class ShowSettings(QObject):
         if pipeDiam is not None:
             QgsProject.instance().writeEntry("VDLTools", "pipe_diam", pipeDiam)
 
-    @uriDb.setter
-    def uriDb(self, uriDb):
+    @importConfigTable.setter
+    def importConfigTable(self, importConfigTable):
         """
-        To set the saved uri import database
-        :param uriDb: saved uri import database
+        To set the saved config table (for import tool)
+        :param importConfigTable: config table to save
         """
-        self.__uriDb = uriDb
-        if uriDb is not None:
-            QgsProject.instance().writeEntry("VDLTools", "db_name", uriDb.database())
+        self.__importConfigTable = importConfigTable
+        if importConfigTable is not None:
+            QgsProject.instance().writeEntry("VDLTools", "import_config_table", importConfigTable)
 
-    @ctlDb.setter
-    def ctlDb(self, ctlDb):
+    @importUriDb.setter
+    def importUriDb(self, importUriDb):
         """
-        To set the saved uri control database
-        :param ctlDb: saved uri control database
+        To set the saved uri import database (for import tool)
+        :param importUriDb: saved uri import database
         """
-        self.__ctlDb = ctlDb
-        if ctlDb is not None:
-            QgsProject.instance().writeEntry("VDLTools", "ctl_db_name", ctlDb.database())
+        self.__importUriDb = importUriDb
+        if importUriDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "import_db_name", importUriDb.database())
 
-    @schemaDb.setter
-    def schemaDb(self, schemaDb):
+    @importSchemaDb.setter
+    def importSchemaDb(self, importSchemaDb):
         """
-        To set the saved schema import database
-        :param schemaDb: saved schema import database
+        To set the saved schema import database (for import tool)
+        :param importSchemaDb: saved schema import database
         """
-        self.__schemaDb = schemaDb
-        if schemaDb is not None:
-            QgsProject.instance().writeEntry("VDLTools", "schema_db", schemaDb)
+        self.__importSchemaDb = importSchemaDb
+        if importSchemaDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "import_schema_db", importSchemaDb)
+
+    @controlConfigTable.setter
+    def controlConfigTable(self, controlConfigTable):
+        """
+        To set the saved config table (for control tool)
+        :param controlConfigTable: config table to save
+        """
+        self.__controlConfigTable = controlConfigTable
+        if controlConfigTable is not None:
+            QgsProject.instance().writeEntry("VDLTools", "control_config_table", controlConfigTable)
+
+    @controlUriDb.setter
+    def controlUriDb(self, controlUriDb):
+        """
+        To set the saved uri import database (for control tool)
+        :param controlUriDb: saved uri import database
+        """
+        self.__controlUriDb = controlUriDb
+        if controlUriDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "control_db_name", controlUriDb.database())
+
+    @controlSchemaDb.setter
+    def controlSchemaDb(self, controlSchemaDb):
+        """
+        To set the saved schema import database (for control tool)
+        :param controlSchemaDb: saved schema import database
+        """
+        self.__controlSchemaDb = controlSchemaDb
+        if controlSchemaDb is not None:
+            QgsProject.instance().writeEntry("VDLTools", "control_schema_db", controlSchemaDb)

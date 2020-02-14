@@ -36,31 +36,38 @@ class ChooseControlDialog(QDialog):
         Constructor
         """
         QDialog.__init__(self)
-        self.__names = names
+        self.__listReq = names # récupération de la liste des requêtes possible
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Choose Controls"))
         self.__layout = QGridLayout()
+        self.__layout.setRowMinimumHeight(1,700)
+        self.__layout.setColumnMinimumWidth(0,300)
 
         self.__confirmLabel = QLabel(
             QCoreApplication.translate("VDLTools",
                                        "Choose which controls you want to process :"))
 
         self.__layout.addWidget(self.__confirmLabel, 0, 0, 1, 2)
-
         self.__group = QButtonGroup()
-
         self.__controlsLabels = []
         self.__controlsChecks = []
-
         self.__scrollLayout = QGridLayout()
 
-        for i in range(len(self.__names)):
-            label = QLabel(self.__names[i])
+        """
+        création de la boite de dialogue avec la liste des controles possibles
+        """
+
+        for i in range(len(self.__listReq)):
+            textLabel = self.__listReq[i].get("id") + " - " + self.__listReq[i].get("name") + \
+                        " (" + self.__listReq[i].get("code") + ")"
+            label = QLabel(textLabel)
             label.setMinimumHeight(20)
-            label.setMinimumWidth(50)
             self.__controlsLabels.append(label)
             self.__scrollLayout.addWidget(self.__controlsLabels[i], i+1, 0)
             check = QCheckBox()
-            check.setChecked(False)
+            if self.__listReq[i].get("check") == 't':
+                check.setChecked(True)
+            else:
+                check.setChecked(False)
             self.__controlsChecks.append(check)
             self.__scrollLayout.addWidget(self.__controlsChecks[i], i+1, 1)
 
@@ -73,9 +80,20 @@ class ChooseControlDialog(QDialog):
 
         self.__layout.addWidget(scroll, 1, 0, 1, 2)
 
+        self.__allSelect = QPushButton(QCoreApplication.translate("VDLTools", "Select all"))
+        self.__allSelect.setMinimumHeight(20)
+        self.__allSelect.setMinimumWidth(100)
+        self.__deSelect = QPushButton(QCoreApplication.translate("VDLTools", "Unselect"))
+        self.__deSelect.setMinimumHeight(20)
+        self.__deSelect.setMinimumWidth(100)
+
+        self.__layout.addWidget(self.__allSelect, 90, 0)
+        self.__layout.addWidget(self.__deSelect, 90, 1)
+
         self.__okButton = QPushButton(QCoreApplication.translate("VDLTools", "Ok"))
         self.__okButton.setMinimumHeight(20)
         self.__okButton.setMinimumWidth(100)
+        self.__okButton.setDefault(True)
 
         self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
         self.__cancelButton.setMinimumHeight(20)
@@ -84,7 +102,19 @@ class ChooseControlDialog(QDialog):
         self.__layout.addWidget(self.__okButton, 100, 0)
         self.__layout.addWidget(self.__cancelButton, 100, 1)
 
+        helpText = '<html><head/><body><p>' + \
+                   '<a href="https://golux.lausanne.ch/goeland/document/document_view2.php?iddocument=1059148">' + \
+                   QCoreApplication.translate("VDLTools", "Link on controls description (goeland document)") + \
+                   '</span></a></p></body></html>'
+        self.__linkHelp = QLabel(helpText)
+        self.__linkHelp.setOpenExternalLinks(True)
+        self.__layout.addWidget(self.__linkHelp, 110, 0)
+
         self.setLayout(self.__layout)
+
+        self.__allSelect.clicked.connect(self.allSelect)
+        self.__deSelect.clicked.connect(self.deSelect)
+
 
     def okButton(self):
         """
@@ -100,13 +130,27 @@ class ChooseControlDialog(QDialog):
         """
         return self.__cancelButton
 
+    def allSelect(self):
+        """
+        When the allSelect button is clicked
+        """
+        for i in range(len(self.__controlsChecks)):
+            self.__controlsChecks[i].setChecked(True)
+
+    def deSelect(self):
+        """
+        When the deSelect button is clicked
+        """
+        for i in range(len(self.__controlsChecks)):
+            self.__controlsChecks[i].setChecked(False)
+
     def controls(self):
         """
         To get the selected controls
         :return: control list
         """
         controls = []
-        for i in range(len(self.__names)):
+        for i in range(len(self.__listReq)):
             if self.__controlsChecks[i].isChecked():
-                controls.append(self.__names[i])
+                controls.append(self.__listReq[i].get("id"))
         return controls

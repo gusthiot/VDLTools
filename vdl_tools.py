@@ -66,9 +66,9 @@ class VDLTools(object):
         self.pointerTool = None
         self.multiAttributesTool = None
         self.showSettings = None
+        self.controlTool = None
         if VDLTools.MORE_TOOLS:
             self.importMeasures = None
-            self.controlTool = None
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -109,9 +109,9 @@ class VDLTools(object):
             tool.setAction(action)
             action.triggered.connect(tool.setTool)
             action.setEnabled(enable)
-            action.setCheckable(True)
         else:
             action.triggered.connect(tool.start)
+        action.setCheckable(True)
         if inToolBar:
             self.toolbar.addAction(action)
 
@@ -144,11 +144,14 @@ class VDLTools(object):
         self.add_action(self.extrapolateTool, self.iface.mainWindow(), False)
         self.drawdownTool = DrawdownTool(self.iface)
         self.add_action(self.drawdownTool, self.iface.mainWindow())
+        self.controlTool = ControlTool(self.iface)
+        self.add_action(self.controlTool, self.iface.mainWindow())
 
         self.intersectTool.ownSettings = self.showSettings
         self.profileTool.ownSettings = self.showSettings
         self.subProfileTool.ownSettings = self.showSettings
         self.drawdownTool.ownSettings = self.showSettings
+        self.controlTool.ownSettings = self.showSettings
 
         self.profileTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)
@@ -162,11 +165,8 @@ class VDLTools(object):
         if VDLTools.MORE_TOOLS:
             self.importMeasures = ImportMeasures(self.iface)
             self.add_action(self.importMeasures, self.iface.mainWindow(), isMapTool=False)
-            self.controlTool = ControlTool(self.iface)
-            self.add_action(self.controlTool, self.iface.mainWindow())
 
             self.importMeasures.ownSettings = self.showSettings
-            self.controlTool.ownSettings = self.showSettings
 
     def unload(self):
         """

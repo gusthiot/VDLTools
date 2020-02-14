@@ -68,22 +68,22 @@ class ImportMeasures(object):
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No settings given !!"),
                                                   level=Qgis.Critical, duration=0)
             return
-        if self.ownSettings.uriDb is None:
+        if self.ownSettings.importUriDb is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import db given !!"),
                                                   level=Qgis.Critical, duration=0)
             return
-        if self.ownSettings.schemaDb is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No db schema given !!"),
+        if self.ownSettings.importSchemaDb is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import db schema given !!"),
+                                                  level=QgsMessageBar.CRITICAL, duration=0)
+            return
+        if self.ownSettings.importConfigTable is None:
+            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import config table given !!"),
                                                   level=Qgis.Critical, duration=0)
             return
-        if self.ownSettings.configTable is None:
-            self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No config table given !!"),
-                                                  level=Qgis.Critical, duration=0)
-            return
-        self.__configTable = self.ownSettings.configTable
-        self.__schemaDb = self.ownSettings.schemaDb
+        self.__configTable = self.ownSettings.importConfigTable
+        self.__schemaDb = self.ownSettings.importSchemaDb
 
-        self.__connector = DBConnector(self.ownSettings.uriDb, self.__iface)
+        self.__connector = DBConnector(self.ownSettings.importUriDb, self.__iface)
         self.__db = self.__connector.setConnection()
         if self.__db is not None:
             query = self.__db.exec_("""SELECT DISTINCT sourcelayer_name FROM %s.%s WHERE sourcelayer_name IS NOT NULL"""
