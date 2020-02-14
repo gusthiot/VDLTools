@@ -425,7 +425,7 @@ class ShowSettingsDialog(QDialog):
             if query.lastError().isValid():
                 self.__iface.messageBar().pushMessage(query.lastError().text(), level=Qgis.Critical, duration=0)
             else:
-                while next(query):
+                while query.next():
                     self.__schemas.append(query.value(0))
                 db.close()
                 for schema in self.__schemas:
@@ -456,7 +456,7 @@ class ShowSettingsDialog(QDialog):
             if query.lastError().isValid():
                 self.__iface.messageBar().pushMessage(query.lastError().text(), level=Qgis.Critical, duration=0)
             else:
-                while next(query):
+                while query.next():
                     self.__tables.append(query.value(0))
                 db.close()
                 for table in self.__tables:

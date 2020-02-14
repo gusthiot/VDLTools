@@ -502,7 +502,7 @@ class ProfileTool(QgsMapTool):
         for iden in self.__selectedIds:
             for f in self.__lineLayer.selectedFeatures():
                 if f.id() == iden:
-                    line = self.f.geometry().constGet().clone()
+                    line = f.geometry().constGet().clone()
                     lines.append(line)
                     break
         for s in situations:
