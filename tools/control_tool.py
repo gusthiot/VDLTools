@@ -20,13 +20,12 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
+from builtins import (range,
+                      str)
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.PyQt.QtWidgets import QProgressBar
 from .area_tool import AreaTool
 from ..ui.choose_control_dialog import ChooseControlDialog
-from qgis.gui import QgsMessageBar
 from qgis.core import (Qgis,
                        QgsVectorLayer,
                        QgsDataSourceUri,
@@ -124,12 +123,12 @@ class ControlTool(AreaTool):
              self.__iface.messageBar().pushMessage(
                  QCoreApplication.translate("VDLTools", "Request Area not defined, ") +
                  QCoreApplication.translate("VDLTools", "please define a control area (maintain mouse clic)")
-                 , level=QgsMessageBar.CRITICAL, duration=5)
+                 , level=Qgis.Critical, duration=5)
         else:
             if self.__geom.area() > self.areaMax:
                 self.__iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "Please define a smaller control area, max = 1 km2"),
-                    level=QgsMessageBar.CRITICAL, duration=5)
+                    level=Qgis.Critical, duration=5)
             else:
                 """
                 Liste des contrôles actifs existants
@@ -168,7 +167,7 @@ class ControlTool(AreaTool):
                 self.__iface.messageBar().pushMessage(
                     "Avertissement",
                     QCoreApplication.translate("VDLTools", "No control selected"),
-                    level=QgsMessageBar.INFO, duration=5)
+                    level=Qgis.Info, duration=5)
             else:
                 self.__createCtrlLayers(self.__chooseDlg.controls())
             self.__cancel()
@@ -176,7 +175,7 @@ class ControlTool(AreaTool):
             self.__iface.messageBar().pushMessage(
                 "Avertissement",
                 QCoreApplication.translate("VDLTools", "Database onnection problem, or too small area"),
-                level=QgsMessageBar.INFO, duration=5)
+                level=Qgis.Info, duration=5)
 
     def __createCtrlLayers(self,requete):
         """
@@ -232,13 +231,13 @@ class ControlTool(AreaTool):
                 "Info",
                 QCoreApplication.translate("VDLTools", "All layers have been charged with success in the projet. |") +
                 QCoreApplication.translate("VDLTools", "Total errors : ") +
-                        str(totalError), level=QgsMessageBar.INFO, duration=10)
+                        str(totalError), level=Qgis.Info, duration=10)
         else:
             self.__iface.messageBar().clearWidgets()
             self.__iface.messageBar().pushMessage(
                 "Info",
                 QCoreApplication.translate("VDLTools", "Good !! No error detected on the defined area"),
-                level=QgsMessageBar.INFO, duration=5)
+                level=Qgis.Info, duration=5)
 
     def __addCtrlLayers(self, layers, styles):
         """

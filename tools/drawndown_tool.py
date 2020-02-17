@@ -20,8 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
+from builtins import (range, str)
 from qgis.core import (Qgis,
                        QgsWkbTypes,
                        QgsGeometry,
@@ -30,7 +29,8 @@ from qgis.core import (Qgis,
                        QgsTolerance,
                        QgsPointXY)
 from qgis.gui import QgsMapTool
-from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtCore import (Qt,
+                              QCoreApplication)
 from ..core.finder import Finder
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.drawdown_adjustment_dialog import DrawdownAdjustmentDialog

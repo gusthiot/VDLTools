@@ -21,14 +21,15 @@
  ***************************************************************************/
 """
 from builtins import str
-
-from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand)
 from qgis.core import (Qgis,
                        QgsTolerance,
                        QgsMapLayer,
                        QgsGeometry,
                        QgsWkbTypes)
-from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.PyQt.QtCore import (Qt,
+                              QCoreApplication)
 from qgis.PyQt.QtGui import QColor
 from ..core.finder import Finder
 from ..core.geometry_v2 import GeometryV2

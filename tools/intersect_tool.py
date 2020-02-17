@@ -21,8 +21,11 @@
  ***************************************************************************/
 """
 from builtins import range
-from math import cos, sin, pi
-from qgis.PyQt.QtCore import Qt, QCoreApplication
+from math import (cos,
+                  sin,
+                  pi)
+from qgis.PyQt.QtCore import (Qt,
+                              QCoreApplication)
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsGeometry,
                        QgsWkbTypes,

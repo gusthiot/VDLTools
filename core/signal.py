@@ -23,6 +23,7 @@
 
 from builtins import object
 
+
 class Signal(object):
     """
     Class for safely disconnect a signal

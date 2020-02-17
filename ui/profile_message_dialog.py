@@ -20,10 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
-
-from qgis.PyQt.QtWidgets import QDialog, QWidget, QScrollArea, QGridLayout, QPushButton, QLabel, QCheckBox
+from builtins import (range,
+                      str)
+from qgis.PyQt.QtWidgets import (QDialog,
+                                 QWidget,
+                                 QScrollArea,
+                                 QGridLayout,
+                                 QPushButton,
+                                 QLabel,
+                                 QCheckBox)
 from qgis.PyQt.QtCore import QCoreApplication
 
 

@@ -22,7 +22,10 @@
 """
 
 
-from qgis.PyQt.QtWidgets import QDialog, QGridLayout, QPushButton, QLabel
+from qgis.PyQt.QtWidgets import (QDialog,
+                                 QGridLayout,
+                                 QPushButton,
+                                 QLabel)
 from qgis.PyQt.QtCore import QCoreApplication
 
 

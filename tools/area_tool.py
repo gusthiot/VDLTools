@@ -22,7 +22,8 @@
 """
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import QColor
-from qgis.gui import QgsMapTool, QgsRubberBand
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand)
 from qgis.core import (QgsLineString,
                        QgsPolygon,
                        QgsPoint,

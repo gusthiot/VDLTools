@@ -20,18 +20,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
+from builtins import (range, str)
 from qgis.core import (QgsMapLayer,
                        Qgis,
                        QgsVertexId,
                        QgsGeometry,
                        QgsTolerance,
-                       QgsPoint,
                        QgsPointXY,
                        QgsWkbTypes)
-from qgis.gui import QgsMapTool, QgsRubberBand
-from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand)
+from qgis.PyQt.QtCore import (Qt,
+                              QCoreApplication)
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.PyQt.QtGui import QColor
 from ..core.finder import Finder

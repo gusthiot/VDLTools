@@ -20,9 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
-
+from builtins import (range,
+                      str)
 from ..ui.show_settings_dialog import ShowSettingsDialog
 from ..ui.fields_settings_dialog import FieldsSettingsDialog
 from qgis.PyQt.QtCore import (QCoreApplication,

@@ -20,7 +20,8 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import pyqtSignal, QCoreApplication
+from qgis.PyQt.QtCore import (pyqtSignal,
+                              QCoreApplication)
 from qgis.core import (QgsFeatureRequest,
                        Qgis,
                        QgsWkbTypes,

@@ -20,13 +20,14 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import str
-from builtins import range
+from builtins import (range,
+                      str)
 from math import (sqrt,
                   log10,
                   ceil,
                   floor)
-from qgis.core import QgsPoint, Qgis
+from qgis.core import (QgsPointXY,
+                       Qgis)
 from qgis.gui import QgsVertexMarker
 from qgis.PyQt.QtWidgets import (QDockWidget,
                                  QVBoxLayout,
@@ -55,7 +56,8 @@ import sys
 import json
 import requests
 from ..core.signal import Signal
-from urllib.error import HTTPError, URLError
+from urllib.error import (HTTPError,
+                          URLError)
 
 try:
     from qgis.PyQt.Qwt5.Qwt import (QwtPlot,
@@ -72,7 +74,8 @@ except ImportError as e:
     Qwt5_loaded = False
 try:
     from matplotlib import rc
-    from matplotlib.figure import Figure, SubplotParams
+    from matplotlib.figure import (Figure,
+                                   SubplotParams)
     from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
     matplotlib_loaded = True
 except ImportError:
@@ -430,7 +433,6 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.messageBar().pushMessage(
                 QCoreApplication.translate("VDLTools", "No MNT values here"),
                 level=Qgis.Critical, duration=0)
-
 
     def attachCurves(self, names, settings, usedMnts):
         """
@@ -874,7 +876,7 @@ class ProfileDockWidget(QDockWidget):
             y = self.__tabmouseevent[i][2] + (self.__tabmouseevent[i + 1][2] - self.__tabmouseevent[i][2]) / (
             self.__tabmouseevent[i + 1][0] - self.__tabmouseevent[i][0]) * (xdata - self.__tabmouseevent[i][0])
             self.__marker.show()
-            self.__marker.setCenter(QgsPoint(x, y))
+            self.__marker.setCenter(QgsPointXY(x, y))
 
     def __loadRubber(self):
         """

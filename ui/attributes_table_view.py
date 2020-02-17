@@ -21,8 +21,11 @@
  ***************************************************************************/
 """
 
-from qgis.gui import QgsDualView, QgsAttributeEditorContext
-from qgis.PyQt.QtWidgets import QDialog, QVBoxLayout, QMenu
+from qgis.gui import (QgsDualView,
+                      QgsAttributeEditorContext)
+from qgis.PyQt.QtWidgets import (QDialog,
+                                 QVBoxLayout,
+                                 QMenu)
 
 
 class AttributesTableView(QDialog):

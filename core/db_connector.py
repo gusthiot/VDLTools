@@ -21,8 +21,8 @@
  ***************************************************************************/
 """
 from builtins import object
-
-from qgis.PyQt.QtCore import QSettings, QCoreApplication
+from qgis.PyQt.QtCore import (QSettings,
+                              QCoreApplication)
 from qgis.PyQt.QtSql import QSqlDatabase
 from qgis.core import (QgsMapLayer,
                        QgsCredentials,

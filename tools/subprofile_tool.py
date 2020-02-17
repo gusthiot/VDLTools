@@ -25,8 +25,10 @@ from qgis.core import (QgsPoint,
                        QgsWkbTypes,
                        QgsLineString,
                        QgsGeometry)
-from qgis.gui import QgsMapTool, QgsRubberBand
-from qgis.PyQt.QtCore import Qt, QCoreApplication
+from qgis.gui import (QgsMapTool,
+                      QgsRubberBand)
+from qgis.PyQt.QtCore import (Qt,
+                              QCoreApplication)
 from qgis.PyQt.QtGui import QColor
 from ..ui.profile_dock_widget import ProfileDockWidget
 

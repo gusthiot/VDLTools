@@ -21,8 +21,8 @@
  ***************************************************************************/
 """
 from builtins import range
-
-from qgis.gui import QgsMapToolAdvancedDigitizing, QgsRubberBand
+from qgis.gui import (QgsMapToolAdvancedDigitizing,
+                      QgsRubberBand)
 from qgis.core import (QgsExpression,
                        QgsExpressionContext,
                        Qgis,
@@ -34,8 +34,10 @@ from qgis.core import (QgsExpression,
                        QgsFeature,
                        QgsGeometry,
                        QgsPoint)
-from qgis.PyQt.QtCore import Qt, QCoreApplication
-from qgis.PyQt.QtGui import QColor, QMoveEvent
+from qgis.PyQt.QtCore import (Qt,
+                              QCoreApplication)
+from qgis.PyQt.QtGui import (QColor,
+                             QMoveEvent)
 from ..core.finder import Finder
 from ..ui.interpolate_confirm_dialog import InterpolateConfirmDialog
 from ..core.signal import Signal

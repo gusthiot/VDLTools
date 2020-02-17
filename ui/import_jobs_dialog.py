@@ -22,7 +22,15 @@
 """
 
 from builtins import range
-from qgis.PyQt.QtWidgets import QDialog, QWidget, QScrollArea, QGridLayout, QPushButton, QLabel, QRadioButton, QButtonGroup, QCheckBox
+from qgis.PyQt.QtWidgets import (QDialog,
+                                 QWidget,
+                                 QScrollArea,
+                                 QGridLayout,
+                                 QPushButton,
+                                 QLabel,
+                                 QRadioButton,
+                                 QButtonGroup,
+                                 QCheckBox)
 from qgis.PyQt.QtCore import QCoreApplication
 
 

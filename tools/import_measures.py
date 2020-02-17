@@ -20,18 +20,18 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import next
-from builtins import str
-from builtins import object
-
-from qgis.core import QgsMapLayer, QgsDataSourceUri, Qgis
+from builtins import (object,
+                      str,
+                      next)
+from qgis.core import (QgsMapLayer,
+                       QgsDataSourceUri,
+                       Qgis)
 from ..core.db_connector import DBConnector
 from ..ui.import_jobs_dialog import ImportJobsDialog
 from qgis.PyQt.QtCore import QCoreApplication
 from ..ui.import_confirm_dialog import ImportConfirmDialog
 from datetime import datetime
 from ..ui.import_measures_dialog import ImportMeasuresDialog
-from qgis.gui import QgsMessageBar
 
 
 class ImportMeasures(object):
@@ -75,7 +75,7 @@ class ImportMeasures(object):
             return
         if self.ownSettings.importSchemaDb is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import db schema given !!"),
-                                                  level=QgsMessageBar.CRITICAL, duration=0)
+                                                  level=Qgis.Critical, duration=0)
             return
         if self.ownSettings.importConfigTable is None:
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "No import config table given !!"),

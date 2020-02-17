@@ -20,8 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
-from builtins import object
+from builtins import object, range
 
 from qgis.PyQt.QtCore import QCoreApplication
 from qgis.core import (QgsPoint,
