@@ -27,6 +27,7 @@ from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsMessageBar,
                       QgsRubberBand)
 from qgis.core import (QGis,
+                       QgsDataSourceURI,
                        QgsExpression,
                        QgsEditFormConfig,
                        QgsSnappingUtils,
@@ -410,10 +411,12 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if withPoint:
             pt_feat = QgsFeature(self.__layer.pendingFields())
             pt_feat.setGeometry(QgsGeometry(vertex_v2))
+            primaryKey = QgsDataSourceURI(self.__layer.source()).keyColumn()
             for i in range(len(self.__layer.pendingFields())):
-                e = QgsExpression(self.__layer.defaultValueExpression(i))
-                default = e.evaluate(pt_feat)
-                pt_feat.setAttribute(i, default)
+                if self.__layer.pendingFields().field(i).name() != primaryKey:
+                    e = QgsExpression(self.__layer.defaultValueExpression(i))
+                    default = e.evaluate(pt_feat)
+                    pt_feat.setAttribute(i, default)
 
             if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
                 self.__layer.addFeature(pt_feat)
