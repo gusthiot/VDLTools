@@ -24,6 +24,7 @@ from builtins import range
 from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsRubberBand)
 from qgis.core import (QgsExpression,
+                       QgsDataSourceUri,
                        QgsExpressionContext,
                        Qgis,
                        QgsWkbTypes,
@@ -405,17 +406,20 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         if withPoint:
             pt_feat = QgsFeature(self.__layer.fields())
             pt_feat.setGeometry(QgsGeometry(vertex))
+            primaryKey = QgsDataSourceUri(self.__layer.source()).keyColumn()
+
             for i in range(len(self.__layer.fields())):
                 # default = self.__layer.defaultValue(i, pt_feat)
                 # if default is not None:
                 #     print(pt_feat.fields().at(i).name(), pt_feat.fields().at(i).defaultValueExpression(), default)
                 #     print(self.__layer.defaultValueExpression(i), self.__layer.expressionField(i))
 
-                e = QgsExpression(self.__layer.defaultValueDefinition(i).expression())
-                c = QgsExpressionContext()
-                c.setFeature(pt_feat)
-                default = e.evaluate(c)
-                pt_feat.setAttribute(i, default)
+                if self.__layer.fields().field(i).name() != primaryKey:
+                    e = QgsExpression(self.__layer.defaultValueDefinition(i).expression())
+                    c = QgsExpressionContext()
+                    c.setFeature(pt_feat)
+                    default = e.evaluate(c)
+                    pt_feat.setAttribute(i, default)
 
             if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
                 self.__layer.addFeature(pt_feat)
