@@ -55,7 +55,6 @@ class ControlTool(AreaTool):
         self.__db = None
         self.ownSettings = None
         self.__crs = None
-        self.__geom = None
         self.__configTable = None                               # nom de la table dans la base de données qui liste
                                                                 # tous les contrôles possible
         self.__schemaDb = None
@@ -118,13 +117,13 @@ class ControlTool(AreaTool):
         Test si la zone de contrôle a bien été définie par l'utilisateur
         """
 
-        if self.__geom is None:
+        if self.geom is None:
              self.__iface.messageBar().pushMessage(
                  QCoreApplication.translate("VDLTools", "Request Area not defined, ") +
                  QCoreApplication.translate("VDLTools", "please define a control area (maintain mouse clic)")
                  , level=QgsMessageBar.CRITICAL, duration=5)
         else:
-            if self.__geom.area() > self.areaMax:
+            if self.geom.area() > self.areaMax:
                 self.__iface.messageBar().pushMessage(
                     QCoreApplication.translate("VDLTools", "Please define a smaller control area, max = 1 km2"),
                     level=QgsMessageBar.CRITICAL, duration=5)
@@ -161,7 +160,7 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg.accept()
 
-        if self.__db is not None and self.__geom.area() > 0:
+        if self.__db is not None and self.geom.area() > 0:
             if len(self.__chooseDlg.controls()) == 0:
                 self.__iface.messageBar().pushMessage(
                     "Avertissement",
@@ -195,7 +194,7 @@ class ControlTool(AreaTool):
         # conversion en géométrie binaire et dans le bon système de coordonnée)
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
                 # défintion du système de coordonnées en sortie (par défaut 21781), récupérer des paramètres du projets
-        bbox = "(SELECT ST_GeomFromText('" + self.__geom.exportToWkt() + "'," + str(self.__crs) + "))"
+        bbox = "(SELECT ST_GeomFromText('" + self.geom.exportToWkt() + "'," + str(self.__crs) + "))"
 
         # paramètres de la source des couches à ajouter au projet
         uri = QgsDataSourceURI()
@@ -267,5 +266,5 @@ class ControlTool(AreaTool):
         """
         self.__chooseDlg = None
         self.__db.close()
-        self.__geom = None # supprimer la géométrie définie
+        self.geom = None # supprimer la géométrie définie
         self.__lrequests = [] # vider la liste des requêtes actives
