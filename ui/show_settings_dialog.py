@@ -25,6 +25,7 @@ from future.builtins import next
 
 from qgis.gui import QgsMessageBar
 from PyQt4.QtGui import (QDialog,
+                         QScrollArea,
                          QLineEdit,
                          QGridLayout,
                          QHBoxLayout,
