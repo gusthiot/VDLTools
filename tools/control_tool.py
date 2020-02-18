@@ -195,7 +195,7 @@ class ControlTool(AreaTool):
         # conversion en géométrie binaire et dans le bon système de coordonnée)
         self.__crs = self.__iface.mapCanvas().mapSettings().destinationCrs().postgisSrid()
                 # défintion du système de coordonnées en sortie (par défaut 21781), récupérer des paramètres du projets
-        bbox = "(SELECT ST_GeomFromText('" + self.geom.exportToWkt() + "'," + str(self.__crs) + "))"
+        bbox = "(SELECT ST_GeomFromText('" + self.geom.asWkt() + "'," + str(self.__crs) + "))"
 
         # paramètres de la source des couches à ajouter au projet
         uri = QgsDataSourceUri()

@@ -405,8 +405,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
         vertex.addZValue(z)
 
         if withPoint:
-            pt_feat = QgsVectorLayerUtils.createFeature(self.__layer)
-            pt_feat.setGeometry(QgsGeometry(vertex))
+            pt_feat = QgsVectorLayerUtils.createFeature(self.__layer, QgsGeometry(vertex))
+            # pt_feat.setGeometry(QgsGeometry(vertex))
 
             # pt_feat = QgsFeature(self.__layer.fields())
             # pt_feat.setGeometry(QgsGeometry(vertex))
