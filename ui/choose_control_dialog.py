@@ -71,11 +71,7 @@ class ChooseControlDialog(QDialog):
             self.__controlsLabels.append(label)
             self.__scrollLayout.addWidget(self.__controlsLabels[i], i+1, 0)
             check = QCheckBox()
-            print(str(i) + ") t = (" + str(self.__listReq[i].get("check")) + ")")
-            if self.__listReq[i].get("check") == 't':
-                check.setChecked(True)
-            else:
-                check.setChecked(False)
+            check.setChecked(self.__listReq[i].get("check"))
             self.__controlsChecks.append(check)
             self.__scrollLayout.addWidget(self.__controlsChecks[i], i+1, 1)
 
