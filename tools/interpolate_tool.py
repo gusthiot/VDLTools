@@ -240,24 +240,13 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                         self.__rubber.setIcon(4)
                         self.__rubber.setToGeometry(QgsGeometry().fromPointXY(point), None)
                     else:
-                        intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
-                                                                      self.__selectedFeature.id())
-                        if intersection is not None:
-                            if self.__isVertexUnderPoint(intersection, snap_layers):
-                                self.__rubber.setIcon(4)
-                            else:
-                                self.__rubber.setIcon(1)
-                            self.__rubber.setToGeometry(QgsGeometry().fromPointXY(intersection), None)
-                if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
-                                                                  self.__selectedFeature.id())
-                    if intersection is not None:
-                        if self.__isVertexUnderPoint(intersection, snap_layers):
+                        if self.__isVertexUnderPoint(point, snap_layers):
                             self.__rubber.setIcon(4)
                         else:
                             self.__rubber.setIcon(1)
-                        self.__rubber.setToGeometry(QgsGeometry().fromPointXY(intersection), None)
-                    elif self.__selectedFeature.id() == match.featureId() \
+                        self.__rubber.setToGeometry(QgsGeometry().fromPointXY(point), None)
+                if match.hasEdge():
+                    if self.__selectedFeature.id() == match.featureId() \
                             and match.layer().id() == self.__lastLayer.id():
                         self.__rubber.setIcon(3)
                         self.__rubber.setToGeometry(QgsGeometry().fromPointXY(point), None)
@@ -320,23 +309,12 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                         ok = True
                         noVertex = True
                     else:
-                        intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
-                                                                      self.__selectedFeature.id())
-                        if intersection is not None:
-                            point = intersection
-                            ok = True
-                            if self.__isVertexUnderPoint(intersection, snap_layers):
-                                noVertex = True
+                        ok = True
+                        if self.__isVertexUnderPoint(point, snap_layers):
+                            noVertex = True
 
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self,
-                                                                  self.__selectedFeature.id())
-                    if intersection is not None:
-                        point = intersection
-                        ok = True
-                        if self.__isVertexUnderPoint(intersection, snap_layers):
-                            noVertex = True
-                    elif self.__selectedFeature.id() == match.featureId() \
+                    if self.__selectedFeature.id() == match.featureId() \
                             and match.layer().id() == self.__lastLayer.id():
                         ok = True
                 if ok:
@@ -406,25 +384,6 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
 
         if withPoint:
             pt_feat = QgsVectorLayerUtils.createFeature(self.__layer, QgsGeometry(vertex))
-            # pt_feat.setGeometry(QgsGeometry(vertex))
-
-            # pt_feat = QgsFeature(self.__layer.fields())
-            # pt_feat.setGeometry(QgsGeometry(vertex))
-            # primaryKey = QgsDataSourceUri(self.__layer.source()).keyColumn()
-            #
-            # for i in range(len(self.__layer.fields())):
-            #     # default = self.__layer.defaultValue(i, pt_feat)
-            #     # if default is not None:
-            #     #     print(pt_feat.fields().at(i).name(), pt_feat.fields().at(i).defaultValueExpression(), default)
-            #     #     print(self.__layer.defaultValueExpression(i), self.__layer.expressionField(i))
-            #
-            #     if self.__layer.fields().field(i).name() != primaryKey:
-            #         e = QgsExpression(self.__layer.defaultValueDefinition(i).expression())
-            #         c = QgsExpressionContext()
-            #         c.setFeature(pt_feat)
-            #         default = e.evaluate(c)
-            #         pt_feat.setAttribute(i, default)
-
             if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
                 self.__layer.addFeature(pt_feat)
             else:

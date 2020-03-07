@@ -172,12 +172,7 @@ class IntersectTool(QgsMapTool):
                     else:
                         self.__rubber.setIcon(1)
                 if match.hasEdge():
-                    intersection = Finder.snapCurvedIntersections(point, self.canvas(), self)
-                    if intersection is not None:
-                        self.__rubber.setIcon(1)
-                        point = intersection
-                    else:
-                        self.__rubber.setIcon(3)
+                    self.__rubber.setIcon(3)
                 self.__rubber.setToGeometry(QgsGeometry().fromPointXY(point), None)
 
     def canvasReleaseEvent(self, mouseEvent):
@@ -190,10 +185,6 @@ class IntersectTool(QgsMapTool):
         match = self.canvas().snappingUtils().snapToMap(mouseEvent.mapPoint())
         if match.hasVertex() or match.hasEdge():
             point = match.point()
-            if match.hasEdge():
-                intersection = Finder.snapCurvedIntersections(match.point(), self.canvas(), self)
-                if intersection is not None:
-                    point = intersection
             self.__isEditing = True
             self.__setDistanceDialog(point)
 
@@ -209,7 +200,7 @@ class IntersectTool(QgsMapTool):
                 return layer
         layer = QgsProject.instance().mapLayer(self.__lineLayerID)
         if layer is None:
-            epsg = self.canvas().mapRenderer().destinationCrs().authid()
+            epsg = self.canvas().mapSettings().destinationCrs().authid()
             layer = QgsVectorLayer("LineString?crs=%s&index=yes&field=distance:double&field=x:double&field=y:double"
                                    % epsg, "Memory Lines", "memory")
             QgsProject.instance().addMapLayer(layer)
@@ -239,7 +230,7 @@ class IntersectTool(QgsMapTool):
                 return layer
         layer = QgsProject.instance().mapLayer(self.__pointLayerID)
         if layer is None:
-            epsg = self.canvas().mapRenderer().destinationCrs().authid()
+            epsg = self.canvas().mapSettings().destinationCrs().authid()
             layer = QgsVectorLayer("Point?crs=%s&index=yes" % epsg, "Memory Points", "memory")
             QgsProject.instance().addMapLayer(layer)
             layer.destroyed.connect(self.__pointLayerDeleted)

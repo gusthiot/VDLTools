@@ -23,8 +23,7 @@
 from builtins import (object,
                       range)
 from qgis.PyQt.QtCore import QPoint
-from qgis.core import (QgsPoint,
-                       QgsPointXY,
+from qgis.core import (QgsPointXY,
                        QgsWkbTypes,
                        QgsGeometry,
                        QgsMapLayer,
@@ -198,7 +197,7 @@ class Finder(object):
         :param feature1: the first feature
         :param feature2: the second feature
         :param mousePoint: the given point
-        :return: the intersection as QgsPoint or none
+        :return: the intersection as QgsPointXY or none
         """
 
         if featureId is None or feature1.id() == featureId or feature2.id() == featureId:
@@ -209,11 +208,11 @@ class Finder(object):
             if geometry2.type() == 0:
                 return geometry2.asPoint()
             if geometry1.type() == 2:
-                polygon = geometry1.geometry()
+                polygon = geometry1.constGet()
                 newG = polygon.boundary()
                 geometry1 = QgsGeometry(newG)
             if geometry2.type() == 2:
-                polygon = geometry2.geometry()
+                polygon = geometry2.constGet()
                 newG = polygon.boundary()
                 geometry2 = QgsGeometry(newG)
 
@@ -227,9 +226,8 @@ class Finder(object):
                             if intersectionP is None:
                                 intersectionP = point
                             elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                                intersectionP = QgsPoint(point.x(), point.y())
+                                intersectionP = QgsPointXY(point.x(), point.y())
             elif intersection.type() == 1:
-                intersectionPL = intersection.asPolyline()
                 intersectionP = None
                 if (intersection.isMultipart()):
                     intersectionMPL = intersection.asMultiPolyline()
@@ -239,13 +237,14 @@ class Finder(object):
                                 if intersectionP is None:
                                     intersectionP = point
                                 elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                                    intersectionP = QgsPoint(point.x(), point.y())
+                                    intersectionP = QgsPointXY(point.x(), point.y())
                 else:
+                    intersectionPL = intersection.asPolyline()
                     for point in intersectionPL:
                         if intersectionP is None:
                             intersectionP = point
                         elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                            intersectionP = QgsPoint(point.x(), point.y())
+                            intersectionP = QgsPointXY(point.x(), point.y())
             elif intersection.type() == 2:
                 intersectionP = None
                 if (intersection.isMultipart()):
@@ -255,11 +254,11 @@ class Finder(object):
                             if intersectionP is None:
                                 intersectionP = point
                             elif mousePoint.sqrDist(point) < mousePoint.sqrDist(intersectionP):
-                                intersectionP = QgsPoint(point.x(), point.y())
+                                intersectionP = QgsPointXY(point.x(), point.y())
             else:
                 return None
 
-            if intersectionP and intersectionP != QgsPoint(0, 0):
+            if intersectionP and intersectionP != QgsPointXY(0, 0):
                 return intersectionP
 
         return None
@@ -298,36 +297,6 @@ class Finder(object):
                         continue
                 snap_layers[layer] = {'type': snap_type, 'tolerance': tolerance, 'units': unitType}
         return snap_layers
-
-    @staticmethod
-    def snapCurvedIntersections(mapPoint, mapCanvas, mapTool, featureId=None):
-        """
-        To snap on curved intersections
-        :param mapPoint: the XY map position
-        :param mapCanvas: the used QgsMapCanvas
-        :param mapTool: a QgsMapTool instance
-        :param featureId: if we want to snap on a given feature
-        :return: intersection point
-        """
-        snap_layers = Finder.getLayersSettings(mapCanvas, [QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry, QgsWkbTypes.PointGeometry])
-        features = Finder.findFeaturesLayersAt(mapPoint, snap_layers, mapTool)
-        inter = None
-        if len(features) > 1:
-            if len(features) > 2:
-                for i in range(len(features)):
-                    for j in range(i, len(features)):
-                        feat1 = features[i]
-                        feat2 = features[j]
-                        if feat1 != feat2:
-                            interP = Finder.intersect(featureId, feat1, feat2, mapPoint)
-                            if interP is not None:
-                                if inter is None or mapPoint.sqrDist(interP) < mapPoint.sqrDist(inter):
-                                    inter = interP
-            else:
-                feat1 = features[0]
-                feat2 = features[1]
-                inter = Finder.intersect(featureId, feat1, feat2, mapPoint)
-        return inter
 
     @staticmethod
     def snapLayersConfigs(mapPoint, mapCanvas, layersConfigs=None, mode=None):
