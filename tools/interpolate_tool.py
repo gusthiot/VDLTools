@@ -387,7 +387,8 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
             if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
                 self.__layer.addFeature(pt_feat)
             else:
-                self.__iface.openFeatureForm(self.__layer, pt_feat)
+                if self.__iface.openFeatureForm(self.__layer, pt_feat):
+                    self.__layer.addFeature(pt_feat)
 
         if withVertex:
             line_v2.insertVertex(vertex_id, vertex)
