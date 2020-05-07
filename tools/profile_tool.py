@@ -540,7 +540,11 @@ class ProfileTool(QgsMapTool):
         situations = self.__msgDlg.getSituations()
         num_lines = len(self.__selectedIds)
         for s in situations:
+            print("l : " + str(s['layer']-1))
+            print("s : " + str(s['point']))
             layer = self.__layers[s['layer']-1]
+            print(self.__features)
+            print(self.__points)
             feat = self.__features[s['point']][s['layer']-1]
             if 'poz' in s:
                 feat = feat[s['poz']]
@@ -730,15 +734,20 @@ class ProfileTool(QgsMapTool):
                                     if f.id() in self.__selectedIds:
                                         continue
                                 feats.append(f)
+                                print("layer : " + layer.name())
+                                print("id : " + str(f.attribute('id')))
+                                print("vertex : " + str(closest[1]))
                                 line = f.geometry().constGet()
                                 zp = line.zAt(closest[1])
+                                print("z : " + str(zp))
+                                print("--------------")
                                 if zp is None or zp != zp:
                                     zs.append(0)
                                 else:
                                     zs.append(zp)
                         else:
                             zp = f.geometry().constGet().z()
-                            feat.append(f)
+                            feats.append(f)
                             if zp is None or zp != zp:
                                 zs.append(0)
                             else:
