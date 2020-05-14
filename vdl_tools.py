@@ -33,7 +33,6 @@ from .tools.show_settings import ShowSettings
 from .tools.import_measures import ImportMeasures
 from .tools.subprofile_tool import SubProfileTool
 from .tools.pointer_tool import PointerTool
-from .tools.multi_attributes_tool import MultiAttributesTool
 from .tools.control_tool import ControlTool
 from .tools.drawndown_tool import DrawdownTool
 
@@ -64,7 +63,6 @@ class VDLTools(object):
         self.subProfileTool = None
         self.drawdownTool = None
         self.pointerTool = None
-        self.multiAttributesTool = None
         self.showSettings = None
         self.controlTool = None
         if VDLTools.MORE_TOOLS:
@@ -130,8 +128,6 @@ class VDLTools(object):
         self.add_action(self.showSettings, self.iface.mainWindow(), True, False, False)
         self.intersectTool = IntersectTool(self.iface)
         self.add_action(self.intersectTool, self.iface.mainWindow())
-        self.multiAttributesTool = MultiAttributesTool(self.iface)
-        self.add_action(self.multiAttributesTool, self.iface.mainWindow())
         self.profileTool = ProfileTool(self.iface)
         self.add_action(self.profileTool, self.iface.mainWindow(), False)
         self.subProfileTool = SubProfileTool(self.iface)
