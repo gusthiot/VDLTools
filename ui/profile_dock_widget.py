@@ -761,7 +761,7 @@ class ProfileDockWidget(QDockWidget):
         """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools", "Save As"),
-            QCoreApplication.translate("VDLTools", "Profile.pdf"),"Portable Document Format (*.pdf)")
+            QCoreApplication.translate("VDLTools", "Profile.pdf"),"Portable Document Format (*.pdf)")[0]
         if fileName is not None:
             if self.__lib == 'Qwt5':
                 printer = QPrinter()
@@ -779,9 +779,9 @@ class ProfileDockWidget(QDockWidget):
         """
         fileName = QFileDialog.getSaveFileName(
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools", "Save As"),
-            QCoreApplication.translate("VDLTools", "Profile.png"),"Portable Network Graphics (*.png)")
+            QCoreApplication.translate("VDLTools", "Profile.png"),"Portable Network Graphics (*.png)")[0]
         if fileName is not None:
-            QPixmap.grabWidget(self.__printWdg).save(fileName, "PNG")
+            self.__printWdg.grab().save(fileName, "PNG")
 
     def clearData(self):
         """
