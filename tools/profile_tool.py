@@ -35,7 +35,7 @@ from qgis.PyQt.QtCore import (Qt,
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.PyQt.QtGui import QColor
 from ..core.finder import Finder
-from ..core.geometry_v2 import GeometryV2
+# from ..core.geometry_v2 import GeometryV2
 from ..ui.profile_layers_dialog import ProfileLayersDialog
 from ..ui.profile_dock_widget import ProfileDockWidget
 from ..ui.profile_message_dialog import ProfileMessageDialog
@@ -163,7 +163,8 @@ class ProfileTool(QgsMapTool):
         :param layer: selected layer
         """
         if layer is not None and layer.type() == QgsMapLayer.VectorLayer and \
-                GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
+                layer.wkbType() == QgsWkbTypes.LineStringZ:
+                # GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
             self.__lineLayer = layer
             self.action().setEnabled(True)
             return
@@ -248,7 +249,8 @@ class ProfileTool(QgsMapTool):
         types = [QgsWkbTypes.PointZ, QgsWkbTypes.LineStringZ, QgsWkbTypes.CircularStringZ, QgsWkbTypes.CompoundCurveZ,
                  QgsWkbTypes.CurvePolygonZ, QgsWkbTypes.PolygonZ]
         for layer in self.canvas().layers():
-            if layer.type() == QgsMapLayer.VectorLayer and GeometryV2.getAdaptedWKB(layer.wkbType()) in types:
+            # if layer.type() == QgsMapLayer.VectorLayer and GeometryV2.getAdaptedWKB(layer.wkbType()) in types:
+            if layer.type() == QgsMapLayer.VectorLayer and layer.wkbType() in types:
                 layerList.append(layer)
         return layerList
 

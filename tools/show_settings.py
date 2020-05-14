@@ -35,7 +35,7 @@ from qgis.core import (QgsProject,
                        QgsField,
                        QgsMapLayer)
 from ..core.db_connector import DBConnector
-from ..core.geometry_v2 import GeometryV2
+# from ..core.geometry_v2 import GeometryV2
 
 
 class ShowSettings(QObject):
@@ -138,10 +138,12 @@ class ShowSettings(QObject):
                     if layer.geometryType() == QgsWkbTypes.LineGeometry:
                         if layer.id() == mll_id:
                             self.__memoryLinesLayer = layer
-                if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
+                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
+                if layer.wkbType() == QgsWkbTypes.LineStringZ:
                         if layer.id() == dd_id:
                             self.__drawdownLayer = layer
-                if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
+                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
+                if layer.wkbType() == QgsWkbTypes.PointZ:
                         if layer.id() in ref_ids:
                             self.__refLayers.append(layer)
                         if layer.id() in adj_ids:

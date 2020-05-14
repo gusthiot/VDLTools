@@ -37,7 +37,7 @@ from qgis.core import (QgsMapLayer,
 from qgis.PyQt.QtCore import QCoreApplication
 from ..core.db_connector import DBConnector
 from ..core.signal import Signal
-from ..core.geometry_v2 import GeometryV2
+# from ..core.geometry_v2 import GeometryV2
 
 
 class ShowSettingsDialog(QDialog):
@@ -107,9 +107,11 @@ class ShowSettingsDialog(QDialog):
                         self.__pointsLayers.append(layer)
                     if layer.geometryType() == QgsWkbTypes.LineGeometry:
                         self.__linesLayers.append(layer)
-                if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
+                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
+                if layer.wkbType() == QgsWkbTypes.LineStringZ:
                     self.__drawdownLayers.append(layer)
-                if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
+                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
+                if layer.wkbType() == QgsWkbTypes.PointZ:
                     self.__refAvailableLayers.append(layer)
 
         self.resize(600, 500)
