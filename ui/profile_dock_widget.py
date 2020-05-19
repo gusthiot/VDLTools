@@ -42,8 +42,7 @@ from qgis.PyQt.QtWidgets import (QDockWidget,
                                  QSizePolicy)
 from qgis.PyQt.QtGui import (QPen,
                              QColor,
-                             QFont,
-                             QPixmap)
+                             QFont)
 from qgis.PyQt.QtPrintSupport import QPrinter
 from qgis.PyQt.QtCore import (QSize,
                               QRectF,
@@ -60,7 +59,7 @@ from urllib.error import (HTTPError,
                           URLError)
 
 try:
-    from qgis.PyQt.Qwt5.Qwt import (QwtPlot,
+    from PyQt5.Qwt import (QwtPlot,
                                 QwtText,
                                 QwtPlotZoomer,
                                 QwtPicker,

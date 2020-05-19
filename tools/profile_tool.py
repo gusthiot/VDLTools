@@ -465,8 +465,14 @@ class ProfileTool(QgsMapTool):
                 for p in range(len(zz)-num_lines):
                     if zz[num_lines+p] is not None:
                         feat = self.__features[z[0]][p]
-                        layer = self.__layers[p]
-                        self.__changePoint(layer, z[0], feat, z[1])
+                        if isinstance(feat, list):
+                            for ff in feat:
+                                layer = self.__layers[p]
+                                self.__changePoint(layer, z[0], ff, z[1])
+                        else:
+                            layer = self.__layers[p]
+                            self.__changePoint(layer, z[0], feat, z[1])
+
         if not self.__lineLayer.isEditable():
             self.__lineLayer.startEditing()
         for i in range(len(lines)):
@@ -945,9 +951,11 @@ class ProfileTool(QgsMapTool):
                         if pt['z'][i] is None:
                             continue
                         if isinstance(pt['z'][i], list):
+                            poz = 0
                             for z in pt['z'][i]:
                                 if abs(z-z0) > self.ALT_TOLERANCE:
-                                    situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
+                                    situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0, 'poz': poz})
+                                poz += 1
                         else:
                             if abs(pt['z'][i]-z0) > self.ALT_TOLERANCE:
                                 situations.append({'point': p, 'layer': (i-num_lines+1), 'vertex': z0})
