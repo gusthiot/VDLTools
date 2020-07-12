@@ -59,23 +59,20 @@ from urllib.error import (HTTPError,
                           URLError)
 
 try:
-    from PyQt5.Qwt import (QwtPlot,
-                                QwtText,
-                                QwtPlotZoomer,
-                                QwtPicker,
-                                QwtPlotItem,
-                                QwtPlotGrid,
-                                QwtPlotMarker,
-                                QwtPlotCurve)
-    Qwt5_loaded = True
+    from qwt.plot import QwtPlot, QwtPlotItem
+    from qwt.text import QwtText
+    from qwt.plot_curve import QwtPlotCurve
+    from qwt.plot_marker import QwtPlotMarker
+    from qwt.plot_grid import QwtPlotGrid
+    Qwt6_loaded = True
 except ImportError as e:
     print(e)
-    Qwt5_loaded = False
+    Qwt6_loaded = False
 try:
     from matplotlib import rc
     from matplotlib.figure import (Figure,
                                    SubplotParams)
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
+    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
     matplotlib_loaded = True
 except ImportError:
     matplotlib_loaded = False
@@ -101,9 +98,9 @@ class ProfileDockWidget(QDockWidget):
         self.__canvas = self.__iface.mapCanvas()
         self.__types = ['PDF', 'PNG']  # ], 'SVG', 'PS']
         self.__libs = []
-        if Qwt5_loaded:
-            self.__lib = 'Qwt5'
-            self.__libs.append('Qwt5')
+        if Qwt6_loaded:
+            self.__lib = 'Qwt6'
+            self.__libs.append('Qwt6')
             if matplotlib_loaded:
                 self.__libs.append('Matplotlib')
         elif matplotlib_loaded:
@@ -183,7 +180,7 @@ class ProfileDockWidget(QDockWidget):
         self.__scaleButton = QPushButton(QCoreApplication.translate("VDLTools", "Scale 1:1"))
         self.__scaleButton.setFixedSize(size)
         self.__scaleButton.clicked.connect(self.__scale)
-        if self.__lib == 'Qwt5':
+        if self.__lib == 'Qwt6':
             self.__scaleButton.setVisible(True)
         else:
             self.__scaleButton.setVisible(False)
@@ -298,7 +295,7 @@ class ProfileDockWidget(QDockWidget):
             child.widget().deleteLater()
         self.__plotWdg = None
 
-        if self.__lib == 'Qwt5':
+        if self.__lib == 'Qwt6':
             self.__plotWdg = QwtPlot(self.__plotFrame)
             sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             sizePolicy.setHorizontalStretch(10)
@@ -317,10 +314,10 @@ class ProfileDockWidget(QDockWidget):
             title.setText(QCoreApplication.translate("VDLTools", "Elevation [m]"))
             title.setFont(QFont("Helvetica", 10))
             self.__plotWdg.setAxisTitle(QwtPlot.yLeft, title)
-            self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
-                                          self.__plotWdg.canvas())
-            self.__zoomer.zoomed.connect(self.__scaleZoom)
-            self.__zoomer.setRubberBandPen(QPen(Qt.blue))
+            # self.__zoomer = QwtPlotZoomer(QwtPlot.xBottom, QwtPlot.yLeft, QwtPicker.DragSelection, QwtPicker.AlwaysOff,
+            #                               self.__plotWdg.canvas())
+            # self.__zoomer.zoomed.connect(self.__scaleZoom)
+            # self.__zoomer.setRubberBandPen(QPen(Qt.blue))
             grid = QwtPlotGrid()
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
@@ -454,7 +451,7 @@ class ProfileDockWidget(QDockWidget):
                                         + "</font>")
                         self.__legendLayout.addWidget(legend)
 
-                        if self.__lib == 'Qwt5':
+                        if self.__lib == 'Qwt6':
 
                             xx = [list(g) for k, g in itertools.groupby(self.__mntPoints[1],
                                                                         lambda x: x is None) if not k]
@@ -506,7 +503,7 @@ class ProfileDockWidget(QDockWidget):
                     legend = QLabel("<font color='" + self.__colors[c] + "'>" + name + "</font>")
                     self.__legendLayout.addWidget(legend)
 
-                if self.__lib == 'Qwt5':
+                if self.__lib == 'Qwt6':
 
                     # Split xx and yy into single lines at None values
                     xx = [list(g) for k, g in itertools.groupby(xx, lambda x: x is None) if not k]
@@ -548,7 +545,7 @@ class ProfileDockWidget(QDockWidget):
                 QCoreApplication.translate("VDLTools", "Rescale problem... (trace printed)"),
                 level=Qgis.Critical, duration=0)
             print(sys.exc_info()[0], traceback.format_exc())
-        if self.__lib == 'Qwt5':
+        if self.__lib == 'Qwt6':
             self.__plotWdg.replot()
         elif self.__lib == 'Matplotlib':
             self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
@@ -556,26 +553,26 @@ class ProfileDockWidget(QDockWidget):
             self.__activateMouseTracking(True)
             self.__marker.show()
 
-    def __scaleZoom(self):
-        if self.__scale11:
-            rect = self.__zoomer.zoomRect()
-            plot = self.__zoomer.plot()
-            width = plot.canvas().width()
-            height = plot.canvas().height()
-            length = rect.right() - rect.left()
-            density = length/width
-            interval = density * height
-            middle = (rect.top() + rect.bottom()) / 2
-            maximumValue = middle + (interval/2)
-            minimumValue = middle - (interval/2)
-
-            inter = pow(10, floor(log10(length)))
-            if length / inter > 5:
-                inter = 2 * inter
-            step = inter / 2
-            plot.setAxisScale(2, rect.left(), rect.right(), step)
-            plot.setAxisScale(0, minimumValue, maximumValue, step)
-            plot.replot()
+    # def __scaleZoom(self):
+    #     if self.__scale11:
+    #         rect = self.__zoomer.zoomRect()
+    #         plot = self.__zoomer.plot()
+    #         width = plot.canvas().width()
+    #         height = plot.canvas().height()
+    #         length = rect.right() - rect.left()
+    #         density = length/width
+    #         interval = density * height
+    #         middle = (rect.top() + rect.bottom()) / 2
+    #         maximumValue = middle + (interval/2)
+    #         minimumValue = middle - (interval/2)
+    #
+    #         inter = pow(10, floor(log10(length)))
+    #         if length / inter > 5:
+    #             inter = 2 * inter
+    #         step = inter / 2
+    #         plot.setAxisScale(2, rect.left(), rect.right(), step)
+    #         plot.setAxisScale(0, minimumValue, maximumValue, step)
+    #         plot.replot()
 
     def __reScalePlot(self, value=None, auto=False):
         """
@@ -591,7 +588,7 @@ class ProfileDockWidget(QDockWidget):
         for i in range(len(self.__profiles)):
             if (ceil(self.__profiles[i]['l'])) > length:
                 length = ceil(self.__profiles[i]['l'])
-        if self.__lib == 'Qwt5':
+        if self.__lib == 'Qwt6':
             self.__plotWdg.setAxisScale(2, 0, length, 0)
         elif self.__lib == 'Matplotlib':
             self.__plotWdg.figure.get_axes()[0].set_xbound(0, length)
@@ -651,7 +648,7 @@ class ProfileDockWidget(QDockWidget):
             else:
                 width = 1
 
-            if self.__lib == 'Qwt5':
+            if self.__lib == 'Qwt6':
                 vertLine = QwtPlotMarker()
                 vertLine.setLineStyle(QwtPlotMarker.VLine)
                 pen = vertLine.linePen()
@@ -670,7 +667,7 @@ class ProfileDockWidget(QDockWidget):
                                                            linewidth=width)
 
         if minimumValue < maximumValue:
-            if self.__lib == 'Qwt5':
+            if self.__lib == 'Qwt6':
                 step = 0
                 if self.__scale11:
                     inter = pow(10, floor(log10(length)))
@@ -685,9 +682,9 @@ class ProfileDockWidget(QDockWidget):
                 self.__plotWdg.figure.get_axes()[0].redraw_in_frame()
                 self.__plotWdg.draw()
 
-        if self.__lib == 'Qwt5':
-            rect = QRectF(0, minimumValue, length, maximumValue-minimumValue)
-            self.__zoomer.setZoomBase(rect)
+        # if self.__lib == 'Qwt6':
+        #     rect = QRectF(0, minimumValue, length, maximumValue-minimumValue)
+        #     self.__zoomer.setZoomBase(rect)
 
     @staticmethod
     def __minTab(tab):
@@ -762,7 +759,7 @@ class ProfileDockWidget(QDockWidget):
             self.__iface.mainWindow(), QCoreApplication.translate("VDLTools", "Save As"),
             QCoreApplication.translate("VDLTools", "Profile.pdf"),"Portable Document Format (*.pdf)")[0]
         if fileName is not None:
-            if self.__lib == 'Qwt5':
+            if self.__lib == 'Qwt6':
                 printer = QPrinter()
                 printer.setCreator(QCoreApplication.translate("VDLTools", "QGIS Profile Plugin"))
                 printer.setOutputFileName(fileName)
@@ -788,13 +785,14 @@ class ProfileDockWidget(QDockWidget):
         """
         if self.__profiles is None:
             return
-        if self.__lib == 'Qwt5':
-            self.__plotWdg.clear()
+        if self.__lib == 'Qwt6':
+            items = []
+            for item in self.__plotWdg.itemList():
+                items.append(item)
+            for item in items:
+                if item.rtti() == QwtPlotItem.Rtti_PlotCurve:
+                    item.detach()
             self.__profiles = None
-            temp1 = self.__plotWdg.itemList()
-            for j in range(len(temp1)):
-                if temp1[j].rtti() == QwtPlotItem.Rtti_PlotCurve:
-                    temp1[j].detach()
         elif self.__lib == 'Matplotlib':
             self.__plotWdg.figure.get_axes()[0].cla()
             self.__manageMatplotlibAxe(self.__plotWdg.figure.get_axes()[0])
