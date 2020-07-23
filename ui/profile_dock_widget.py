@@ -45,7 +45,6 @@ from qgis.PyQt.QtGui import (QPen,
                              QFont)
 from qgis.PyQt.QtPrintSupport import QPrinter
 from qgis.PyQt.QtCore import (QSize,
-                              QRectF,
                               QCoreApplication,
                               Qt,
                               pyqtSignal)
@@ -103,14 +102,18 @@ class ProfileDockWidget(QDockWidget):
             self.__libs.append('Qwt6')
             if matplotlib_loaded:
                 self.__libs.append('Matplotlib')
-        elif matplotlib_loaded:
-            self.__lib = 'Matplotlib'
-            self.__libs.append('Matplotlib')
         else:
-            self.__lib = None
             self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "No graph lib available (qwt5 or matplotlib)"),
-                level=Qgis.Critical, duration=0)
+                QCoreApplication.translate("VDLTools", "Qwt6 is not available, have you installed pythonqwt package ?"),
+                level=Qgis.Warning, duration=0)
+            if matplotlib_loaded:
+                self.__lib = 'Matplotlib'
+                self.__libs.append('Matplotlib')
+            else:
+                self.__lib = None
+                self.__iface.messageBar().pushMessage(
+                    QCoreApplication.translate("VDLTools", "No graph lib available (qwt6 or matplotlib)"),
+                    level=Qgis.Critical, duration=0)
 
         self.__doTracking = False
         self.__vline = None
