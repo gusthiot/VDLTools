@@ -134,9 +134,11 @@ class IntersectTool(QgsMapTool):
             feature.setAttribute("x", x)
         if "y" in fieldsNames:
             feature.setAttribute("y", y)
-        lineLayer.addFeature(feature)
-        # lineLayer.updateExtents()
-        lineLayer.commitChanges()
+        ok, outs = lineLayer.dataProvider().addFeatures([feature])
+        lineLayer.updateExtents()
+        lineLayer.setCacheImage(None)
+        lineLayer.triggerRepaint()
+        lineLayer.featureAdded.emit(outs[0].id())  # emit signal so feature is added to snapping index
 
         # center
         pointLayer = self.__pointLayer()
@@ -144,8 +146,12 @@ class IntersectTool(QgsMapTool):
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry().fromPoint(self.__dstDlg.mapPoint()))
         feature.setFields(pointLayer.pendingFields())
-        pointLayer.addFeature(feature)
-        pointLayer.commitChanges()
+        ok, outs = pointLayer.dataProvider().addFeatures([feature])
+        pointLayer.updateExtents()
+        pointLayer.setCacheImage(None)
+        pointLayer.triggerRepaint()
+        pointLayer.featureAdded.emit(outs[0].id())  # emit signal so feature is added to snapping index
+
 
         self.__dstDlg.accept()
         self.__cancel()

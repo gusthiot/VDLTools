@@ -363,8 +363,11 @@ class DuplicateTool(QgsMapTool):
                 QgsEditFormConfig.SuppressOn:
             self.__iface.openFeatureForm(self.__layer, feature)
         else:
-            self.__layer.addFeature(feature)
-        # self.__layer.updateExtents()
+            ok, outs = self.__layer.dataProvider().addFeatures([feature])
+            self.__layer.updateExtents()
+            self.__layer.setCacheImage(None)
+            self.__layer.triggerRepaint()
+            self.__layer.featureAdded.emit(outs[0].id())  # emit signal so feature is added to snapping index
         self.__cancel()
 
     def canvasMoveEvent(self, event):

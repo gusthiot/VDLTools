@@ -419,7 +419,11 @@ class InterpolateTool(QgsMapToolAdvancedDigitizing):
                     pt_feat.setAttribute(i, default)
 
             if self.__layer.editFormConfig().suppress() == QgsEditFormConfig.SuppressOn:
-                self.__layer.addFeature(pt_feat)
+                ok, outs = self.__layer.dataProvider().addFeatures([pt_feat])
+                self.__layer.updateExtents()
+                self.__layer.setCacheImage(None)
+                self.__layer.triggerRepaint()
+                self.__layer.featureAdded.emit(outs[0].id())  # emit signal so feature is added to snapping index
             else:
                 self.__iface.openFeatureForm(self.__layer, pt_feat)
 
