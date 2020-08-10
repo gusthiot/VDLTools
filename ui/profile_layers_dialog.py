@@ -54,7 +54,7 @@ class ProfileLayersDialog(QDialog):
         self.__cancelButton.setMinimumHeight(20)
         self.__cancelButton.setMinimumWidth(100)
 
-        self.__layersLabel = QLabel(QCoreApplication.translate("VDLTools", "Also points layers profile ? :"))
+        self.__layersLabel = QLabel(QCoreApplication.translate("VDLTools", "Also Points layers profile ? :"))
         self.__layersLabel.setMinimumHeight(20)
         self.__layersLabel.setMinimumWidth(50)
 
