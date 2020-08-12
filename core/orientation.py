@@ -47,47 +47,57 @@ from math import cos, sin, pi
 
 
 class Orientation:
-    def __init__(self, point, observation, precision, lineLayer, pointLayer, length):
-        self.lineLayer = lineLayer
-        self.pointLayer = pointLayer
-        self.length = length
+    """
+    Class representing orientation
+    """
 
-        self.id = datetime.now().strftime("%Y%m%d%H%M%S%f")
+    def __init__(self, point, azimut):
+        """
+        Constructor
+        :param point: base point
+        :param azimut: mesured azimut
+        """
+        self.point = point
+        self.azimut = azimut
+        self.length = 8.0
+        # self.precision = 0.5
 
-        self.point = QgsPoint(point)
-        self.observation = observation
-        self.precision = precision
+    def save(self, lineLayer, pointLayer):
+        """
+        To save the orientation
+        """
+        did = datetime.now().strftime("%Y%m%d%H%M%S%f")
 
-    def save(self):
         # observation
         f = QgsFeature()
-        fields = self.lineLayer.dataProvider().fields()
+        fields = lineLayer.dataProvider().fields()
         f.setFields(fields)
-        f["id"] = self.id
+        f["id"] = did
         f["x"] = self.point.x()
         f["y"] = self.point.y()
-        f["observation"] = self.observation
-        f["precision"] = self.precision
+        f["type"] = "orientation"
+        f["mesure"] = self.azimut
         f.setGeometry(self.geometry())
-        ok, l = self.lineLayer.dataProvider().addFeatures([f])
-        self.lineLayer.updateExtents()
-        self.lineLayer.setCacheImage(None)
-        self.lineLayer.triggerRepaint()
-        self.lineLayer.featureAdded.emit(l[0].id())  # emit signal so feature is added to snapping index
+        ok, l = lineLayer.dataProvider().addFeatures([f])
+        lineLayer.updateExtents()
+        lineLayer.triggerRepaint()
+        lineLayer.featureAdded.emit(l[0].id())  # emit signal so feature is added to snapping index
 
         # center
         f = QgsFeature()
-        fields = self.pointLayer.dataProvider().fields()
+        fields = pointLayer.dataProvider().fields()
         f.setFields(fields)
-        f["id"] = self.id
-        f.setGeometry(QgsGeometry().fromPoint(self.point))
-        ok, l = self.pointLayer.dataProvider().addFeatures([f])
-        self.pointLayer.updateExtents()
-        self.pointLayer.setCacheImage(None)
-        self.pointLayer.triggerRepaint()
-        self.pointLayer.featureAdded.emit(l[0].id())  # emit signal so feature is added to snapping index
+        f["id"] = did
+        f.setGeometry(QgsGeometry().fromPointXY(self.point))
+        ok, l = pointLayer.dataProvider().addFeatures([f])
+        pointLayer.updateExtents()
+        pointLayer.triggerRepaint()
+        pointLayer.featureAdded.emit(l[0].id())  # emit signal so feature is added to snapping index
 
     def geometry(self):
-        x = self.point.x() + self.length * cos((90-self.observation)*pi/180)
-        y = self.point.y() + self.length * sin((90-self.observation)*pi/180)
-        return QgsGeometry().fromPolyline([self.point, QgsPoint(x, y)])
+        """
+        To generate the orientation geometry
+        """
+        x = self.point.x() + self.length * cos((90-self.azimut)*pi/180)
+        y = self.point.y() + self.length * sin((90-self.azimut)*pi/180)
+        return QgsGeometry().fromPolyline([QgsPoint(self.point), QgsPoint(x, y)])

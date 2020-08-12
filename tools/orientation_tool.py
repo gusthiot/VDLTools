@@ -46,22 +46,19 @@ Reimplemented for QGIS3 by :
 from qgis.PyQt.QtCore import (Qt,
                               QCoreApplication)
 from qgis.PyQt.QtGui import QColor
-from qgis.core import (QgsGeometry,
-                       QgsWkbTypes,
-                       QgsPoint,
-                       QgsCircularString,
-                       QgsFeature,
-                       QgsProject,
-                       QgsVectorLayer)
+from qgis.core import (QgsSnappingConfig,
+                       QgsWkbTypes)
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand)
 from ..ui.orientation_dialog import OrientationDialog
 from ..core.orientation import Orientation
+from ..core.finder import Finder
+from ..core.memory_layers import MemoryLayers
 
 
 class OrientationTool(QgsMapTool):
     """
-    Map tool class to
+    Map tool class to place orientation
     """
 
     def __init__(self, iface):
@@ -73,9 +70,11 @@ class OrientationTool(QgsMapTool):
         self.__iface = iface
         self.icon_path = ':/plugins/VDLTools/icons/orientation_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "Place orientation")
-        self.setCursor(Qt.ArrowCursor)
+        self.setCursor(Qt.CrossCursor)
         self.__rubber = None
         self.ownSettings = None
+        self.__memoryLayers = None
+        self.__placeDlg = None
 
     def setTool(self):
         """
@@ -94,6 +93,7 @@ class OrientationTool(QgsMapTool):
         self.__rubber.setColor(color)
         self.__rubber.setWidth(2)
         self.__rubber.setLineStyle(Qt.DashLine)
+        self.__memoryLayers = MemoryLayers(self.__iface, self.ownSettings)
 
     def deactivate(self):
         """
@@ -101,6 +101,7 @@ class OrientationTool(QgsMapTool):
         """
         self.__cancel()
         self.__rubber = None
+        self.__memoryLayers = None
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
@@ -110,22 +111,56 @@ class OrientationTool(QgsMapTool):
         if self.__rubber is not None:
             self.__rubber.reset()
 
+    def canvasMoveEvent(self, mouseEvent):
+        """
+        When the mouse is moved
+        :param event: mouse event
+        """
+        ori = self.get_orientation(mouseEvent.pos())
+        if ori is None:
+            self.__rubber.reset()
+        else:
+            self.__rubber.setToGeometry(ori.geometry(), None)
+
     def canvasPressEvent(self, mouseEvent):
+        """
+        When the mouse is pressed
+        :param event: mouse event
+        """
         if mouseEvent.button() != Qt.LeftButton:
-            self.rubber.reset()
+            self.__rubber.reset()
             return
         ori = self.get_orientation(mouseEvent.pos())
         if ori is None:
-            self.rubber.reset()
+            self.__rubber.reset()
             return
-        dlg = OrientationDialog(ori, self.rubber)
-        if dlg.exec_():
-            if ori.length != 0:
-                ori.save()
-        self.rubber.reset()
+        self.__placeDlg = OrientationDialog(ori, self.__rubber)
+        self.__placeDlg.rejected.connect(self.__cancel)
+        self.__placeDlg.okButton().clicked.connect(self.__onOk)
+        self.__placeDlg.cancelButton().clicked.connect(self.__onCancel)
+        self.__placeDlg.show()
+
+    def __onCancel(self):
+        """
+        When the Cancel button in Orientation Dialog is pushed
+        """
+        self.__placeDlg.reject()
+
+    def __onOk(self):
+        """
+        When the Ok button in Orientation Dialog is pushed
+        """
+        self.__placeDlg.accept()
+        if self.__placeDlg.getOrientation().length != 0:
+            lineLayer = self.__memoryLayers.lineLayer()
+            pointLayer = self.__memoryLayers.pointLayer()
+            self.__placeDlg.getOrientation().save(lineLayer, pointLayer)
+        self.__rubber.reset()
 
     def get_orientation(self, pos):
-        match = self.snap_to_segment(pos)
+        snap_layers = Finder.getLayersSettings(self.canvas(), [QgsWkbTypes.LineGeometry, QgsWkbTypes.PolygonGeometry],
+                                               QgsSnappingConfig.Segment)
+        match = Finder.snapLayersConfigs(pos, self.canvas(), snap_layers)
         if not match.hasEdge():
             return None
         vertices = match.edgePoints()
@@ -135,6 +170,10 @@ class OrientationTool(QgsMapTool):
         if mindist == 0:
             return None
         i = dist.index(mindist)
-        ve = vertices[i]
-        az = po.azimuth(ve)
-        return Orientation(self.iface, ve, az)
+        pt = vertices[i]
+        azi = po.azimuth(pt)
+        return Orientation(pt, azi)
+        # if self.ownSettings is None or self.ownSettings.orientLength is None:
+        #     return Orientation(pt, obs, 8.0)
+        # else:
+        #     return Orientation(pt, obs, self.ownSettings.orientLength)

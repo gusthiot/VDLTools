@@ -43,36 +43,120 @@ Reimplemented for QGIS3 by :
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtWidgets import QDialog
+from qgis.PyQt.QtWidgets import (QDialog,
+                                 QPushButton,
+                                 QDoubleSpinBox,
+                                 QGridLayout,
+                                 QLabel)
+from qgis.PyQt.QtCore import QCoreApplication
+
 
 class OrientationDialog(QDialog):
-    def __init__(self, orientation, rubber):
+    """
+    Dialog class to choose the settings for placing orientation
+    """
+
+    def __init__(self, orientation, rubber
+                 #, settings
+                ):
+        """
+        Constructor
+        """
         QDialog.__init__(self)
-        self.setupUi(self)
+        self.__orientation = orientation
+        self.__rubber = rubber
+        # self.__settings = settings
 
-        # this is a reference, orientation observation is modified in outer class
-        self.orientation = orientation
-        self.rubber = rubber
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Place Orientation"))
+        self.__layout = QGridLayout()
 
-        settings = MySettings()
-        self.observation.setValue(orientation.observation)
-        self.length.setValue(settings.value("obsOrientationLength"))
-        self.precision.setValue(settings.value("obsDefaultPrecisionOrientation"))
+        # self.__precisionLabel = QLabel(QCoreApplication.translate("VDLTools", "Precision of prolongation [°]"))
+        # self.__layout.addWidget(self.__precisionLabel, 0, 0)
+        #
+        # self.__precisionSpinBox = QDoubleSpinBox()
+        # self.__precisionSpinBox.setDecimals(4)
+        # self.__precisionSpinBox.setMaximum(10.0)
+        # self.__precisionSpinBox.setSingleStep(0.05)
+        # if self.__settings.orientPrecision is not None:
+        #     self.__precisionSpinBox.setValue(self.__settings.orientPrecision)
+        # else:
+        # self.__precisionSpinBox.setValue(0.5)
+        # self.__layout.addWidget(self.__precisionSpinBox, 0, 1)
 
-        self.precision.valueChanged.connect(self.changePrecision)
-        self.observation.valueChanged.connect(self.changeObservation)
-        self.length.valueChanged.connect(self.changeLength)
+        self.__lengthLabel = QLabel(QCoreApplication.translate("VDLTools", "Length of drawn line"))
+        self.__layout.addWidget(self.__lengthLabel, 1, 0)
 
-    def changeLength(self, v):
-        self.orientation.length = v
-        self.rubber.setToGeometry(self.orientation.geometry(), None)
+        self.__lengthSpinBox = QDoubleSpinBox()
+        self.__lengthSpinBox.setDecimals(1)
+        # if self.__settings.orientLength is not None:
+        #     self.__lengthSpinBox.setValue(self.__settings.orientLength)
+        # else:
+        self.__lengthSpinBox.setValue(8.0)
+        self.__layout.addWidget(self.__lengthSpinBox, 1, 1)
 
-    def changeObservation(self, v):
-        self.orientation.observation = v
-        self.rubber.setToGeometry(self.orientation.geometry(), None)
+        self.__angleLabel = QLabel(QCoreApplication.translate("VDLTools", "Angle [°]"))
+        self.__layout.addWidget(self.__angleLabel, 2, 0)
 
-    def changePrecision(self, v):
-        self.orientation.precision = v
+        self.__angleSpinBox = QDoubleSpinBox()
+        self.__angleSpinBox.setDecimals(3)
+        self.__angleSpinBox.setMinimum(-180.0)
+        self.__angleSpinBox.setMaximum(180.0)
+        self.__angleSpinBox.setValue(orientation.azimut)
+        self.__layout.addWidget(self.__angleSpinBox, 2, 1)
 
-    def closeEvent(self, e):
-        self.rubber.reset()
+        # self.__precisionSpinBox.valueChanged.connect(self.changePrecision)
+        self.__angleSpinBox.valueChanged.connect(self.changeAzimut)
+        self.__lengthSpinBox.valueChanged.connect(self.changeLength)
+
+        self.__okButton = QPushButton(QCoreApplication.translate("VDLTools",  "OK"))
+        self.__okButton.setMinimumHeight(20)
+        self.__okButton.setMinimumWidth(100)
+
+        self.__cancelButton = QPushButton(QCoreApplication.translate("VDLTools", "Cancel"))
+        self.__cancelButton.setMinimumHeight(20)
+        self.__cancelButton.setMinimumWidth(100)
+
+        self.__layout.addWidget(self.__okButton, 3, 0)
+        self.__layout.addWidget(self.__cancelButton, 3, 1)
+
+        self.setLayout(self.__layout)
+
+    def changeLength(self, length):
+        """
+        When te length is changed
+        :param length: new length
+        """
+        self.__orientation.length = length
+        self.__rubber.setToGeometry(self.__orientation.geometry(), None)
+
+    def changeAzimut(self, angle):
+        """
+        When the angle is changed
+        :param angle: new angle
+        """
+        self.__orientation.azimut = angle
+        self.__rubber.setToGeometry(self.__orientation.geometry(), None)
+
+    # def changePrecision(self, v):
+    #     self.__orientation.precision = v
+
+    def getOrientation(self):
+        """
+        To return the updated orientation object
+        :return: orientation object
+        """
+        return self.__orientation
+
+    def okButton(self):
+        """
+        To get the ok button instance
+        :return: ok button instance
+        """
+        return self.__okButton
+
+    def cancelButton(self):
+        """
+        To get the cancel button instance
+        :return: cancel button instance
+        """
+        return self.__cancelButton

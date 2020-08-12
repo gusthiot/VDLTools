@@ -35,7 +35,6 @@ from qgis.core import (QgsProject,
                        QgsField,
                        QgsMapLayer)
 from ..core.db_connector import DBConnector
-# from ..core.geometry_v2 import GeometryV2
 
 
 class ShowSettings(QObject):
@@ -74,6 +73,8 @@ class ShowSettings(QObject):
         QgsProject.instance().readProject.connect(self.__project_loaded)
         self.__linesLayer = None
         self.__fieldnames = None
+        # self.__orientLength = None
+        # self.__orientPrecision = None
         self.__moreTools = moreTools
 
     def __project_loaded(self):
@@ -104,6 +105,12 @@ class ShowSettings(QObject):
 
         """ Url used to get mnt values on a line """
         self.__mntUrl = QgsProject.instance().readEntry("VDLTools", "mnt_url", "None")[0]
+
+        # """ Orientation length """
+        # self.__orientLength = QgsProject.instance().readEntry("VDLTools", "orient_length", "None")[0]
+        #
+        # """ Orientation precision """
+        # self.__orientPrecision = QgsProject.instance().readEntry("VDLTools", "orient_precision", "None")[0]
 
         """ Config table in Database for importing new Lausanne data """
         self.__importConfigTable = QgsProject.instance().readEntry("VDLTools", "import_config_table", None)[0]
@@ -138,11 +145,9 @@ class ShowSettings(QObject):
                     if layer.geometryType() == QgsWkbTypes.LineGeometry:
                         if layer.id() == mll_id:
                             self.__memoryLinesLayer = layer
-                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
                 if layer.wkbType() == QgsWkbTypes.LineStringZ:
                         if layer.id() == dd_id:
                             self.__drawdownLayer = layer
-                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
                 if layer.wkbType() == QgsWkbTypes.PointZ:
                         if layer.id() in ref_ids:
                             self.__refLayers.append(layer)
@@ -167,7 +172,9 @@ class ShowSettings(QObject):
                                             self.__importConfigTable, self.__importUriDb, self.__importSchemaDb,
                                             self.__controlConfigTable, self.__controlUriDb, self.__controlSchemaDb,
                                             self.__mntUrl, self.__refLayers, self.__adjLayers, self.__levelAtt,
-                                            levelVal, self.__drawdownLayer, self.__pipeDiam, self.__moreTools)
+                                            levelVal, self.__drawdownLayer, self.__pipeDiam,
+                                            # self.__orientLength, self.__orientPrecision,
+                                            self.__moreTools)
         self.__showDlg.okButton().clicked.connect(self.__onOk)
         self.__showDlg.cancelButton().clicked.connect(self.__onCancel)
         self.__showDlg.show()
@@ -201,6 +208,9 @@ class ShowSettings(QObject):
         self.levelVals = self.__showDlg.levelVal()
         self.drawdownLayer = self.__showDlg.drawdownLayer()
         self.pipeDiam = self.__showDlg.pipeDiam()
+        # self.orientLength = self.__showDlg.orientLength()
+        # self.orientPrecision = self.__showDlg.orientPrecision()
+
         self.changedSignal.emit()
 
     def __onCancel(self):
@@ -350,6 +360,22 @@ class ShowSettings(QObject):
         """
         return self.__controlSchemaDb
 
+    # @property
+    # def orientLength(self):
+    #     """
+    #     To get the saved orientation length
+    #     :return: saved orientation length
+    #     """
+    #     return self.__orientLength
+    #
+    # @property
+    # def orientPrecision(self):
+    #     """
+    #     To get the saved orientation precision
+    #     :return: saved orientation precision
+    #     """
+    #     return self.__orientPrecision
+
     @pointsLayer.setter
     def pointsLayer(self, pointsLayer):
         """
@@ -370,12 +396,13 @@ class ShowSettings(QObject):
         :param linesLayer: memory lines layer to save
         """
         self.__linesLayer = linesLayer
-        if linesLayer:
+        if self.__linesLayer:
             fields = self.__linesLayer.fields()
             fieldsNames = []
             for pos in range(fields.count()):
                 fieldsNames.append(fields.at(pos).name())
-            if "distance" not in fieldsNames or "x" not in fieldsNames or "y" not in fieldsNames:
+            if "id" not in fieldsNames or "mesure" not in fieldsNames or "type" not in fieldsNames or\
+                    "x" not in fieldsNames or "y" not in fieldsNames:
                 self.__fieldnames = fieldsNames
                 self.__fieldsDlg = FieldsSettingsDialog()
                 self.__fieldsDlg.rejected.connect(self.__cancel)
@@ -404,8 +431,12 @@ class ShowSettings(QObject):
         """
         self.__fieldsDlg.accept()
         with edit(self.__linesLayer):
-            if "distance" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
+            if "id" not in self.__fieldnames:
+                self.__linesLayer.addAttribute(QgsField("id", QVariant.String))
+            if "type" not in self.__fieldnames:
+                self.__linesLayer.addAttribute(QgsField("type", QVariant.String))
+            if "mesure" not in self.__fieldnames:
+                self.__linesLayer.addAttribute(QgsField("mesure", QVariant.Double))
             if "x" not in self.__fieldnames:
                 self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
             if "y" not in self.__fieldnames:
@@ -574,3 +605,23 @@ class ShowSettings(QObject):
         self.__controlSchemaDb = controlSchemaDb
         if controlSchemaDb is not None:
             QgsProject.instance().writeEntry("VDLTools", "control_schema_db", controlSchemaDb)
+
+    # @orientLength.setter
+    # def orientLength(self, orientLength):
+    #     """
+    #     To set the saved orientation length
+    #     :param orientLength: saved orientation length
+    #     """
+    #     self.__orientLength = orientLength
+    #     if orientLength is not None:
+    #         QgsProject.instance().writeEntry("VDLTools", "orient_length", orientLength)
+    #
+    # @orientPrecision.setter
+    # def orientPrecision(self, orientPrecision):
+    #     """
+    #     To set the saved orientation precision
+    #     :param orientPrecision: saved orientation precision
+    #     """
+    #     self.__orientPrecision = orientPrecision
+    #     if orientPrecision is not None:
+    #         QgsProject.instance().writeEntry("VDLTools", "orient_precision", orientPrecision)

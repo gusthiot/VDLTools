@@ -35,6 +35,7 @@ from .tools.subprofile_tool import SubProfileTool
 from .tools.pointer_tool import PointerTool
 from .tools.control_tool import ControlTool
 from .tools.drawndown_tool import DrawdownTool
+from .tools.orientation_tool import OrientationTool
 
 # Initialize Qt resources from file resources.py
 from . import resources
@@ -65,6 +66,7 @@ class VDLTools(object):
         self.pointerTool = None
         self.showSettings = None
         self.controlTool = None
+        self.orientationTool = None
         if VDLTools.MORE_TOOLS:
             self.importMeasures = None
 
@@ -142,12 +144,15 @@ class VDLTools(object):
         self.add_action(self.drawdownTool, self.iface.mainWindow())
         self.controlTool = ControlTool(self.iface)
         self.add_action(self.controlTool, self.iface.mainWindow())
+        self.orientationTool = OrientationTool(self.iface)
+        self.add_action(self.orientationTool, self.iface.mainWindow())
 
         self.intersectTool.ownSettings = self.showSettings
         self.profileTool.ownSettings = self.showSettings
         self.subProfileTool.ownSettings = self.showSettings
         self.drawdownTool.ownSettings = self.showSettings
         self.controlTool.ownSettings = self.showSettings
+        self.orientationTool.ownSettings = self.showSettings
 
         self.profileTool.setEnable(self.iface.activeLayer())
         self.iface.currentLayerChanged.connect(self.profileTool.setEnable)

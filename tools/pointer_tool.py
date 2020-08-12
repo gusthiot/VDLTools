@@ -29,7 +29,6 @@ from qgis.gui import QgsMapTool
 from qgis.PyQt.QtCore import Qt, QCoreApplication
 from qgis.PyQt.QtWidgets import QMessageBox
 from ..core.finder import Finder
-# from ..core.geometry_v2 import GeometryV2
 
 
 class PointerTool(QgsMapTool):
@@ -63,7 +62,6 @@ class PointerTool(QgsMapTool):
                  QgsWkbTypes.CurvePolygonZ, QgsWkbTypes.PolygonZ]
         display = ""
         for layer in self.canvas().layers():
-            # if layer.type() == QgsMapLayer.VectorLayer and GeometryV2.getAdaptedWKB(layer.wkbType()) in types:
             if layer.type() == QgsMapLayer.VectorLayer and layer.wkbType() in types:
                 features = Finder.findFeaturesAt(event.mapPoint(), layer, 10, QgsTolerance.Pixels, self)
                 if len(features) > 0:

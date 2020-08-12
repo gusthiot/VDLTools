@@ -21,6 +21,7 @@
  ***************************************************************************/
 """
 from builtins import range
+from datetime import datetime
 from math import (cos,
                   sin,
                   pi)
@@ -31,13 +32,11 @@ from qgis.core import (QgsGeometry,
                        QgsWkbTypes,
                        QgsPoint,
                        QgsCircularString,
-                       QgsFeature,
-                       QgsProject,
-                       QgsVectorLayer)
+                       QgsFeature)
 from qgis.gui import (QgsMapTool,
                       QgsRubberBand)
 from ..ui.intersect_distance_dialog import IntersectDistanceDialog
-from ..core.finder import Finder
+from ..core.memory_layers import MemoryLayers
 
 
 class IntersectTool(QgsMapTool):
@@ -55,8 +54,7 @@ class IntersectTool(QgsMapTool):
         self.icon_path = ':/plugins/VDLTools/icons/intersect_icon.png'
         self.text = QCoreApplication.translate("VDLTools", "From intersection")
         self.setCursor(Qt.ArrowCursor)
-        self.__lineLayerID = None
-        self.__pointLayerID = None
+        self.__memoryLayers = None
         self.__rubber = None
         self.ownSettings = None
         self.__isEditing = False
@@ -81,6 +79,7 @@ class IntersectTool(QgsMapTool):
         self.__rubber.setIconSize(20)
         self.__rubber.setWidth(2)
         self.__distance = 6.0
+        self.__memoryLayers = MemoryLayers(self.__iface, self.ownSettings)
 
     def deactivate(self):
         """
@@ -88,6 +87,7 @@ class IntersectTool(QgsMapTool):
         """
         self.__cancel()
         self.__rubber = None
+        self.__memoryLayers = None
         QgsMapTool.deactivate(self)
 
     def __cancel(self):
@@ -115,37 +115,48 @@ class IntersectTool(QgsMapTool):
         """
         When the Ok button in Intersect Distance Dialog is pushed
         """
-        self.__distance = float(self.__dstDlg.observation().text())
+        did = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        self.__distance = self.__dstDlg.observation().value()
         circle = QgsCircularString()
         x = self.__dstDlg.mapPoint().x()
         y = self.__dstDlg.mapPoint().y()
         circle.setPoints([QgsPoint(x + self.__distance * cos(pi / 180 * a), y + self.__distance * sin(pi / 180 * a))
                           for a in range(0, 361, 90)])
-        lineLayer = self.__lineLayer()
+        lineLayer = self.__memoryLayers.lineLayer()
         lineLayer.startEditing()
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry(circle))
         fields = lineLayer.fields()
         feature.setFields(fields)
         fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
-        if "distance" in fieldsNames:
-            feature.setAttribute("distance", self.__distance)
+        if "id" in fieldsNames:
+            feature.setAttribute("id", did)
+        if "type" in fieldsNames:
+            feature.setAttribute("type", "distance")
+        if "mesure" in fieldsNames:
+            feature.setAttribute("mesure", self.__distance)
         if "x" in fieldsNames:
             feature.setAttribute("x", x)
         if "y" in fieldsNames:
             feature.setAttribute("y", y)
-        lineLayer.addFeature(feature)
-        # lineLayer.updateExtents()
-        lineLayer.commitChanges()
+        ok, outs = lineLayer.dataProvider().addFeatures([feature])
+        lineLayer.updateExtents()
+        lineLayer.triggerRepaint()
+        lineLayer.featureAdded.emit(outs[0].id())  # emit signal so feature is added to snapping index
 
         # center
-        pointLayer = self.__pointLayer()
+        pointLayer = self.__memoryLayers.pointLayer()
         pointLayer.startEditing()
         feature = QgsFeature()
         feature.setGeometry(QgsGeometry().fromPointXY(self.__dstDlg.mapPoint()))
         feature.setFields(pointLayer.fields())
-        pointLayer.addFeature(feature)
-        pointLayer.commitChanges()
+        fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
+        if "id" in fieldsNames:
+            feature.setAttribute("id", did)
+        ok, outs = pointLayer.dataProvider().addFeatures([feature])
+        pointLayer.updateExtents()
+        pointLayer.triggerRepaint()
+        pointLayer.featureAdded.emit(outs[0].id())  # emit signal so feature is added to snapping index
 
         self.__dstDlg.accept()
         self.__cancel()
@@ -187,62 +198,3 @@ class IntersectTool(QgsMapTool):
             point = match.point()
             self.__isEditing = True
             self.__setDistanceDialog(point)
-
-    def __lineLayer(self):
-        """
-        To get the line layer to create the circle
-        :return: a line layer
-        """
-        if self.ownSettings is not None:
-            if self.ownSettings.linesLayer is not None:
-                layer = self.ownSettings.linesLayer
-                self.__lineLayerID = layer.id()
-                return layer
-        layer = QgsProject.instance().mapLayer(self.__lineLayerID)
-        if layer is None:
-            epsg = self.canvas().mapSettings().destinationCrs().authid()
-            layer = QgsVectorLayer("LineString?crs=%s&index=yes&field=distance:double&field=x:double&field=y:double"
-                                   % epsg, "Memory Lines", "memory")
-            QgsProject.instance().addMapLayer(layer)
-            layer.destroyed.connect(self.__lineLayerDeleted)
-            self.__lineLayerID = layer.id()
-            if self.ownSettings is not None:
-                self.ownSettings.linesLayer = layer
-        else:
-            self.__iface.legendInterface().setLayerVisible(layer, True)
-        return layer
-
-    def __lineLayerDeleted(self):
-        """
-        To deselect the line layer when it is deleted
-        """
-        self.lineLayerID = None
-
-    def __pointLayer(self):
-        """
-        To get the point layer to create the center
-        :return: a point layer
-        """
-        if self.ownSettings is not None:
-            if self.ownSettings.pointsLayer is not None:
-                layer = self.ownSettings.pointsLayer
-                self.__pointLayerID = layer.id()
-                return layer
-        layer = QgsProject.instance().mapLayer(self.__pointLayerID)
-        if layer is None:
-            epsg = self.canvas().mapSettings().destinationCrs().authid()
-            layer = QgsVectorLayer("Point?crs=%s&index=yes" % epsg, "Memory Points", "memory")
-            QgsProject.instance().addMapLayer(layer)
-            layer.destroyed.connect(self.__pointLayerDeleted)
-            self.__pointLayerID = layer.id()
-            if self.ownSettings is not None:
-                self.ownSettings.pointsLayer = layer
-        else:
-            self.__iface.legendInterface().setLayerVisible(layer, True)
-        return layer
-
-    def __pointLayerDeleted(self):
-        """
-        To deselect the point layer when it is deleted
-        """
-        self.__pointLayerID = None

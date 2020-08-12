@@ -46,8 +46,8 @@ class ChooseControlDialog(QDialog):
         self.__listReq = names # récupération de la liste des requêtes possible
         self.setWindowTitle(QCoreApplication.translate("VDLTools", "Choose Controls"))
         self.__layout = QGridLayout()
-        self.__layout.setRowMinimumHeight(1,700)
-        self.__layout.setColumnMinimumWidth(0,300)
+        self.__layout.setRowMinimumHeight(1, 700)
+        self.__layout.setColumnMinimumWidth(0, 300)
 
         self.__confirmLabel = QLabel(
             QCoreApplication.translate("VDLTools",

@@ -29,6 +29,7 @@ from qgis.PyQt.QtWidgets import (QDialog,
                                  QLabel,
                                  QCheckBox,
                                  QWidget,
+#                                 QDoubleSpinBox,
                                  QComboBox)
 from qgis.core import (QgsMapLayer,
                        Qgis,
@@ -37,7 +38,6 @@ from qgis.core import (QgsMapLayer,
 from qgis.PyQt.QtCore import QCoreApplication
 from ..core.db_connector import DBConnector
 from ..core.signal import Signal
-# from ..core.geometry_v2 import GeometryV2
 
 
 class ShowSettingsDialog(QDialog):
@@ -47,7 +47,9 @@ class ShowSettingsDialog(QDialog):
 
     def __init__(self, iface, memoryPointsLayer, memoryLinesLayer, importConfigTable, importUriDb, importSchemaDb,
                  controlConfigTable, controlUriDb, controlSchemaDb, mntUrl, refLayers, adjLayers, levelAtt, levelVal,
-                 drawdowmLayer, pipeDiam, moreTools):
+                 drawdowmLayer, pipeDiam,
+                 # orientLength, orientPrecision,
+                 moreTools):
         """
         Constructor
         :param iface: interface
@@ -95,6 +97,8 @@ class ShowSettingsDialog(QDialog):
         self.__pipeDiamFields = []
         self.__levelAttFields = []
         self.__dbs = DBConnector.getUsedDatabases()
+        # self.__orientLength = orientLength
+        # self.__orientPrecision = orientPrecision
 
         self.__refLabels = []
         self.__refChecks = []
@@ -107,10 +111,8 @@ class ShowSettingsDialog(QDialog):
                         self.__pointsLayers.append(layer)
                     if layer.geometryType() == QgsWkbTypes.LineGeometry:
                         self.__linesLayers.append(layer)
-                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.LineStringZ:
                 if layer.wkbType() == QgsWkbTypes.LineStringZ:
                     self.__drawdownLayers.append(layer)
-                # if GeometryV2.getAdaptedWKB(layer.wkbType()) == QgsWkbTypes.PointZ:
                 if layer.wkbType() == QgsWkbTypes.PointZ:
                     self.__refAvailableLayers.append(layer)
 
@@ -119,7 +121,7 @@ class ShowSettingsDialog(QDialog):
         self.__scrollLayout = QGridLayout()
         line = 0
 
-        intersectLabel = QLabel(QCoreApplication.translate("VDLTools", "Intersect "))
+        intersectLabel = QLabel(QCoreApplication.translate("VDLTools", "Intersect / Orientation "))
         self.__scrollLayout.addWidget(intersectLabel, line, 0)
 
         line += 1
@@ -326,6 +328,40 @@ class ShowSettingsDialog(QDialog):
         if self.__controlUriDb is not None:
             if self.__controlUriDb.database() in list(self.__dbs.keys()):
                 self.__controlDbCombo.setCurrentIndex(list(self.__dbs.keys()).index(self.__controlUriDb.database()) + 1)
+
+        # line += 1
+        #
+        # orientLabel = QLabel(QCoreApplication.translate("VDLTools", "Orientation "))
+        # self.__scrollLayout.addWidget(orientLabel, line, 0)
+        #
+        # line += 1
+        #
+        # orientLengthLabel = QLabel(QCoreApplication.translate("VDLTools", "Length : "))
+        # self.__scrollLayout.addWidget(orientLengthLabel, line, 1)
+        #
+        # self.__orientLengthSpinBox = QDoubleSpinBox()
+        # self.__orientLengthSpinBox.setDecimals(1)
+        # if self.__orientLength is not None and self.__orientLength != "None":
+        #     self.__orientLengthSpinBox.setValue(self.__orientLength)
+        # else:
+        #     self.__orientLengthSpinBox.setValue(8.0)
+        # self.__scrollLayout.addWidget(self.__orientLengthSpinBox, line, 2)
+        #
+        # line += 1
+        #
+        # orientPrecisionLabel = QLabel(QCoreApplication.translate("VDLTools", "Precision [°] : "))
+        # self.__scrollLayout.addWidget(orientPrecisionLabel, line, 1)
+        #
+        # self.__orientPrecisionSpinBox = QDoubleSpinBox()
+        # self.__orientPrecisionSpinBox.setMaximum(2.0)
+        # self.__orientPrecisionSpinBox.setSingleStep(0.1)
+        # if self.__orientPrecision is not None and self.__orientPrecision != "None":
+        #     self.__orientPrecisionSpinBox.setValue(self.__orientPrecision)
+        # else:
+        #     self.__orientPrecisionSpinBox.setValue(0.5)
+        # self.__scrollLayout.addWidget(self.__orientPrecisionSpinBox, line, 2)
+        #
+        # line += 1
 
         if moreTools:
             line += 1
@@ -810,8 +846,21 @@ class ShowSettingsDialog(QDialog):
 
     def mntUrl(self):
         """
-        To get selected MN url
-        :return: MN url
+        To get selected MNT url
+        :return: MNT url
         """
         return self.__mntText.text()
 
+    # def orientLength(self):
+    #     """
+    #     To get orientation length
+    #     :return: orientation length
+    #     """
+    #     return self.__orientLengthSpinBox.value()
+    #
+    # def orientPrecision(self):
+    #     """
+    #     To get orientation precision
+    #     :return: orientation precision
+    #     """
+    #     return self.__orientPrecisionSpinBox.value()
