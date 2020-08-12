@@ -67,7 +67,7 @@ class OrientationDialog(QDialog):
         self.__rubber = rubber
         # self.__settings = settings
 
-        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Place Orientation"))
+        self.setWindowTitle(QCoreApplication.translate("VDLTools", "Place orientation"))
         self.__layout = QGridLayout()
 
         # self.__precisionLabel = QLabel(QCoreApplication.translate("VDLTools", "Precision of prolongation [°]"))
