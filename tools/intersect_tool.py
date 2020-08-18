@@ -115,7 +115,7 @@ class IntersectTool(QgsMapTool):
         """
         When the Ok button in Intersect Distance Dialog is pushed
         """
-        self.__distance = float(self.__dstDlg.observation().text())
+        self.__distance = self.__dstDlg.observation().value()
         circle = QgsCircularStringV2()
         x = self.__dstDlg.mapPoint().x()
         y = self.__dstDlg.mapPoint().y()

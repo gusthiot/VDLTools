@@ -402,14 +402,15 @@ class ShowSettings(QObject):
         When the Ok button in Fields Settings Dialog is pushed
         """
         self.__fieldsDlg.accept()
-        with edit(self.__linesLayer):
-            if "distance" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
-            if "x" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
-            if "y" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
-            self.reallySetLinesLayer()
+        if not self.__linesLayer.isEditable():
+            self.__linesLayer.startEditing()
+        if "distance" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("distance", QVariant.Double))
+        if "x" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
+        if "y" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
+        self.reallySetLinesLayer()
 
     def __onFieldsBut(self):
         """
