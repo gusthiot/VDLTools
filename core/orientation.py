@@ -41,9 +41,15 @@ Reimplemented for QGIS3 by :
  ***************************************************************************/
 """
 
-from qgis.core import QgsPoint, QgsGeometry, QgsFeature
+from qgis.core import (QgsPoint,
+                       Qgis,
+                       QgsGeometry,
+                       QgsFeature)
 from datetime import datetime
-from math import cos, sin, pi
+from math import (cos,
+                  sin,
+                  pi)
+from qgis.PyQt.QtCore import QCoreApplication
 
 
 class Orientation:
@@ -51,12 +57,13 @@ class Orientation:
     Class representing orientation
     """
 
-    def __init__(self, point, azimut):
+    def __init__(self, iface, point, azimut):
         """
         Constructor
         :param point: base point
         :param azimut: mesured azimut
         """
+        self.iface = iface
         self.point = point
         self.azimut = azimut
         self.length = 8.0
@@ -72,11 +79,37 @@ class Orientation:
         f = QgsFeature()
         fields = lineLayer.dataProvider().fields()
         f.setFields(fields)
-        f["id"] = did
-        f["x"] = self.point.x()
-        f["y"] = self.point.y()
-        f["type"] = "orientation"
-        f["mesure"] = self.azimut
+        fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
+        if "id" in fieldsNames:
+            f.setAttribute("id", did)
+        else:
+            self.iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'id' attribute in line layer"),
+                level=Qgis.Warning)
+        if "type" in fieldsNames:
+            f.setAttribute("type", "orientation")
+        else:
+            self.iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'type' attribute in line layer"),
+                level=Qgis.Warning)
+        if "mesure" in fieldsNames:
+            f.setAttribute("mesure", self.azimut)
+        else:
+            self.iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'mesure' attribute in line layer"),
+                level=Qgis.Warning)
+        if "x" in fieldsNames:
+            f.setAttribute("x", self.point.x())
+        else:
+            self.iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'x' attribute in line layer"),
+                level=Qgis.Warning)
+        if "y" in fieldsNames:
+            f.setAttribute("y", self.point.y())
+        else:
+            self.iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'y' attribute in line layer"),
+                level=Qgis.Warning)
         f.setGeometry(self.geometry())
         ok, l = lineLayer.dataProvider().addFeatures([f])
         lineLayer.updateExtents()
@@ -87,7 +120,13 @@ class Orientation:
         f = QgsFeature()
         fields = pointLayer.dataProvider().fields()
         f.setFields(fields)
-        f["id"] = did
+        fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
+        if "id" in fieldsNames:
+            f.setAttribute("id", did)
+        else:
+            self.iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'id' attribute in point layer"),
+                level=Qgis.Warning)
         f.setGeometry(QgsGeometry().fromPointXY(self.point))
         ok, l = pointLayer.dataProvider().addFeatures([f])
         pointLayer.updateExtents()

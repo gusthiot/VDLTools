@@ -172,7 +172,7 @@ class OrientationTool(QgsMapTool):
         i = dist.index(mindist)
         pt = vertices[i]
         azi = po.azimuth(pt)
-        return Orientation(pt, azi)
+        return Orientation(self.__iface, pt, azi)
         # if self.ownSettings is None or self.ownSettings.orientLength is None:
         #     return Orientation(pt, obs, 8.0)
         # else:

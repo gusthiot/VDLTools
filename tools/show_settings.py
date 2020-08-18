@@ -430,18 +430,19 @@ class ShowSettings(QObject):
         When the Ok button in Fields Settings Dialog is pushed
         """
         self.__fieldsDlg.accept()
-        with edit(self.__linesLayer):
-            if "id" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("id", QVariant.String))
-            if "type" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("type", QVariant.String))
-            if "mesure" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("mesure", QVariant.Double))
-            if "x" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
-            if "y" not in self.__fieldnames:
-                self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
-            self.reallySetLinesLayer()
+        if not self.__linesLayer.isEditable():
+            self.__linesLayer.startEditing()
+        if "id" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("id", QVariant.String))
+        if "type" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("type", QVariant.String))
+        if "mesure" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("mesure", QVariant.Double))
+        if "x" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("x", QVariant.Double))
+        if "y" not in self.__fieldnames:
+            self.__linesLayer.addAttribute(QgsField("y", QVariant.Double))
+        self.reallySetLinesLayer()
 
     def __onFieldsBut(self):
         """

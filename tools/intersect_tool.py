@@ -29,6 +29,7 @@ from qgis.PyQt.QtCore import (Qt,
                               QCoreApplication)
 from qgis.PyQt.QtGui import QColor
 from qgis.core import (QgsGeometry,
+                       Qgis,
                        QgsWkbTypes,
                        QgsPoint,
                        QgsCircularString,
@@ -131,14 +132,34 @@ class IntersectTool(QgsMapTool):
         fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
         if "id" in fieldsNames:
             feature.setAttribute("id", did)
+        else:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'id' attribute in line layer"),
+                level=Qgis.Warning)
         if "type" in fieldsNames:
             feature.setAttribute("type", "distance")
+        else:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'type' attribute in line layer"),
+                level=Qgis.Warning)
         if "mesure" in fieldsNames:
             feature.setAttribute("mesure", self.__distance)
+        else:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'mesure' attribute in line layer"),
+                level=Qgis.Warning)
         if "x" in fieldsNames:
             feature.setAttribute("x", x)
+        else:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'x' attribute in line layer"),
+                level=Qgis.Warning)
         if "y" in fieldsNames:
             feature.setAttribute("y", y)
+        else:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'y' attribute in line layer"),
+                level=Qgis.Warning)
         ok, outs = lineLayer.dataProvider().addFeatures([feature])
         lineLayer.updateExtents()
         lineLayer.triggerRepaint()
@@ -153,6 +174,10 @@ class IntersectTool(QgsMapTool):
         fieldsNames = [fields.at(pos).name() for pos in range(fields.count())]
         if "id" in fieldsNames:
             feature.setAttribute("id", did)
+        else:
+            self.__iface.messageBar().pushMessage(
+                QCoreApplication.translate("VDLTools", "no 'id' attribute in point layer"),
+                level=Qgis.Warning)
         ok, outs = pointLayer.dataProvider().addFeatures([feature])
         pointLayer.updateExtents()
         pointLayer.triggerRepaint()
