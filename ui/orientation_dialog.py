@@ -87,7 +87,7 @@ class OrientationDialog(QDialog):
         self.__layout.addWidget(self.__lengthLabel, 1, 0)
 
         self.__lengthSpinBox = QDoubleSpinBox()
-        self.__lengthSpinBox.setDecimals(1)
+        self.__lengthSpinBox.setDecimals(2)
         # if self.__settings.orientLength is not None:
         #     self.__lengthSpinBox.setValue(self.__settings.orientLength)
         # else:
