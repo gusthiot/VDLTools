@@ -450,7 +450,7 @@
     <message>
         <location filename="../ui/profile_dock_widget.py" line="548"/>
         <source>Rescale problem... (trace printed)</source>
-        <translation>Problème de rescale... (trace imrpimée dans la console)</translation>
+        <translation>Problème de rescale... (trace imprimée dans la console)</translation>
     </message>
     <message>
         <location filename="../ui/profile_dock_widget.py" line="850"/>

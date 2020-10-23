@@ -20,20 +20,15 @@
  *                                                                         *
  ***************************************************************************/
 """
-from builtins import range
 from qgis.gui import (QgsMapToolAdvancedDigitizing,
                       QgsRubberBand)
-from qgis.core import (QgsExpression,
-                       QgsVectorLayerUtils,
-                       QgsDataSourceUri,
-                       QgsExpressionContext,
+from qgis.core import (QgsVectorLayerUtils,
                        Qgis,
                        QgsWkbTypes,
                        QgsEditFormConfig,
                        QgsTolerance,
                        QgsSnappingConfig,
                        QgsMapLayer,
-                       QgsFeature,
                        QgsGeometry,
                        QgsPoint)
 from qgis.PyQt.QtCore import (Qt,

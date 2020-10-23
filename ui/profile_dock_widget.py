@@ -100,18 +100,21 @@ class ProfileDockWidget(QDockWidget):
         self.__canvas = self.__iface.mapCanvas()
         self.__types = ['PDF', 'PNG']  # ], 'SVG', 'PS']
         self.__libs = []
-        if Qwt6_loaded:
-            self.__lib = 'Qwt6'
-            self.__libs.append('Qwt6')
-            if matplotlib_loaded:
-                self.__libs.append('Matplotlib')
+        if matplotlib_loaded:
+            self.__lib = 'Matplotlib'
+            self.__libs.append('Matplotlib')
+            if Qwt6_loaded:
+                self.__libs.append('Qwt6')
         else:
-            self.__iface.messageBar().pushMessage(
-                QCoreApplication.translate("VDLTools", "Qwt6 is not available, have you installed pythonqwt package ?"),
-                level=Qgis.Warning, duration=0)
-            if matplotlib_loaded:
-                self.__lib = 'Matplotlib'
-                self.__libs.append('Matplotlib')
+            # self.__iface.messageBar().pushMessage(
+            #     QCoreApplication.translate("VDLTools", "Qwt6 is not available, have you installed pythonqwt package ?"),
+            #     level=Qgis.Warning, duration=0)
+            # if matplotlib_loaded:
+            #     self.__lib = 'Matplotlib'
+            #     self.__libs.append('Matplotlib')
+            if Qwt6_loaded:
+                self.__lib = 'Qwt6'
+                self.__libs.append('Qwt6')
             else:
                 self.__lib = None
                 self.__iface.messageBar().pushMessage(
@@ -190,10 +193,10 @@ class ProfileDockWidget(QDockWidget):
         self.__scaleButton = QPushButton(QCoreApplication.translate("VDLTools", "Scale 1:1"))
         self.__scaleButton.setFixedSize(size)
         self.__scaleButton.clicked.connect(self.__scale)
-        if self.__lib == 'Qwt6':
-            self.__scaleButton.setVisible(True)
-        else:
-            self.__scaleButton.setVisible(False)
+        # if self.__lib == 'Qwt6':
+        #    self.__scaleButton.setVisible(True)
+        # else:
+        #    self.__scaleButton.setVisible(False)
         self.__vertLayout.addWidget(self.__scaleButton)
 
         self.__maxLabel = QLabel("y max")
@@ -332,8 +335,8 @@ class ProfileDockWidget(QDockWidget):
             grid.setPen(QPen(QColor('grey'), 0, Qt.DotLine))
             grid.attach(self.__plotWdg)
             self.__frameLayout.addWidget(self.__plotWdg)
-            if self.__scaleButton is not None:
-                self.__scaleButton.setVisible(True)
+            # if self.__scaleButton is not None:
+            #     self.__scaleButton.setVisible(True)
 
         elif self.__lib == 'Matplotlib':
             # fig = Figure((1.0, 1.0), linewidth=0.0, subplotpars=SubplotParams(left=0, bottom=0, right=1, top=1,
@@ -347,20 +350,22 @@ class ProfileDockWidget(QDockWidget):
 
             fig = pyplot.figure()
             pyplot.axis([0, 1000, 0, 1000])
-            pyplot.xlabel(QCoreApplication.translate("VDLTools", "Distance [m]"))
-            pyplot.ylabel(QCoreApplication.translate("VDLTools", "Elevation [m]"))
+            # pyplot.xlabel(QCoreApplication.translate("VDLTools", "Distance [m]"))
+            # pyplot.ylabel(QCoreApplication.translate("VDLTools", "Elevation [m]"))
             # self.__axes = fig.add_axes((0.07, 0.16, 0.92, 0.82))
             # self.__axes.set_xbound(0, 1000)
             # self.__axes.set_ybound(0, 1000)
             # self.__manageMatplotlibAxe(self.__axes)
+
+            self.__manageMatplotlibAxe(fig.get_axes()[0])
             self.__plotWdg = FigureCanvasQTAgg(fig)
             sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             sizePolicy.setHorizontalStretch(0)
             sizePolicy.setVerticalStretch(0)
             self.__plotWdg.setSizePolicy(sizePolicy)
             self.__frameLayout.addWidget(self.__plotWdg)
-            if self.__scaleButton is not None:
-                self.__scaleButton.setVisible(False)
+            # if self.__scaleButton is not None:
+            #     self.__scaleButton.setVisible(False)
 
     def setProfiles(self, profiles, numLines):
         """
@@ -483,11 +488,11 @@ class ProfileDockWidget(QDockWidget):
                             # self.__plotWdg.figure.get_axes()[0].plot(self.__mntPoints[1], self.__mntPoints[2][p],
                             #                                         gid=self.__mntPoints[0][p], linewidth=3)
                             pyplot.plot(self.__mntPoints[1], self.__mntPoints[2][p],
-                                               gid=self.__mntPoints[0][p], linewidth=3,
-                                               color=(qcol.red() / 255.0,
-                                                      qcol.green() / 255.0,
-                                                      qcol.blue() / 255.0,
-                                                      qcol.alpha() / 255.0))
+                                        gid=self.__mntPoints[0][p], linewidth=3,
+                                        color=(qcol.red() / 255.0,
+                                               qcol.green() / 255.0,
+                                               qcol.blue() / 255.0,
+                                               qcol.alpha() / 255.0))
                             # tmp = self.__plotWdg.figure.get_axes()[0].get_lines()
                             # for t in range(len(tmp)):
                             #     if self.__mntPoints[0][p] == tmp[t].get_gid():
@@ -680,13 +685,19 @@ class ProfileDockWidget(QDockWidget):
                     self.__plotWdg.figure.get_axes()[0].vlines(self.__profiles[i]['l'], minimumValue, maximumValue,
                                                                linewidth=width)
         if self.__scale11:
-            width = self.__plotWdg.canvas().width()
-            height = self.__plotWdg.canvas().height()
+            if self.__lib == 'Qwt6':
+                width = self.__plotWdg.canvas().width()
+                height = self.__plotWdg.canvas().height()
+            elif self.__lib == 'Matplotlib':
+                width = self.__plotWdg.figure.get_figwidth()
+                height = self.__plotWdg.figure.get_figheight()
             density = length/width
             interval = density * height
+            print(length, interval)
             middle = (maximumValue + minimumValue) / 2
             maximumValue = middle + (interval/2)
             minimumValue = middle - (interval/2)
+            print(middle, minimumValue, maximumValue)
 
         self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
         self.__maxSpin.setValue(maximumValue)
@@ -810,7 +821,7 @@ class ProfileDockWidget(QDockWidget):
         if fileName is not None:
             self.__printWdg.grab().save(fileName, "PNG")
 
-    def clearData(self): # not used ??
+    def clearData(self):
         """
         To clear the displayed data
         """
@@ -826,7 +837,7 @@ class ProfileDockWidget(QDockWidget):
             self.__profiles = None
         elif self.__lib == 'Matplotlib':
             self.__plotWdg.figure.get_axes()[0].cla()
-            # self.__manageMatplotlibAxe(self.__plotWdg.figure.get_axes()[0])
+            self.__manageMatplotlibAxe(self.__plotWdg.figure.get_axes()[0])
         self.__maxSpin.setEnabled(False)
         self.__minSpin.setEnabled(False)
         self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
@@ -841,7 +852,7 @@ class ProfileDockWidget(QDockWidget):
             child = self.__legendLayout.takeAt(0)
             child.widget().deleteLater()
 
-    def __manageMatplotlibAxe(self, axe): # no more used ?
+    def __manageMatplotlibAxe(self, axe):
         """
         To manage the axes for matplotlib library
         :param axe: the axes element
@@ -854,6 +865,7 @@ class ProfileDockWidget(QDockWidget):
                         left=True, right=False)
         axe.set_xlabel(QCoreApplication.translate("VDLTools", "Distance [m]"))
         axe.set_ylabel(QCoreApplication.translate("VDLTools", "Elevation [m]"))
+        axe.set_position([0.1, 0.2, 0.85, 0.7])
 
     def __activateMouseTracking(self, activate):
         """
@@ -907,8 +919,22 @@ class ProfileDockWidget(QDockWidget):
         if event.button == MouseButton.LEFT:
             # print('released x', self.__rect.get_x(), (self.__rect.get_x()+self.__rect.get_width()))
             # print('released y', self.__rect.get_y(), (self.__rect.get_y()+self.__rect.get_height()))
-            self.__plotWdg.figure.get_axes()[0].set_xbound(self.__rect.get_x(), (self.__rect.get_x()+self.__rect.get_width()))
-            self.__plotWdg.figure.get_axes()[0].set_ybound(self.__rect.get_y(), (self.__rect.get_y()+self.__rect.get_height()))
+
+            self.__plotWdg.figure.get_axes()[0].set_xbound(self.__rect.get_x(),
+                                                           (self.__rect.get_x() + self.__rect.get_width()))
+            if self.__scale11:
+                length = self.__rect.get_width()
+                width = self.__plotWdg.figure.get_figwidth()
+                height = self.__plotWdg.figure.get_figheight()
+                density = length / width
+                interval = density * height
+                middle = self.__rect.get_y() + self.__rect.get_height()/2
+                maximumValue = middle + (interval / 2)
+                minimumValue = middle - (interval / 2)
+                self.__plotWdg.figure.get_axes()[0].set_ybound(minimumValue, maximumValue)
+            else:
+                self.__plotWdg.figure.get_axes()[0].set_ybound(self.__rect.get_y(),
+                                                               (self.__rect.get_y()+self.__rect.get_height()))
             self.__maxSpin.valueChanged.disconnect(self.__reScalePlot)
             self.__maxSpin.setValue(self.__rect.get_y() + self.__rect.get_height())
             self.__maxSpin.valueChanged.connect(self.__reScalePlot)
