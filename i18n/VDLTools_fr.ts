@@ -70,8 +70,8 @@
     </message>
     <message>
         <location filename="../tools/extrapolate_tool.py" line="194"/>
-        <location filename="../tools/interpolate_tool.py" line="286"/>
-        <location filename="../tools/interpolate_tool.py" line="400"/>
+        <location filename="../tools/interpolate_tool.py" line="281"/>
+        <location filename="../tools/interpolate_tool.py" line="395"/>
         <source>One feature at a time</source>
         <translation>Un objet à la fois</translation>
     </message>
@@ -81,39 +81,69 @@
         <translation>Extrapoler l&apos;altitude d&apos;un vertex et d&apos;un point à l&apos;extrémité d&apos;une ligne</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="61"/>
+        <location filename="../tools/interpolate_tool.py" line="56"/>
         <source>Interpolate the elevation of a vertex and a point in the middle of a line</source>
         <translation>Interpoler l&apos;altitude d&apos;un vertex et d&apos;un point au milieu d&apos;une ligne</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="292"/>
+        <location filename="../tools/interpolate_tool.py" line="287"/>
         <source>Select the position for interpolation (ESC to undo)</source>
         <translation>Sélectionner la position pour l&apos;interpolation (ESC pour annuler)</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="329"/>
+        <location filename="../tools/interpolate_tool.py" line="324"/>
         <source>What do you want to do ?</source>
         <translation>Que voulez-vous faire ?</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="330"/>
+        <location filename="../tools/interpolate_tool.py" line="325"/>
         <source>Create point and new vertex</source>
         <translation>Créer un point et un nouveau vertex</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="331"/>
+        <location filename="../tools/interpolate_tool.py" line="326"/>
         <source>Create only the vertex</source>
         <translation>Créer seulement le vertex</translation>
     </message>
     <message>
-        <location filename="../tools/interpolate_tool.py" line="405"/>
+        <location filename="../tools/interpolate_tool.py" line="400"/>
         <source>No more feature selected</source>
         <translation>Plus d&apos;objet sélectionné</translation>
     </message>
     <message>
-        <location filename="../tools/intersect_tool.py" line="55"/>
+        <location filename="../tools/intersect_tool.py" line="56"/>
         <source>From intersection</source>
         <translation>A partir d&apos;une intersection</translation>
+    </message>
+    <message>
+        <location filename="../tools/intersect_tool.py" line="137"/>
+        <source>no &apos;id&apos; attribute in line layer</source>
+        <translation>pas d&apos;attribut &apos;id&apos; dans la couche ligne</translation>
+    </message>
+    <message>
+        <location filename="../tools/intersect_tool.py" line="143"/>
+        <source>no &apos;type&apos; attribute in line layer</source>
+        <translation>pas d&apos;attribut &apos;type dans la couche ligne</translation>
+    </message>
+    <message>
+        <location filename="../tools/intersect_tool.py" line="149"/>
+        <source>no &apos;mesure&apos; attribute in line layer</source>
+        <translation>pas d&apos;attribut &apos;mesure&apos; dans la couche ligne</translation>
+    </message>
+    <message>
+        <location filename="../tools/intersect_tool.py" line="155"/>
+        <source>no &apos;x&apos; attribute in line layer</source>
+        <translation>pas d&apos;attribut &apos;x&apos; dans la couche ligne</translation>
+    </message>
+    <message>
+        <location filename="../tools/intersect_tool.py" line="161"/>
+        <source>no &apos;y&apos; attribute in line layer</source>
+        <translation>pas d&apos;attribut &apos;y&apos; dans la couche ligne</translation>
+    </message>
+    <message>
+        <location filename="../tools/intersect_tool.py" line="179"/>
+        <source>no &apos;id&apos; attribute in point layer</source>
+        <translation>pas d&apos;attribut &apos;id&apos; dans la couche point</translation>
     </message>
     <message>
         <location filename="../tools/profile_tool.py" line="62"/>
@@ -373,128 +403,128 @@
         <translation>Juste éditer la ligne avec un nouveau vertex</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="94"/>
+        <location filename="../ui/profile_dock_widget.py" line="97"/>
         <source>Profile Tool</source>
         <translation>Outil de profil</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="168"/>
-        <location filename="../ui/profile_dock_widget.py" line="275"/>
+        <location filename="../ui/profile_dock_widget.py" line="178"/>
+        <location filename="../ui/profile_dock_widget.py" line="285"/>
         <source>Display MNT</source>
         <translation>Afficher MNT</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="175"/>
-        <location filename="../ui/profile_dock_widget.py" line="286"/>
+        <location filename="../ui/profile_dock_widget.py" line="185"/>
+        <location filename="../ui/profile_dock_widget.py" line="296"/>
         <source>Display Zeros</source>
         <translation>Afficher les zéros</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="183"/>
-        <location filename="../ui/profile_dock_widget.py" line="264"/>
+        <location filename="../ui/profile_dock_widget.py" line="193"/>
+        <location filename="../ui/profile_dock_widget.py" line="274"/>
         <source>Scale 1:1</source>
         <translation>Echelle 1:1</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="216"/>
+        <location filename="../ui/profile_dock_widget.py" line="226"/>
         <source>Save</source>
         <translation>Sauver</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="267"/>
+        <location filename="../ui/profile_dock_widget.py" line="277"/>
         <source>Auto scale</source>
         <translation>Echelle automatique</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="278"/>
+        <location filename="../ui/profile_dock_widget.py" line="288"/>
         <source>Remove MNT</source>
         <translation>Effacer MNT</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="289"/>
+        <location filename="../ui/profile_dock_widget.py" line="299"/>
         <source>Remove Zeros</source>
         <translation>Cacher les zéros</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="314"/>
-        <location filename="../ui/profile_dock_widget.py" line="827"/>
+        <location filename="../ui/profile_dock_widget.py" line="324"/>
+        <location filename="../ui/profile_dock_widget.py" line="866"/>
         <source>Distance [m]</source>
         <translation>Distance [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="317"/>
-        <location filename="../ui/profile_dock_widget.py" line="828"/>
+        <location filename="../ui/profile_dock_widget.py" line="327"/>
+        <location filename="../ui/profile_dock_widget.py" line="867"/>
         <source>Elevation [m]</source>
         <translation>Altitude [m]</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="424"/>
+        <location filename="../ui/profile_dock_widget.py" line="440"/>
         <source>HTTP Error</source>
         <translation>Erreur HTTP</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="425"/>
+        <location filename="../ui/profile_dock_widget.py" line="441"/>
         <source>status error</source>
         <translation>erreur status</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="429"/>
+        <location filename="../ui/profile_dock_widget.py" line="445"/>
         <source>URL Error</source>
         <translation>Erreur URL</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="433"/>
+        <location filename="../ui/profile_dock_widget.py" line="449"/>
         <source>No MNT values here</source>
         <translation>Pas de mesures MNT ici</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="548"/>
+        <location filename="../ui/profile_dock_widget.py" line="579"/>
         <source>Rescale problem... (trace printed)</source>
         <translation>Problème de rescale... (trace imprimée dans la console)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="850"/>
+        <location filename="../ui/profile_dock_widget.py" line="894"/>
         <source>Tracking exception : </source>
         <translation>Exception de tracking : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="864"/>
+        <location filename="../ui/profile_dock_widget.py" line="910"/>
+        <location filename="../ui/profile_dock_widget.py" line="980"/>
         <source>Mouse event exception : </source>
         <translation>Exception d&apos;évènement souris : </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="754"/>
+        <location filename="../ui/profile_dock_widget.py" line="793"/>
         <source>Invalid index </source>
         <translation>Index invalide </translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="107"/>
         <source>Qwt6 is not available, have you installed pythonqwt package ?</source>
-        <translation>Qwt6 n&apos;est pas disponible, avez-vous intallé le package pythonqwt ?</translation>
+        <translation type="vanished">Qwt6 n&apos;est pas disponible, avez-vous intallé le package pythonqwt ?</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="115"/>
+        <location filename="../ui/profile_dock_widget.py" line="121"/>
         <source>No graph lib available (qwt6 or matplotlib)</source>
         <translation>Librairie graphique non disponible (qwt6 ou matplotlib)</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="762"/>
-        <location filename="../ui/profile_dock_widget.py" line="780"/>
+        <location filename="../ui/profile_dock_widget.py" line="801"/>
+        <location filename="../ui/profile_dock_widget.py" line="819"/>
         <source>Save As</source>
         <translation>Sauver sous</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="763"/>
+        <location filename="../ui/profile_dock_widget.py" line="802"/>
         <source>Profile.pdf</source>
         <translation>Profil.pdf</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="781"/>
+        <location filename="../ui/profile_dock_widget.py" line="820"/>
         <source>Profile.png</source>
         <translation>Profil.png</translation>
     </message>
     <message>
-        <location filename="../ui/profile_dock_widget.py" line="767"/>
+        <location filename="../ui/profile_dock_widget.py" line="806"/>
         <source>QGIS Profile Plugin</source>
         <translation>Pllugin QGIS de profil</translation>
     </message>
