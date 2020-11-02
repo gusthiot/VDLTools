@@ -209,7 +209,10 @@ class IntersectTool(QgsMapTool):
                         self.__rubber.setIcon(1)
                 if match.hasEdge():
                     self.__rubber.setIcon(3)
-                self.__rubber.setToGeometry(QgsGeometry().fromPointXY(point), None)
+            else:
+                point = mouseEvent.mapPoint()
+                self.__rubber.setIcon(2)
+            self.__rubber.setToGeometry(QgsGeometry().fromPointXY(point), None)
 
     def canvasReleaseEvent(self, mouseEvent):
         """
@@ -221,5 +224,9 @@ class IntersectTool(QgsMapTool):
         match = self.canvas().snappingUtils().snapToMap(mouseEvent.mapPoint())
         if match.hasVertex() or match.hasEdge():
             point = match.point()
+            self.__isEditing = True
+            self.__setDistanceDialog(point)
+        else:
+            point = mouseEvent.mapPoint()
             self.__isEditing = True
             self.__setDistanceDialog(point)
