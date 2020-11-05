@@ -86,6 +86,8 @@ class ProfileTool(QgsMapTool):
         self.__usedMnts = None
         self.__isfloating = False
         self.__dockGeom = None
+        self.__rendered = False
+        self.__renderedIds = None
 
     def setTool(self):
         """
@@ -99,6 +101,7 @@ class ProfileTool(QgsMapTool):
         """
         QgsMapTool.activate(self)
         self.__dockWdg = ProfileDockWidget(self.__iface, self.__dockGeom)
+        self.__dockWdg.scaleButton().clicked.connect(self.__isScalingOneOne)
         if self.__isfloating:
             self.__dockWdg.show()
         else:
@@ -115,6 +118,13 @@ class ProfileTool(QgsMapTool):
         self.__rubberDif.setIcon(2)
         self.__rubberDif.setIconSize(20)
 
+    def __isScalingOneOne(self):
+        """
+        To update the graph when changing scale choice
+        """
+        if self.__rendered:
+            self.__calculateProfile()
+
     def __closed(self):
         """
         When the dock is closed
@@ -122,6 +132,7 @@ class ProfileTool(QgsMapTool):
         self.__dockGeom = self.__dockWdg.geometry()
         self.__isfloating = self.__dockWdg.isFloating()
         self.__cancel()
+        self.__rendered = False
         self.__iface.actionPan().trigger()
 
     def deactivate(self):
@@ -764,6 +775,7 @@ class ProfileTool(QgsMapTool):
                         feat.append(feats)
 
             self.__features.append(feat)
+        self.__renderedIds = self.__selectedIds
         self.__calculateProfile()
 
     def __getNames(self):
@@ -905,8 +917,9 @@ class ProfileTool(QgsMapTool):
         self.__dockWdg.clearData()
         if len(self.__points) == 0:
             return
-        self.__dockWdg.setProfiles(self.__points, len(self.__selectedIds))
+        self.__dockWdg.setProfiles(self.__points, len(self.__renderedIds))
         self.__dockWdg.attachCurves(self.__getNames(), self.ownSettings, self.__usedMnts)
+        self.__rendered = True
 
     def __checkSituations(self):
         """
