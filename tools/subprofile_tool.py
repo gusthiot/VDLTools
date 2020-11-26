@@ -73,7 +73,7 @@ class SubProfileTool(QgsMapTool):
         if self.__isfloating:
             self.__dockWdg.show()
         else:
-           self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+            self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
         self.__rubberLine = QgsRubberBand(self.canvas(), QgsWkbTypes.LineGeometry)
         color = QColor("red")

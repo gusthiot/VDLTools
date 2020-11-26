@@ -241,7 +241,8 @@ class DrawdownTool(QgsMapTool):
             drawdown = False
             level = None
             for layer in self.ownSettings.refLayers:
-                feature = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPointXY(x, y)), layer, self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits, self)
+                feature = Finder.findClosestFeatureAt(self.toMapCoordinates(layer, QgsPointXY(x, y)), layer,
+                                                      self.SEARCH_TOLERANCE, QgsTolerance.LayerUnits, self)
                 if feature is not None:
                     point_v2 = feature.geometry().constGet()
                     if point_v2.z() > 0:
@@ -299,7 +300,8 @@ class DrawdownTool(QgsMapTool):
                                     if dtemp > diam:
                                         diam = dtemp
                                     self.__adjustments.append({'point': p, 'previous': zp, 'line': False, 'diam': dtemp,
-                                                               'comp': QCoreApplication.translate("VDLTools", " connected"),
+                                                               'comp': QCoreApplication.translate("VDLTools",
+                                                                                                  " connected"),
                                                                'feature': f, 'layer': layer, 'delta': True})
                                     if zp is None or zp != zp:
                                         zz.append(0)
@@ -484,7 +486,6 @@ class DrawdownTool(QgsMapTool):
         for layer in self.__editDlg.getLayers():
             layer.startEditing()
         self.__applyAdjustments()
-
 
     def __applyAdjustments(self):
         """

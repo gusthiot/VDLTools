@@ -105,7 +105,7 @@ class ProfileTool(QgsMapTool):
         if self.__isfloating:
             self.__dockWdg.show()
         else:
-           self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
+            self.__iface.addDockWidget(Qt.BottomDockWidgetArea, self.__dockWdg)
         self.__dockWdg.closeSignal.connect(self.__closed)
         self.__rubberSit = QgsRubberBand(self.canvas(), QgsWkbTypes.PointGeometry)
         self.__rubberDif = QgsRubberBand(self.canvas(), QgsWkbTypes.PointGeometry)
