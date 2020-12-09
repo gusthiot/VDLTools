@@ -36,6 +36,7 @@ from .tools.pointer_tool import PointerTool
 from .tools.control_tool import ControlTool
 from .tools.drawndown_tool import DrawdownTool
 from .tools.orientation_tool import OrientationTool
+from .tools.duplicate_tool import DuplicateTool
 
 # Initialize Qt resources from file resources.py
 from . import resources
@@ -67,6 +68,7 @@ class VDLTools(object):
         self.showSettings = None
         self.controlTool = None
         self.orientationTool = None
+        self.duplicateTool = None
         if VDLTools.MORE_TOOLS:
             self.importMeasures = None
 
@@ -146,6 +148,8 @@ class VDLTools(object):
         self.add_action(self.controlTool, self.iface.mainWindow())
         self.orientationTool = OrientationTool(self.iface)
         self.add_action(self.orientationTool, self.iface.mainWindow())
+        self.duplicateTool = DuplicateTool(self.iface)
+        self.add_action(self.duplicateTool, self.iface.mainWindow(), False)
 
         self.intersectTool.ownSettings = self.showSettings
         self.profileTool.ownSettings = self.showSettings
@@ -162,6 +166,8 @@ class VDLTools(object):
         self.iface.currentLayerChanged.connect(self.extrapolateTool.setEnable)
         self.drawdownTool.setEnable()
         self.showSettings.changedSignal.connect(self.drawdownTool.setEnable)
+        self.duplicateTool.setEnable(self.iface.activeLayer())
+        self.iface.currentLayerChanged.connect(self.duplicateTool.setEnable)
 
         if VDLTools.MORE_TOOLS:
             self.importMeasures = ImportMeasures(self.iface)

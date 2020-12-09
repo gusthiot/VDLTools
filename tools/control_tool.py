@@ -64,13 +64,6 @@ class ControlTool(AreaTool):
         self.__lrequests = []                                   # liste des requêtes actives
         self.areaMax = 1000000                                  # tolérance de surface max. pour lancer un contrôle
 
-    def toolName(self):
-        """
-        To get the tool name
-        :return: tool name
-        """
-        return QCoreApplication.translate("VDLTools", "Control")
-
     def setTool(self):
         """
         To set the current tool as this one
