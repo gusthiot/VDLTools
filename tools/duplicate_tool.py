@@ -221,8 +221,7 @@ class DuplicateTool(QgsMapTool):
         self.__rubberBand = QgsRubberBand(self.canvas(), QgsWkbTypes.LineGeometry)
         line = self.__selectedFeature.geometry().constGet().clone()
         self.__newFeature = self.__newLine(line, distance)
-        # self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.curveToLine()), None)
-        self.__rubberBand.setToGeometry(self.__newFeature, None)
+        self.__rubberBand.setToGeometry(QgsGeometry(self.__newFeature.clone()), None)
 
     def __newLine(self, line, distance):
         """
@@ -259,8 +258,7 @@ class DuplicateTool(QgsMapTool):
         self.__newFeature = QgsCurvePolygon()
         line = self.__newPolygonLine(polygon.exteriorRing(), distance)
         self.__newFeature.setExteriorRing(line)
-        # self.__rubberBand.setToGeometry(QgsGeometry(line_v2.curveToLine()), None)
-        self.__rubberBand.setToGeometry(line, None)
+        self.__rubberBand.setToGeometry(QgsGeometry(line.clone()), None)
         for num in range(polygon.numInteriorRings()):
             if self.__dstDlg.isInverted():
                 distance = -distance
@@ -307,7 +305,7 @@ class DuplicateTool(QgsMapTool):
         if not geometry.isGeosValid():
             self.__iface.messageBar().pushMessage(QCoreApplication.translate("VDLTools", "Geos geometry problem"),
                                                   level=QgsMessageBar.CRITICAL, duration=0)
-        feature = QgsFeature(self.__layer.pendingFields())
+        feature = QgsFeature(self.__layer.fields())
         feature.setGeometry(geometry)
         primaryKey = QgsDataSourceUri(self.__layer.source()).keyColumn()
         for field in self.__selectedFeature.fields():
@@ -315,12 +313,11 @@ class DuplicateTool(QgsMapTool):
                 feature.setAttribute(field.name(), self.__selectedFeature.attribute(field.name()))
         if len(self.__selectedFeature.fields()) > 0 and self.__layer.editFormConfig().suppress() != \
                 QgsEditFormConfig.SuppressOn:
-            self.__iface.openFeatureForm(self.__layer, feature)
+            if self.__iface.openFeatureForm(self.__layer, feature):
+                self.__layer.addFeature(feature)
         else:
             ok, outs = self.__layer.dataProvider().addFeatures([feature])
-            self.__layer.updateExtents()
-            self.__layer.setCacheImage(None)
-            self.__layer.triggerRepaint()
+        self.__layer.updateExtents()
         self.__cancel()
 
     def canvasMoveEvent(self, event):
@@ -332,7 +329,7 @@ class DuplicateTool(QgsMapTool):
             feat = Finder.findClosestFeatureAt(event.mapPoint(), self.__layer, 10, QgsTolerance.Pixels, self)
             if feat is not None and self.__lastFeatureId != feat.id():
                 self.__lastFeatureId = feat.id()
-                self.__layer.setSelectedFeatures([feat.id()])
+                self.__layer.selectByIds([feat.id()])
             if feat is None:
                 self.__layer.removeSelection()
                 self.__lastFeatureId = None

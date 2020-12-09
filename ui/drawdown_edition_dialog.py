@@ -63,7 +63,6 @@ class DrawdownEditionDialog(QDialog):
         self.__okButton.setMinimumWidth(100)
         self.__layout.addWidget(self.__okButton, pos, 1)
 
-
         self.setLayout(self.__layout)
 
     def getLayers(self):
