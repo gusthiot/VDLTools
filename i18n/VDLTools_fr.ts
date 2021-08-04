@@ -69,12 +69,12 @@
         <translation>Dupliquer un objet</translation>
     </message>
     <message>
-        <location filename="../tools/duplicate_tool.py" line="308"/>
+        <location filename="../tools/duplicate_tool.py" line="306"/>
         <source>Geos geometry problem</source>
         <translation>Problème de géométrie Geos</translation>
     </message>
     <message>
-        <location filename="../tools/duplicate_tool.py" line="348"/>
+        <location filename="../tools/duplicate_tool.py" line="345"/>
         <location filename="../tools/extrapolate_tool.py" line="194"/>
         <location filename="../tools/interpolate_tool.py" line="281"/>
         <location filename="../tools/interpolate_tool.py" line="395"/>
@@ -288,6 +288,7 @@
     </message>
     <message>
         <location filename="../ui/drawdown_edition_dialog.py" line="61"/>
+        <location filename="../ui/duplicate_distance_dialog.py" line="63"/>
         <location filename="../ui/import_confirm_dialog.py" line="49"/>
         <location filename="../ui/import_jobs_dialog.py" line="52"/>
         <location filename="../ui/interpolate_confirm_dialog.py" line="77"/>
@@ -333,6 +334,7 @@
         <location filename="../ui/choose_control_dialog.py" line="102"/>
         <location filename="../ui/drawdown_adjustment_dialog.py" line="112"/>
         <location filename="../ui/drawdown_edition_dialog.py" line="54"/>
+        <location filename="../ui/duplicate_distance_dialog.py" line="67"/>
         <location filename="../ui/fields_settings_dialog.py" line="67"/>
         <location filename="../ui/import_confirm_dialog.py" line="53"/>
         <location filename="../ui/import_jobs_dialog.py" line="56"/>
@@ -896,6 +898,31 @@
         <location filename="../ui/orientation_dialog.py" line="97"/>
         <source>Angle [°]</source>
         <translation>Angle [°]</translation>
+    </message>
+    <message>
+        <location filename="../ui/duplicate_distance_dialog.py" line="46"/>
+        <source>Duplicate</source>
+        <translation>Duliquer</translation>
+    </message>
+    <message>
+        <location filename="../ui/duplicate_distance_dialog.py" line="48"/>
+        <source>distance :</source>
+        <translation>distance :</translation>
+    </message>
+    <message>
+        <location filename="../ui/duplicate_distance_dialog.py" line="57"/>
+        <source>invert direction</source>
+        <translation>inverser la direction</translation>
+    </message>
+    <message>
+        <location filename="../ui/duplicate_distance_dialog.py" line="59"/>
+        <source>Preview</source>
+        <translation>Aperçu</translation>
+    </message>
+    <message>
+        <location filename="../ui/duplicate_distance_dialog.py" line="78"/>
+        <source>In which direction the internal part has to be duplicated ?</source>
+        <translation>Dans quelle direction la partie interne doit-elle être dupliquée ?</translation>
     </message>
 </context>
 </TS>

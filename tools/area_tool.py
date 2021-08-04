@@ -46,7 +46,6 @@ class AreaTool(QgsMapTool):
         QgsMapTool.__init__(self, iface.mapCanvas())
         self.__clear()
 
-
     def activate(self):
         """
         When the action is selected
